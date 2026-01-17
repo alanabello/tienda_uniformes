@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - Uniformes Clínicos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="announcement-bar">
+        🚚 Envío a todo Santiago por solo $4.000 | Despachos desde Valdivia de Paine
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Uniformes Clínicos</a>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;" title="Volver al Inicio">🏠</a>
+                <a href="carrito.html" class="cart-icon">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container cart-page">
+        <h2>Resumen de tu Pedido</h2>
+        
+        <div class="cart-container">
+            <!-- Lista de productos -->
+            <div id="cart-items" class="cart-items">
+                <!-- Se llena con JS -->
+            </div>
+
+            <!-- Resumen de Costos -->
+            <div class="cart-summary-box">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal-price">$0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Envío (Santiago)</span>
+                    <span>$4.000</span>
+                </div>
+                <hr>
+                <div class="summary-row total">
+                    <span>Total a Pagar</span>
+                    <span id="total-price">$0</span>
+                </div>
+
+                <div class="payment-method">
+                    <label for="payment">Método de Pago:</label>
+                    <select id="payment">
+                        
+                        <option value="Contra Entrega">Pago Contra Entrega</option>
+                    </select>
+                </div>
+
+                <button onclick="enviarPedido()" class="btn-checkout">
+                    Enviar pedido por WhatsApp 📲
+                </button>
+                
+                <p class="disclaimer">Serás redirigido a WhatsApp para coordinar el pago y la entrega.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
