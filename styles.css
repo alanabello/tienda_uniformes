@@ -966,4 +966,51 @@ body {
     .btn-whatssapp, .btn-instagram {
         width: 50px; height: 50px; /* Un poco más pequeños */
     }
+
+    /* 5. Cards en Miniatura (Estilo Grilla PC) */
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas */
+        gap: 10px; /* Espacio reducido entre tarjetas */
+    }
+
+    .product-img {
+        height: 140px; /* Imagen más pequeña y proporcional */
+    }
+
+    .card-body {
+        padding: 8px; /* Menos relleno interno */
+    }
+
+    .card-body h3 {
+        font-size: 0.85rem; /* Título más pequeño */
+        margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Máximo 2 líneas de texto */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .price {
+        font-size: 0.95rem;
+    }
+
+    .selectors {
+        flex-direction: column; /* Selectores verticales para ahorrar espacio */
+        gap: 5px;
+    }
+
+    .selectors select {
+        font-size: 0.75rem;
+        padding: 4px;
+    }
+
+    .btn-add {
+        padding: 8px;
+        font-size: 0.8rem;
+        margin-top: 8px;
+    }
+
+    .envio-info {
+        display: none; /* Ocultar info de envío en miniatura */
+    }
 }
