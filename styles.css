@@ -1066,3 +1066,66 @@ body {
 .payment-text { display: flex; flex-direction: column; }
 .payment-text strong { font-size: 1rem; color: #222; font-weight: 600; }
 .payment-text small { font-size: 0.85rem; color: #666; }
+
+/* =========================================
+   LOGIN Y ADMIN
+   ========================================= */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    background: #f0f2f5;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-box h2 { margin-bottom: 20px; color: var(--primary); }
+
+.form-group { margin-bottom: 15px; text-align: left; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+.form-group input {
+    width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+}
+
+/* Tabla de Inventario */
+.admin-container {
+    max-width: 1200px; margin: 40px auto; padding: 0 20px;
+}
+
+.admin-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+
+.inventory-table {
+    width: 100%; border-collapse: collapse; background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden;
+}
+
+.inventory-table th, .inventory-table td {
+    padding: 15px; text-align: left; border-bottom: 1px solid #eee;
+}
+
+.inventory-table th {
+    background: var(--primary); color: white; font-weight: 600;
+}
+
+.inventory-table tr:hover { background: #f9f9f9; }
+
+.status-badge {
+    padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;
+}
+.status-active { background: #d1fae5; color: #065f46; }
+.status-inactive { background: #fee2e2; color: #991b1b; }
+
+.btn-logout {
+    background: #e74c3c; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.9rem;
+}

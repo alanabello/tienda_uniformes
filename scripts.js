@@ -869,3 +869,60 @@ function moverCarrusel(direction) {
         behavior: 'smooth'
     });
 }
+
+/* ===============================
+   SISTEMA DE ADMINISTRACIÓN (LOGIN)
+================================ */
+
+function iniciarSesion(e) {
+    e.preventDefault();
+    const user = document.getElementById('adminUser').value;
+    const pass = document.getElementById('adminPass').value;
+    const errorMsg = document.getElementById('loginError');
+
+    // ⚠️ CAMBIA AQUÍ TU USUARIO Y CONTRASEÑA
+    if (user === 'admin' && pass === 'uniformes2024') {
+        // Guardar sesión en el navegador
+        sessionStorage.setItem('adminAuth', 'true');
+        window.location.href = 'admin.html';
+    } else {
+        errorMsg.style.display = 'block';
+    }
+}
+
+function verificarAutenticacion() {
+    // Si no está logueado, lo manda al login
+    if (sessionStorage.getItem('adminAuth') !== 'true') {
+        window.location.href = 'login.html';
+    }
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('adminAuth');
+    window.location.href = 'login.html';
+}
+
+function cargarInventarioAdmin() {
+    const tbody = document.getElementById('inventory-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    productos.forEach(p => {
+        const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : '';
+        const estadoClass = p.mostrar ? 'status-active' : 'status-inactive';
+        const estadoText = p.mostrar ? 'Visible' : 'Oculto';
+
+        const row = `
+            <tr>
+                <td>#${p.id}</td>
+                <td><img src="${img}" width="50" style="border-radius:5px;"></td>
+                <td><strong>${p.nombre}</strong></td>
+                <td>$${p.precio.toLocaleString('es-CL')}</td>
+                <td>${p.categorias.join(', ')}</td>
+                <td><span class="status-badge ${estadoClass}">${estadoText}</span></td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
