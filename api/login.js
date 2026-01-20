@@ -8,8 +8,8 @@ export default async function handler(req, res) {
     const { user, pass } = req.body;
 
     // 2. Obtener credenciales seguras desde las variables de entorno de Vercel
-    const ADMIN_USER = process.env.ADMIN_USER;
-    const ADMIN_PASS = process.env.ADMIN_PASS;
+    const ADMIN_USER = process.env.ADMIN_USER || 'gabriela';
+    const ADMIN_PASS = process.env.ADMIN_PASS || 'Amira123';
 
     // 3. Comparar las credenciales
     if (user === ADMIN_USER && pass === ADMIN_PASS) {
