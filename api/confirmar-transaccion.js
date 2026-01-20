@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   // Si el usuario cancela el pago en el formulario de Webpay
   if (!token_ws) {
-     return res.redirect("https://tiendauniformes.vercel.app/pago-fallido.html");
+     return res.redirect("/pago-fallido.html");
   }
 
   try {
@@ -14,13 +14,13 @@ export default async function handler(req, res) {
 
     if (result.status === "AUTHORIZED") {
       // PAGO EXITOSO: Redirigir al index con mensaje de éxito
-      res.redirect("https://tiendauniformes.vercel.app/pago-exitoso.html");
+      res.redirect("/pago-exitoso.html");
     } else {
       // PAGO RECHAZADO
-      res.redirect("https://tiendauniformes.vercel.app/pago-fallido.html");
+      res.redirect("/pago-fallido.html");
     }
   } catch (error) {
     console.error(error);
-    res.redirect("https://tiendauniformes.vercel.app/pago-fallido.html");
+    res.redirect("/pago-fallido.html");
   }
 }
