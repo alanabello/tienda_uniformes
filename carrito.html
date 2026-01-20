@@ -50,14 +50,31 @@
                     <span id="total-price">$0</span>
                 </div>
 
-                <div class="payment-method">
-                    <label for="payment">Método de Pago:</label>
-                    <select id="payment">
+                <div class="payment-section">
+                    <h3>Método de Pago</h3>
+                    <div class="payment-options">
+                        <label class="payment-card selected">
+                            <input type="radio" name="payment" value="Webpay" checked>
+                            <div class="payment-content">
+                                <span class="payment-icon">💳</span>
+                                <div class="payment-text">
+                                    <strong>Webpay Plus</strong>
+                                    <small>Tarjetas de Crédito, Débito y Prepago</small>
+                                </div>
+                            </div>
+                        </label>
                         
-                        <option value="Contra Entrega">Pago Contra Entrega</option>
-                        <option value="Transferencia">Transferencia Bancaria</option>
-                        <option value="Webpay">Transbank (Webpay)</option>
-                    </select>
+                        <label class="payment-card">
+                            <input type="radio" name="payment" value="Contra Entrega">
+                            <div class="payment-content">
+                                <span class="payment-icon">💵</span>
+                                <div class="payment-text">
+                                    <strong>Pago Contra Entrega</strong>
+                                    <small>Paga al recibir tu pedido</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <button onclick="enviarPedido()" class="btn-checkout">

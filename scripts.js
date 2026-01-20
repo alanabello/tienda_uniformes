@@ -650,7 +650,8 @@ function enviarPedido() {
     if (carrito.length === 0) return alert("El carrito está vacío");
 
     const telefono = "56929395568"; // Número actualizado
-    const pago = document.getElementById('payment').value;
+    const pagoInput = document.querySelector('input[name="payment"]:checked');
+    const pago = pagoInput ? pagoInput.value : 'Webpay'; // Por defecto Webpay
     
     // Si elige Webpay, iniciamos el flujo de Transbank y detenemos el WhatsApp
     if (pago === "Webpay") {
@@ -695,9 +696,6 @@ function enviarPedido() {
     mensaje += `⭐ *TOTAL A PAGAR: $${total.toLocaleString('es-CL')}*\n`;
     mensaje += `--------------------------\n`;
     mensaje += `💳 Método de pago: ${pago}`;
-    if (pago.includes("Transferencia")) {
-        mensaje += `\nℹ️ *Solicito datos de transferencia o Link de Pago*`;
-    }
 
     const mensajeEncoded = encodeURIComponent(mensaje);
     window.open(`https://wa.me/${telefono}?text=${mensajeEncoded}`, '_blank');
@@ -811,19 +809,24 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(abrirPromo, 1000);
 
     // Cambiar texto del botón según método de pago
-    const selectPago = document.getElementById('payment');
+    const radioPagos = document.querySelectorAll('input[name="payment"]');
     const btnCheckout = document.querySelector('.btn-checkout');
 
-    if (selectPago && btnCheckout) {
-        selectPago.addEventListener('change', () => {
-            if (selectPago.value === 'Webpay') {
-                btnCheckout.innerHTML = 'Pagar con Webpay 💳';
-                btnCheckout.style.background = '#1a1a1a'; // Color oscuro elegante
-            } else {
-                btnCheckout.innerHTML = 'Enviar pedido por WhatsApp 📲';
-                btnCheckout.style.background = '#25D366'; // Verde WhatsApp
-            }
+    if (radioPagos.length > 0 && btnCheckout) {
+        radioPagos.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'Webpay') {
+                    btnCheckout.innerHTML = 'Pagar con Webpay 💳';
+                    btnCheckout.style.background = '#1a1a1a'; // Color oscuro elegante
+                } else {
+                    btnCheckout.innerHTML = 'Enviar pedido por WhatsApp 📲';
+                    btnCheckout.style.background = '#25D366'; // Verde WhatsApp
+                }
+            });
         });
+        // Ejecutar una vez al inicio para asegurar el estado correcto
+        const checked = document.querySelector('input[name="payment"]:checked');
+        if(checked) checked.dispatchEvent(new Event('change'));
     }
 });
 

@@ -1012,3 +1012,57 @@ body {
         display: none; /* Ocultar info de envío en miniatura */
     }
 }
+
+/* =========================================
+   SECCIÓN DE PAGO PROFESIONAL
+   ========================================= */
+.payment-section {
+    margin-top: 25px;
+    text-align: left;
+}
+
+.payment-section h3 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 700;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.payment-card:hover { border-color: #bbb; background: #f9f9f9; }
+
+/* Estilo cuando está seleccionado (manejado por JS o :has en navegadores modernos) */
+.payment-card:has(input:checked), .payment-card.active-payment {
+    border-color: var(--primary);
+    background-color: #f0fdfa; /* Fondo sutil del color primario */
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.payment-card input[type="radio"] {
+    margin-right: 15px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+.payment-content { display: flex; align-items: center; gap: 15px; }
+.payment-icon { font-size: 1.8rem; }
+.payment-text { display: flex; flex-direction: column; }
+.payment-text strong { font-size: 1rem; color: #222; font-weight: 600; }
+.payment-text small { font-size: 0.85rem; color: #666; }
