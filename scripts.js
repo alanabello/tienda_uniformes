@@ -976,12 +976,15 @@ async function cargarInventarioAdmin() {
                 <td><strong>${p.nombre}</strong></td>
                 <td>$${p.precio.toLocaleString('es-CL')}</td>
                 <td>${p.categorias.join(', ')}</td>
-                <td><strong>${stock}</strong></td>
+                <td>
+                    <strong>${stock}</strong>
+                    <button onclick="cambiarStock(${p.id}, ${stock})" title="Editar Stock" style="cursor:pointer; border:1px solid #ccc; background:#fff; border-radius:4px; padding:2px 5px; margin-left:5px;">✏️</button>
+                </td>
                 <td><span class="status-badge ${estadoClass}">${estadoText}</span></td>
                 <td>
-                    <button onclick="cambiarVisibilidad('${p.firebaseId}', ${!p.mostrar})" style="cursor:pointer;">👁️</button>
-                    <!-- La edición requiere un endpoint PUT que podemos agregar luego -->
-                    <button style="cursor:not-allowed; opacity:0.5;">👁️</button>
+                    <button onclick="cambiarVisibilidad(${p.id}, ${!p.mostrar})" style="cursor:pointer; border:none; background:none; font-size:1.2rem;" title="Ocultar/Mostrar">
+                        ${p.mostrar ? '👁️' : '🚫'}
+                    </button>
                 </td>
             </tr>
         `;
@@ -991,7 +994,6 @@ async function cargarInventarioAdmin() {
 
 // --- FUNCIONES ADMIN AVANZADAS ---
 
-// 1. Migrar productos locales a Firebase (Solo usar una vez)
 // 1. Migrar productos locales a Neon (Solo usar una vez)
 async function migrarProductosAFirebase() {
     if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
@@ -1014,9 +1016,18 @@ async function migrarProductosAFirebase() {
 }
 
 // 2. Cambiar visibilidad (Ocultar/Mostrar)
-async function cambiarVisibilidad(firebaseId, nuevoEstado) {
-    // Pendiente implementar endpoint UPDATE en api/productos.js
-    alert("Función en mantenimiento para Neon");
+async function cambiarVisibilidad(id, nuevoEstado) {
+    try {
+        await fetch('/api/productos', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, mostrar: nuevoEstado })
+        });
+        cargarInventarioAdmin(); // Recargar tabla
+    } catch (error) {
+        console.error(error);
+        alert("Error al cambiar visibilidad");
+    }
 }
 
 // 3. Cargar Ventas
@@ -1081,7 +1092,32 @@ async function registrarVentaExitosa() {
     }
 }
 
-// EXPORTAR FUNCIONES AL ÁMBITO GLOBAL (Necesario porque ahora es un módulo)
+// 5. Cambiar Stock (Nuevo)
+async function cambiarStock(id, stockActual) {
+    const nuevoStock = prompt(`Ingresa el nuevo stock para el producto ID ${id}:`, stockActual);
+    
+    if (nuevoStock === null) return; // Cancelado
+    
+    const stockNum = parseInt(nuevoStock);
+    if (isNaN(stockNum) || stockNum < 0) {
+        alert("Por favor ingresa un número válido.");
+        return;
+    }
+
+    try {
+        await fetch('/api/productos', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, stock: stockNum })
+        });
+        cargarInventarioAdmin(); // Recargar tabla para ver cambios
+    } catch (error) {
+        console.error(error);
+        alert("Error al actualizar stock");
+    }
+}
+
+// EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
 window.agregar = agregar;
 window.agregarDesdeDetalle = agregarDesdeDetalle;
 window.eliminar = eliminar;
@@ -1102,3 +1138,4 @@ window.migrarProductosAFirebase = migrarProductosAFirebase;
 window.cambiarVisibilidad = cambiarVisibilidad;
 window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
+window.cambiarStock = cambiarStock;

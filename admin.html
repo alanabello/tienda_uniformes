@@ -20,7 +20,7 @@
         <div class="admin-header">
             <h2>📦 Inventario de Productos</h2>
             <div>
-                <button onclick="migrarProductosAFirebase()" style="background:#f39c12; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">⚠️ Migrar Datos Iniciales</button>
+                <button onclick="migrarProductosANeon()" style="background:#f39c12; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">⚠️ Migrar Datos Iniciales</button>
                 <a href="index.html" class="btn-primary" target="_blank">Ver Tienda</a>
             </div>
         </div>
@@ -75,8 +75,6 @@
     <script src="scripts.js"></script>
     <script>
         // Verificar seguridad al cargar
-        // Nota: Como scripts.js es module, las funciones globales tardan unos ms en estar disponibles.
-        // Usamos un pequeño timeout o window.onload
         window.onload = function() {
             if(window.verificarAutenticacion) verificarAutenticacion();
             if(window.cargarInventarioAdmin) cargarInventarioAdmin();
