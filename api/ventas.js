@@ -1,9 +1,13 @@
 import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
   try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("La variable DATABASE_URL no está configurada en Vercel");
+    }
+
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
     if (req.method === 'GET') {
       // Obtener últimas 20 ventas
       const { rows } = await pool.query('SELECT * FROM ventas ORDER BY fecha DESC LIMIT 20');

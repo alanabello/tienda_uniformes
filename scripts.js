@@ -350,6 +350,20 @@ async function cargarDetalleProducto() {
 
     const producto = productos.find(p => p.id === idProducto);
     if (producto) {
+        // Verificar stock y disponibilidad para el botón
+        const sinStock = producto.stock !== undefined && producto.stock <= 0;
+        const noDisponible = producto.mostrar === false;
+        let btnTexto = "Añadir al Carrito";
+        let btnAttr = `onclick="agregarDesdeDetalle(${producto.id})"`;
+
+        if (noDisponible) {
+            btnTexto = "No Disponible";
+            btnAttr = "disabled style='background:#ccc; cursor:not-allowed'";
+        } else if (sinStock) {
+            btnTexto = "Agotado";
+            btnAttr = "disabled style='background:#ccc; cursor:not-allowed'";
+        }
+
         document.getElementById("detalle-producto").innerHTML = `
 <div class="detalle-page">
     <div class="detalle-card">
@@ -415,9 +429,8 @@ async function cargarDetalleProducto() {
 
             </div>
 
-            <button class="btn-add"
-                onclick="agregarDesdeDetalle(${producto.id})">
-                Añadir al Carrito
+            <button class="btn-add" ${btnAttr}>
+                ${btnTexto}
             </button>
 
             <p class="envio-info">
@@ -470,10 +483,20 @@ function renderizarProductos(filtro = 'todos') {
         const img1 = p.imagenes?.[0] || 'https://via.placeholder.com/300x300?text=Sin+Foto';
         const img2 = p.imagenes?.[1] || img1;
 
-        // Verificar stock
+        // Verificar stock y disponibilidad
         const sinStock = p.stock !== undefined && p.stock <= 0;
-        const btnTexto = sinStock ? "Agotado" : "Añadir al Carrito";
-        const btnDisabled = sinStock ? "disabled style='background:#ccc; cursor:not-allowed'" : "";
+        const noDisponible = p.mostrar === false;
+
+        let btnTexto = "Añadir al Carrito";
+        let btnDisabled = "";
+
+        if (noDisponible) {
+            btnTexto = "No Disponible";
+            btnDisabled = "disabled style='background:#ccc; cursor:not-allowed'";
+        } else if (sinStock) {
+            btnTexto = "Agotado";
+            btnDisabled = "disabled style='background:#ccc; cursor:not-allowed'";
+        }
 
         card.innerHTML = `
             <img 
@@ -1036,16 +1059,37 @@ async function cargarInventarioAdmin() {
 // 1. Migrar productos locales a Neon (Solo usar una vez)
 async function migrarProductosANeon() {
     if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
+    if(!confirm("¿Estás seguro de subir los productos base a Neon? Se omitirán los que ya existan.")) return;
     
+    // 1. Obtener productos actuales de la DB para evitar duplicados
+    let productosEnDB = [];
+    try {
+        const res = await fetch('/api/productos');
+        if (res.ok) {
+            productosEnDB = await res.json();
+        }
+    } catch (e) {
+        console.error("Error verificando duplicados:", e);
+    }
+
     let contador = 0;
     let errores = 0;
+    let omitidos = 0;
     let ultimoError = "";
 
     // Feedback visual en el botón
     const btn = document.querySelector('button[onclick="migrarProductosANeon()"]');
     if(btn) { btn.innerText = "⏳ Subiendo..."; btn.disabled = true; }
+    if(btn) { btn.innerText = "⏳ Verificando..."; btn.disabled = true; }
 
     for (const p of productosBase) {
+        // Verificar si ya existe por nombre
+        const existe = productosEnDB.find(dbProd => dbProd.nombre === p.nombre);
+        if (existe) {
+            omitidos++;
+            continue;
+        }
+
         // Añadimos campo stock por defecto
         const nuevoProd = { ...p, stock: 100 };
         
@@ -1069,8 +1113,10 @@ async function migrarProductosANeon() {
 
     if (errores > 0) {
         alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}\n\nPosible causa: Tablas no creadas en Neon o DATABASE_URL incorrecta.`);
+        alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n⏭️ Omitidos (Ya existen): ${omitidos}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}`);
     } else {
         alert(`✅ Éxito: ${contador} productos migrados a la base de datos.`);
+        alert(`✅ Proceso finalizado.\n✨ Nuevos subidos: ${contador}\n⏭️ Omitidos (Ya existen): ${omitidos}`);
         location.reload();
     }
     
