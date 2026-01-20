@@ -1,6 +1,8 @@
-// 1. CONFIGURACIÓN DE PRODUCTOS
-// Aquí es donde pondrás tus fotos reales más adelante
-const productos = [
+let productos = []; // Ahora la lista es dinámica
+
+// 1. DATOS INICIALES (Solo para migración)
+// Estos son tus productos actuales. Usaremos una función en Admin para subirlos a la base de datos.
+const productosBase = [
     {
         id: 1,
         nombre: "Conjunto Azul Marino",
@@ -333,6 +335,7 @@ if (idProducto) {
             <li>💦 Protección antifluido</li>
             <li>🇨🇱 Diseño y confección chilena</li>
             <li>⭐ Estándar profesional</li>
+            ${producto.stock ? `<li>📦 <strong>Stock disponible:</strong> ${producto.stock} un.</li>` : ''}
        </ul>
 
 
@@ -419,6 +422,11 @@ function renderizarProductos(filtro = 'todos') {
         const img1 = p.imagenes?.[0] || 'https://via.placeholder.com/300x300?text=Sin+Foto';
         const img2 = p.imagenes?.[1] || img1;
 
+        // Verificar stock
+        const sinStock = p.stock !== undefined && p.stock <= 0;
+        const btnTexto = sinStock ? "Agotado" : "Añadir al Carrito";
+        const btnDisabled = sinStock ? "disabled style='background:#ccc; cursor:not-allowed'" : "";
+
         card.innerHTML = `
             <img 
                 src="${img1}"
@@ -456,9 +464,9 @@ function renderizarProductos(filtro = 'todos') {
 
                 </div>
 
-                <button class="btn-add"
+                <button class="btn-add" ${btnDisabled}
                     onclick="event.stopPropagation(); agregar(${p.id})">
-                    Añadir al Carrito
+                    ${btnTexto}
                     
                 </button>
 
@@ -489,6 +497,12 @@ function filtrarProductos(categoria) {
 function agregar(id) {
     const prod = productos.find(p => p.id === id);
     const talla = document.getElementById(`talla-${id}`).value;
+
+    // Validar Stock
+    if (prod.stock !== undefined && prod.stock <= 0) {
+        mostrarNotificacion("❌ Producto agotado");
+        return;
+    }
     
     // Buscamos el color específicamente para este ID de producto si existe
     const colorSelect = document.getElementById(`color-${id}`); 
@@ -522,6 +536,12 @@ function agregarDesdeDetalle(id) {
 
     const producto = productos.find(p => p.id === id);
     if (!producto) return;
+
+    // Validar Stock
+    if (producto.stock !== undefined && producto.stock <= 0) {
+        mostrarNotificacion("❌ Producto agotado");
+        return;
+    }
 
     const talla = document.getElementById('detalle-talla')?.value || 'Única';
     const colorSelect = document.getElementById('detalle-color');
@@ -803,6 +823,8 @@ function cerrarPromo() {
 document.addEventListener('DOMContentLoaded', () => {
     actualizarContador();
     renderizarProductos();
+    cargarProductosDesdeDB(); // Cargar DB al iniciar
+    cargarDetalleProducto(); // Cargar detalle si estamos en esa página
     renderizarPaginaCarrito();
 
     // Mostrar promo al cargar (1 segundo de retraso)
@@ -902,16 +924,21 @@ function cerrarSesion() {
     window.location.href = 'login.html';
 }
 
-function cargarInventarioAdmin() {
+async function cargarInventarioAdmin() {
     const tbody = document.getElementById('inventory-body');
     if (!tbody) return;
 
+    tbody.innerHTML = '';
+    
+    // Asegurar que tenemos datos frescos
+    await cargarProductosDesdeDB();
     tbody.innerHTML = '';
 
     productos.forEach(p => {
         const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : '';
         const estadoClass = p.mostrar ? 'status-active' : 'status-inactive';
         const estadoText = p.mostrar ? 'Visible' : 'Oculto';
+        const stock = p.stock !== undefined ? p.stock : '∞';
 
         const row = `
             <tr>
@@ -920,9 +947,129 @@ function cargarInventarioAdmin() {
                 <td><strong>${p.nombre}</strong></td>
                 <td>$${p.precio.toLocaleString('es-CL')}</td>
                 <td>${p.categorias.join(', ')}</td>
+                <td><strong>${stock}</strong></td>
                 <td><span class="status-badge ${estadoClass}">${estadoText}</span></td>
+                <td>
+                    <button onclick="cambiarVisibilidad('${p.firebaseId}', ${!p.mostrar})" style="cursor:pointer;">👁️</button>
+                    <!-- La edición requiere un endpoint PUT que podemos agregar luego -->
+                    <button style="cursor:not-allowed; opacity:0.5;">👁️</button>
+                </td>
             </tr>
         `;
         tbody.innerHTML += row;
     });
 }
+
+// --- FUNCIONES ADMIN AVANZADAS ---
+
+// 1. Migrar productos locales a Firebase (Solo usar una vez)
+// 1. Migrar productos locales a Neon (Solo usar una vez)
+async function migrarProductosAFirebase() {
+    if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
+    
+    let contador = 0;
+    for (const p of productosBase) {
+        // Añadimos campo stock por defecto
+        const nuevoProd = { ...p, stock: 100 };
+        
+        await fetch('/api/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoProd)
+        });
+        contador++;
+    }
+
+    alert(`✅ Migración completada. ${contador} productos subidos.`);
+    location.reload();
+}
+
+// 2. Cambiar visibilidad (Ocultar/Mostrar)
+async function cambiarVisibilidad(firebaseId, nuevoEstado) {
+    // Pendiente implementar endpoint UPDATE en api/productos.js
+    alert("Función en mantenimiento para Neon");
+}
+
+// 3. Cargar Ventas
+async function cargarVentasAdmin() {
+    const container = document.getElementById('ventas-body');
+    if(!container) return;
+    
+    container.innerHTML = 'Cargando ventas...';
+    
+    const res = await fetch('/api/ventas');
+    const ventas = await res.json();
+    
+    container.innerHTML = '';
+    ventas.forEach(venta => {
+        const fecha = venta.fecha ? new Date(venta.fecha).toLocaleDateString() : '-';
+        // items viene como JSONB desde Postgres, fetch lo convierte a objeto automáticamente
+        const items = venta.items || [];
+        
+        const row = `
+            <tr>
+                <td>${fecha}</td>
+                <td>${venta.orden}</td>
+                <td>Cliente Web</td>
+                <td>$${(venta.total || 0).toLocaleString('es-CL')}</td>
+                <td>
+                    <ul style="font-size:0.8rem; padding-left:15px; margin:0;">
+                        ${items.map(i => `<li>${i.nombre} (x${i.cantidad})</li>`).join('')}
+                    </ul>
+                </td>
+            </tr>
+        `;
+        container.innerHTML += row;
+    });
+}
+
+// 4. Registrar Venta (Se llama desde pago-exitoso)
+async function registrarVentaExitosa() {
+    const carritoGuardado = JSON.parse(localStorage.getItem('carrito'));
+    if (!carritoGuardado || carritoGuardado.length === 0) return;
+
+    try {
+        const total = carritoGuardado.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+        const orden = "ORD-" + Date.now();
+
+        await fetch('/api/ventas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orden,
+                total,
+                items: carritoGuardado,
+                estado: "Pagado"
+            })
+        });
+
+        // 3. Limpiar carrito
+        localStorage.removeItem('carrito');
+        console.log("✅ Venta registrada y stock actualizado");
+
+    } catch (error) {
+        console.error("Error registrando venta:", error);
+    }
+}
+
+// EXPORTAR FUNCIONES AL ÁMBITO GLOBAL (Necesario porque ahora es un módulo)
+window.agregar = agregar;
+window.agregarDesdeDetalle = agregarDesdeDetalle;
+window.eliminar = eliminar;
+window.enviarPedido = enviarPedido;
+window.filtrarProductos = filtrarProductos;
+window.abrirGuiaTallas = abrirGuiaTallas;
+window.cerrarGuiaTallas = cerrarGuiaTallas;
+window.abrirPromo = abrirPromo;
+window.cerrarPromo = cerrarPromo;
+window.moverCarrusel = moverCarrusel;
+window.iniciarSesion = iniciarSesion;
+window.cerrarSesion = cerrarSesion;
+window.verificarAutenticacion = verificarAutenticacion;
+window.cargarInventarioAdmin = cargarInventarioAdmin;
+window.cambiarImagen = cambiarImagen;
+window.irADetalle = irADetalle;
+window.migrarProductosAFirebase = migrarProductosAFirebase;
+window.cambiarVisibilidad = cambiarVisibilidad;
+window.cargarVentasAdmin = cargarVentasAdmin;
+window.registrarVentaExitosa = registrarVentaExitosa;

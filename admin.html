@@ -19,9 +19,19 @@
     <div class="admin-container">
         <div class="admin-header">
             <h2>📦 Inventario de Productos</h2>
-            <a href="index.html" class="btn-primary" target="_blank">Ver Tienda</a>
+            <div>
+                <button onclick="migrarProductosAFirebase()" style="background:#f39c12; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">⚠️ Migrar Datos Iniciales</button>
+                <a href="index.html" class="btn-primary" target="_blank">Ver Tienda</a>
+            </div>
         </div>
 
+        <!-- Pestañas simples -->
+        <div style="margin-bottom: 20px;">
+            <button onclick="document.getElementById('vista-inventario').style.display='block'; document.getElementById('vista-ventas').style.display='none';" class="btn-primary">Inventario</button>
+            <button onclick="document.getElementById('vista-inventario').style.display='none'; document.getElementById('vista-ventas').style.display='block'; cargarVentasAdmin();" class="btn-secondary" style="background:#ddd; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">Ver Ventas</button>
+        </div>
+
+        <div id="vista-inventario">
         <div style="overflow-x: auto;">
             <table class="inventory-table">
                 <thead>
@@ -31,7 +41,9 @@
                         <th>Nombre</th>
                         <th>Precio</th>
                         <th>Categoría</th>
+                        <th>Stock</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-body">
@@ -39,14 +51,36 @@
                 </tbody>
             </table>
         </div>
+        </div>
+
+        <div id="vista-ventas" style="display:none;">
+            <h3>📊 Registro de Ventas</h3>
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Productos</th>
+                    </tr>
+                </thead>
+                <tbody id="ventas-body">
+                    <!-- Se llena con JS -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <script src="scripts.js"></script>
+    <script type="module" src="scripts.js"></script>
     <script>
         // Verificar seguridad al cargar
-        verificarAutenticacion();
-        // Cargar tabla
-        cargarInventarioAdmin();
+        // Nota: Como scripts.js es module, las funciones globales tardan unos ms en estar disponibles.
+        // Usamos un pequeño timeout o window.onload
+        window.onload = function() {
+            if(window.verificarAutenticacion) verificarAutenticacion();
+            if(window.cargarInventarioAdmin) cargarInventarioAdmin();
+        };
     </script>
 </body>
 </html>

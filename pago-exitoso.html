@@ -14,5 +14,13 @@
     <h1>✅ Pago realizado con éxito</h1>
     <p>Gracias por tu compra</p>
     <a href="index.html" class="btn-primary" style="margin-top: 20px;">Volver al Inicio</a>
+
+    <script type="module" src="scripts.js"></script>
+    <script>
+        // Registrar venta y descontar stock al cargar esta página
+        window.onload = function() {
+            if(window.registrarVentaExitosa) window.registrarVentaExitosa();
+        };
+    </script>
 </body>
 </html>
