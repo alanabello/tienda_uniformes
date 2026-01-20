@@ -380,7 +380,7 @@ async function cargarDetalleProducto() {
 
         // Definir variables para el template (tallas y colores)
         const tallas = producto.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-        const mostrarColores = producto.mostrarColores !== undefined ? producto.mostrarColores : true;
+        const mostrarColores = producto.mostrar_colores !== undefined ? producto.mostrar_colores : true;
 
         document.getElementById("detalle-producto").innerHTML = `
 <div class="detalle-page">
@@ -501,7 +501,7 @@ function renderizarProductos(filtro = 'todos') {
         
         // Nuevas propiedades
         const tallas = p.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-        const mostrarColores = p.mostrarColores !== undefined ? p.mostrarColores : true;
+        const mostrarColores = p.mostrar_colores !== undefined ? p.mostrar_colores : true;
 
         let btnTexto = "Añadir al Carrito";
         let btnDisabled = "";
@@ -1006,18 +1006,34 @@ function moverCarrusel(direction) {
    SISTEMA DE ADMINISTRACIÓN (LOGIN)
 ================================ */
 
-function iniciarSesion(e) {
+async function iniciarSesion(e) {
     e.preventDefault();
     const user = document.getElementById('adminUser').value;
     const pass = document.getElementById('adminPass').value;
     const errorMsg = document.getElementById('loginError');
+    errorMsg.style.display = 'none'; // Ocultar error previo
 
-    // ⚠️ CAMBIA AQUÍ TU USUARIO Y CONTRASEÑA
-    if (user === 'admin' && pass === 'uniformes2024') {
-        // Guardar sesión en el navegador
-        sessionStorage.setItem('adminAuth', 'true');
-        window.location.href = 'admin.html';
-    } else {
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            // Si el backend dice que es correcto, guardamos la sesión y redirigimos
+            sessionStorage.setItem('adminAuth', 'true');
+            window.location.href = 'admin.html';
+        } else {
+            // Si el backend dice que hay un error, lo mostramos
+            errorMsg.innerText = data.error || 'Error de autenticación';
+            errorMsg.style.display = 'block';
+        }
+    } catch (error) {
+        console.error("Error en el fetch de login:", error);
+        errorMsg.innerText = 'No se pudo conectar con el servidor.';
         errorMsg.style.display = 'block';
     }
 }
