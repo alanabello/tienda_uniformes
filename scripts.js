@@ -1,4 +1,5 @@
 let productos = []; // Ahora la lista es dinámica
+let conexionDB = false; // Variable para diagnosticar conexión
 
 // 1. DATOS INICIALES (Solo para migración)
 // Estos son tus productos actuales. Usaremos una función en Admin para subirlos a la base de datos.
@@ -298,9 +299,20 @@ const productosBase = [
 
 // Cargar productos desde Neon
 async function cargarProductosDesdeDB() {
+    // 1. Verificar si estamos en local (file://)
+    if (window.location.protocol === 'file:') {
+        console.warn("⚠️ Ejecutando en local. La base de datos requiere Vercel.");
+        productos = productosBase;
+        renderizarProductos();
+        return;
+    }
+
     try {
         const res = await fetch('/api/productos');
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        
         const data = await res.json();
+        conexionDB = true; // ¡Conexión exitosa!
         
         if (Array.isArray(data) && data.length > 0) {
             productos = data;
@@ -312,6 +324,7 @@ async function cargarProductosDesdeDB() {
         renderizarProductos();
     } catch (error) {
         console.error("Error cargando productos:", error);
+        conexionDB = false; // Falló la conexión
         productos = productosBase;
         renderizarProductos();
     }
@@ -965,9 +978,17 @@ async function cargarInventarioAdmin() {
     // Verificar estado de conexión visualmente
     const statusDiv = document.getElementById('db-status');
     if(statusDiv) {
-        const esLocal = productos === productosBase;
-        statusDiv.innerHTML = esLocal ? "🔴 Modo Offline (Datos Locales)" : "🟢 Conectado a Neon DB";
-        statusDiv.style.color = esLocal ? "red" : "green";
+        if (window.location.protocol === 'file:') {
+            statusDiv.innerHTML = "⚠️ Modo Archivo Local (Sube a Vercel)";
+            statusDiv.style.color = "orange";
+        } else if (conexionDB) {
+            const esVacia = productos === productosBase;
+            statusDiv.innerHTML = esVacia ? "🟢 Conectado (Base de datos vacía - Dale a Migrar)" : "🟢 Conectado a Neon DB";
+            statusDiv.style.color = esVacia ? "orange" : "green";
+        } else {
+            statusDiv.innerHTML = "🔴 Error de Conexión (Revisar Logs)";
+            statusDiv.style.color = "red";
+        }
     }
 
     tbody.innerHTML = '';
@@ -1012,6 +1033,7 @@ async function migrarProductosANeon() {
     
     let contador = 0;
     let errores = 0;
+    let ultimoError = "";
 
     // Feedback visual en el botón
     const btn = document.querySelector('button[onclick="migrarProductosANeon()"]');
@@ -1027,16 +1049,20 @@ async function migrarProductosANeon() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoProd)
             });
-            if (!res.ok) throw new Error("Error API");
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Error ${res.status}`);
+            }
             contador++;
         } catch (e) {
             console.error("Error subiendo:", e);
             errores++;
+            ultimoError = e.message;
         }
     }
 
     if (errores > 0) {
-        alert(`⚠️ Proceso finalizado con errores.\n✅ Subidos: ${contador}\n❌ Fallidos: ${errores}\n\nPosible causa: No hay conexión a la base de datos (revisa DATABASE_URL en Vercel) o faltan las tablas.`);
+        alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}\n\nPosible causa: Tablas no creadas en Neon o DATABASE_URL incorrecta.`);
     } else {
         alert(`✅ Éxito: ${contador} productos migrados a la base de datos.`);
         location.reload();

@@ -2,8 +2,9 @@
   "name": "uniformes-clinicos",
   "version": "1.0.0",
   "dependencies": {
-    "transbank-sdk": "^3.0.2",
-    "@neondatabase/serverless": "^0.9.0"
+    "@neondatabase/serverless": "^0.9.0",
+    "pg": "^8.17.1",
+    "transbank-sdk": "^3.0.2"
   },
   "description": "",
   "main": "scripts.js",
