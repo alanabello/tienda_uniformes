@@ -2,6 +2,23 @@
   "name": "uniformes-clinicos",
   "version": "1.0.0",
   "dependencies": {
-    "transbank-sdk": "^3.0.0"
-  }
+    "transbank-sdk": "^3.0.2"
+  },
+  "description": "",
+  "main": "scripts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanabello/tienda_uniformes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/alanabello/tienda_uniformes/issues"
+  },
+  "homepage": "https://github.com/alanabello/tienda_uniformes#readme"
 }
