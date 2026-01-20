@@ -378,6 +378,10 @@ async function cargarDetalleProducto() {
         // Asegurar imágenes para evitar errores
         const imgs = (producto.imagenes && producto.imagenes.length > 0) ? producto.imagenes : ['https://via.placeholder.com/400x400?text=Sin+Imagen'];
 
+        // Definir variables para el template (tallas y colores)
+        const tallas = producto.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+        const mostrarColores = producto.mostrarColores !== undefined ? producto.mostrarColores : true;
+
         document.getElementById("detalle-producto").innerHTML = `
 <div class="detalle-page">
     <div class="detalle-card">
