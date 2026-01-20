@@ -652,6 +652,12 @@ function enviarPedido() {
     const telefono = "56929395568"; // Número actualizado
     const pago = document.getElementById('payment').value;
     
+    // Si elige Webpay, iniciamos el flujo de Transbank y detenemos el WhatsApp
+    if (pago === "Webpay") {
+        pagarConWebpay();
+        return;
+    }
+
     // Intentamos obtener la URL base para las imágenes
     // Nota: Si estás en local, esto generará una ruta local. Al subirlo a internet funcionará perfecto.
     const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
@@ -689,10 +695,60 @@ function enviarPedido() {
     mensaje += `⭐ *TOTAL A PAGAR: $${total.toLocaleString('es-CL')}*\n`;
     mensaje += `--------------------------\n`;
     mensaje += `💳 Método de pago: ${pago}`;
+    if (pago.includes("Transferencia")) {
+        mensaje += `\nℹ️ *Solicito datos de transferencia o Link de Pago*`;
+    }
 
     const mensajeEncoded = encodeURIComponent(mensaje);
     window.open(`https://wa.me/${telefono}?text=${mensajeEncoded}`, '_blank');
 }
+
+/* ===============================
+   INTEGRACIÓN TRANSBANK (WEBPAY)
+================================ */
+async function pagarConWebpay() {
+    // 1. Calcular total real del carrito
+    const subtotal = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+    const envio = 4000;
+    const total = subtotal + envio;
+    
+    // 2. Generar ID de orden único (Ej: ORDER-123456789)
+    const orden = "ORDER-" + Date.now();
+
+    mostrarNotificacion("🔄 Conectando con Webpay...");
+
+    try {
+        // ⚠️ IMPORTANTE: Reemplaza esta URL por la de tu proyecto en Vercel cuando lo subas
+        const urlApi = "https://TU-SITIO.vercel.app/api/crear-transaccion";
+        
+        const res = await fetch(urlApi, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ monto: total, orden: orden })
+        });
+
+        const data = await res.json();
+
+        // Crear formulario oculto para redirigir a Webpay
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.url;
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "token_ws";
+        input.value = data.token;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit(); // Redirige a Transbank
+
+    } catch (error) {
+        console.error("Error al iniciar pago:", error);
+        mostrarNotificacion("❌ Error de conexión con Webpay");
+    }
+}
+
 /* ===============================
    SISTEMA DE MODALES PREMIUM
 ================================ */

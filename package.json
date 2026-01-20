@@ -1,0 +1,7 @@
+{
+  "name": "uniformes-clinicos",
+  "version": "1.0.0",
+  "dependencies": {
+    "transbank-sdk": "^3.0.0"
+  }
+}
