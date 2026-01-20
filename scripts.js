@@ -1221,6 +1221,65 @@ async function cambiarStock(id, nuevoStock) {
     }
 }
 
+// 6. Agregar Nuevo Producto (Admin)
+async function guardarNuevoProducto(e) {
+    e.preventDefault();
+    
+    const nombre = document.getElementById('newNombre').value;
+    const precio = parseInt(document.getElementById('newPrecio').value);
+    const stock = parseInt(document.getElementById('newStock').value);
+    const categoria = document.getElementById('newCategoria').value;
+    const imagen = document.getElementById('newImagen').value;
+    const descripcion = document.getElementById('newDescripcion').value;
+
+    const nuevoProd = {
+        nombre,
+        precio,
+        stock,
+        categorias: [categoria],
+        imagenes: [imagen],
+        descripcion,
+        mostrar: true
+    };
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    const textoOriginal = btn.innerText;
+    btn.innerText = "Guardando...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoProd)
+        });
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Error al guardar");
+        }
+
+        alert("✅ Producto agregado correctamente");
+        cerrarModalAgregar();
+        e.target.reset();
+        cargarInventarioAdmin(); // Recargar tabla
+    } catch (error) {
+        console.error(error);
+        alert("❌ Error: " + error.message);
+    } finally {
+        btn.innerText = textoOriginal;
+        btn.disabled = false;
+    }
+}
+
+function abrirModalAgregar() {
+    document.getElementById('modal-agregar').classList.add('active');
+}
+
+function cerrarModalAgregar() {
+    document.getElementById('modal-agregar').classList.remove('active');
+}
+
 // EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
 window.agregar = agregar;
 window.agregarDesdeDetalle = agregarDesdeDetalle;
@@ -1243,3 +1302,6 @@ window.cambiarVisibilidad = cambiarVisibilidad;
 window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
 window.cambiarStock = cambiarStock;
+window.guardarNuevoProducto = guardarNuevoProducto;
+window.abrirModalAgregar = abrirModalAgregar;
+window.cerrarModalAgregar = cerrarModalAgregar;

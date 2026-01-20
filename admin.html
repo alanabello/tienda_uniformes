@@ -21,6 +21,7 @@
             <h2>📦 Inventario de Productos</h2>
             <div id="db-status" style="font-weight:bold; margin-left: 15px; font-size: 0.9rem;">Checking...</div>
             <div>
+                <button onclick="abrirModalAgregar()" style="background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">➕ Nuevo Producto</button>
                 <button onclick="migrarProductosANeon()" style="background:#f39c12; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">⚠️ Migrar Datos Iniciales</button>
                 <a href="index.html" class="btn-primary" target="_blank">Ver Tienda</a>
             </div>
@@ -70,6 +71,49 @@
                     <!-- Se llena con JS -->
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Modal Agregar Producto -->
+    <div id="modal-agregar" class="modal">
+        <div class="modal-content login-box" style="text-align: left; max-width: 500px; position: relative; margin: auto;">
+            <span onclick="cerrarModalAgregar()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">Nuevo Producto</h2>
+            <form onsubmit="guardarNuevoProducto(event)">
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="newNombre" required placeholder="Ej: Top Azul">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Precio</label>
+                        <input type="number" id="newPrecio" required placeholder="19990">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Inicial</label>
+                        <input type="number" id="newStock" value="100" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="newCategoria" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="Mujer">Mujer</option>
+                        <option value="Hombre">Hombre</option>
+                        <option value="Pantalones">Pantalones</option>
+                        <option value="Top C/N Diseños">Top C/N Diseños</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>URL de la Imagen</label>
+                    <input type="url" id="newImagen" required placeholder="https://ejemplo.com/foto.jpg">
+                    <small style="color: #666;">Copia y pega el enlace de la imagen</small>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="newDescripcion" rows="2" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" placeholder="Descripción breve..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Producto</button>
+            </form>
         </div>
     </div>
 
