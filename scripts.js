@@ -295,11 +295,40 @@ const productosBase = [
         
 
 ];
+
+// Cargar productos desde Neon
+async function cargarProductosDesdeDB() {
+    try {
+        const res = await fetch('/api/productos');
+        const data = await res.json();
+        
+        if (Array.isArray(data) && data.length > 0) {
+            productos = data;
+            console.log("✅ Productos cargados desde Neon");
+        } else {
+            console.log("⚠️ DB vacía, usando productos locales");
+            productos = productosBase;
+        }
+        renderizarProductos();
+    } catch (error) {
+        console.error("Error cargando productos:", error);
+        productos = productosBase;
+        renderizarProductos();
+    }
+}
+
 // Obtener ID desde URL
 const params = new URLSearchParams(window.location.search);
 const idProducto = parseInt(params.get("id"));
 
-if (idProducto) {
+async function cargarDetalleProducto() {
+    if (!idProducto) return;
+    
+    // Si no hay productos cargados, intentamos cargarlos
+    if (productos.length === 0) {
+        await cargarProductosDesdeDB();
+    }
+
     const producto = productos.find(p => p.id === idProducto);
     if (producto) {
         document.getElementById("detalle-producto").innerHTML = `
