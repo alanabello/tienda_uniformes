@@ -32,6 +32,7 @@
         <div style="margin-bottom: 20px;">
             <button onclick="document.getElementById('vista-inventario').style.display='block'; document.getElementById('vista-ventas').style.display='none';" class="btn-primary">Inventario</button>
             <button onclick="document.getElementById('vista-inventario').style.display='none'; document.getElementById('vista-ventas').style.display='block'; cargarVentasAdmin();" class="btn-secondary" style="background:#ddd; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">Ver Ventas</button>
+            <button onclick="document.getElementById('vista-inventario').style.display='none'; document.getElementById('vista-ventas').style.display='none'; document.getElementById('vista-promo').style.display='block'; cargarConfigPromo();" class="btn-secondary" style="background:#f39c12; color:white; border:none; padding:16px 32px; border-radius:4px; cursor:pointer; margin-left: 10px;">⚡ Oferta Flash</button>
         </div>
 
         <div id="vista-inventario">
@@ -73,6 +74,37 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Nueva Vista: Configuración de Promo -->
+        <div id="vista-promo" style="display:none; max-width: 600px; margin: 0 auto;">
+            <h3>⚡ Configurar Oferta Relámpago</h3>
+            <div class="login-box" style="text-align: left; padding: 30px;">
+                <form onsubmit="guardarConfigPromo(event)">
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+                        <label style="margin:0; flex:1;">¿Activar Oferta?</label>
+                        <input type="checkbox" id="promoActivo" style="width: 25px; height: 25px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Título Principal</label>
+                        <input type="text" id="promoTitulo" placeholder="Ej: ¡OFERTA FLASH!">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtítulo (Pequeño)</label>
+                        <input type="text" id="promoSubtitulo" placeholder="Ej: Solo por esta semana">
+                    </div>
+                    <div class="form-group">
+                        <label>Contenido de la Oferta</label>
+                        <input type="text" id="promoContenido" placeholder="Ej: Por la compra de un conjunto">
+                    </div>
+                    <div class="form-group">
+                        <label>Etiqueta Destacada (Amarilla)</label>
+                        <input type="text" id="promoTag" placeholder="Ej: ENVÍO GRATIS">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">💾 Guardar Configuración</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- Modal Agregar Producto -->

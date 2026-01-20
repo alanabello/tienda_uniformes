@@ -918,11 +918,34 @@ function cerrarGuiaTallas() {
 /* ===============================
    PROMOCIONES (ALTA CONVERSIÓN)
 ================================ */
-function abrirPromo() {
-    abrirModal("modal-promo");
+async function abrirPromo() {
+    // Intentar cargar configuración desde el servidor
+    try {
+        const res = await fetch('/api/promo');
+        if (res.ok) {
+            const config = await res.json();
+            
+            // Si está desactivada, no hacemos nada
+            if (!config.activo) return;
 
-    // Hook para marketing / analytics
-    console.log("🔥 Promo vista por el usuario");
+            // Actualizar textos en el DOM
+            const titulo = document.getElementById('promo-display-titulo');
+            const subtitulo = document.getElementById('promo-display-subtitulo');
+            const contenido = document.getElementById('promo-display-contenido');
+            const tag = document.getElementById('promo-display-tag');
+
+            if(titulo) titulo.innerText = config.titulo;
+            if(subtitulo) subtitulo.innerText = config.subtitulo;
+            if(contenido) contenido.innerText = config.contenido;
+            if(tag) tag.innerText = config.tag;
+
+            // Mostrar modal
+            abrirModal("modal-promo");
+            console.log("🔥 Promo vista por el usuario");
+        }
+    } catch (e) {
+        console.error("Error cargando promo:", e);
+    }
 }
 
 function cerrarPromo() {
@@ -1292,6 +1315,54 @@ async function cargarVentasAdmin() {
     });
 }
 
+// --- GESTIÓN DE PROMO (ADMIN) ---
+
+async function cargarConfigPromo() {
+    try {
+        const res = await fetch('/api/promo');
+        if (res.ok) {
+            const config = await res.json();
+            document.getElementById('promoActivo').checked = config.activo;
+            document.getElementById('promoTitulo').value = config.titulo || "";
+            document.getElementById('promoSubtitulo').value = config.subtitulo || "";
+            document.getElementById('promoContenido').value = config.contenido || "";
+            document.getElementById('promoTag').value = config.tag || "";
+        }
+    } catch (e) {
+        console.error("Error cargando config promo:", e);
+    }
+}
+
+async function guardarConfigPromo(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const txtOriginal = btn.innerText;
+    btn.innerText = "Guardando...";
+    btn.disabled = true;
+
+    const config = {
+        activo: document.getElementById('promoActivo').checked,
+        titulo: document.getElementById('promoTitulo').value,
+        subtitulo: document.getElementById('promoSubtitulo').value,
+        contenido: document.getElementById('promoContenido').value,
+        tag: document.getElementById('promoTag').value
+    };
+
+    try {
+        await fetch('/api/promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        alert("✅ Configuración de oferta actualizada");
+    } catch (error) {
+        alert("❌ Error al guardar");
+    } finally {
+        btn.innerText = txtOriginal;
+        btn.disabled = false;
+    }
+}
+
 // 4. Registrar Venta (Se llama desde pago-exitoso)
 async function registrarVentaExitosa() {
     const carritoGuardado = JSON.parse(localStorage.getItem('carrito'));
@@ -1539,3 +1610,5 @@ window.registrarVentaExitosa = registrarVentaExitosa;
 window.cambiarStock = cambiarStock;
 window.guardarNuevoProducto = guardarNuevoProducto;
 window.ordenarInventario = ordenarInventario;
+window.cargarConfigPromo = cargarConfigPromo;
+window.guardarConfigPromo = guardarConfigPromo;
