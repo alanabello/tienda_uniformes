@@ -1011,20 +1011,38 @@ async function migrarProductosANeon() {
     if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
     
     let contador = 0;
+    let errores = 0;
+
+    // Feedback visual en el botón
+    const btn = document.querySelector('button[onclick="migrarProductosANeon()"]');
+    if(btn) { btn.innerText = "⏳ Subiendo..."; btn.disabled = true; }
+
     for (const p of productosBase) {
         // Añadimos campo stock por defecto
         const nuevoProd = { ...p, stock: 100 };
         
-        await fetch('/api/productos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoProd)
-        });
-        contador++;
+        try {
+            const res = await fetch('/api/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoProd)
+            });
+            if (!res.ok) throw new Error("Error API");
+            contador++;
+        } catch (e) {
+            console.error("Error subiendo:", e);
+            errores++;
+        }
     }
 
-    alert(`✅ Migración completada. ${contador} productos subidos.`);
-    location.reload();
+    if (errores > 0) {
+        alert(`⚠️ Proceso finalizado con errores.\n✅ Subidos: ${contador}\n❌ Fallidos: ${errores}\n\nPosible causa: No hay conexión a la base de datos (revisa DATABASE_URL en Vercel) o faltan las tablas.`);
+    } else {
+        alert(`✅ Éxito: ${contador} productos migrados a la base de datos.`);
+        location.reload();
+    }
+    
+    if(btn) { btn.innerText = "⚠️ Migrar Datos Iniciales"; btn.disabled = false; }
 }
 
 // 2. Cambiar visibilidad (Ocultar/Mostrar)
