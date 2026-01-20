@@ -527,9 +527,9 @@ function agregar(id) {
     const prod = productos.find(p => p.id === id);
     const talla = document.getElementById(`talla-${id}`).value;
 
-    // Validar Stock
-    if (prod.stock !== undefined && prod.stock <= 0) {
-        mostrarNotificacion("❌ Producto agotado");
+    // Validar Stock y Disponibilidad
+    if ((prod.stock !== undefined && prod.stock <= 0) || prod.mostrar === false) {
+        mostrarNotificacion("❌ Producto agotado o no disponible");
         return;
     }
     
@@ -566,9 +566,9 @@ function agregarDesdeDetalle(id) {
     const producto = productos.find(p => p.id === id);
     if (!producto) return;
 
-    // Validar Stock
-    if (producto.stock !== undefined && producto.stock <= 0) {
-        mostrarNotificacion("❌ Producto agotado");
+    // Validar Stock y Disponibilidad
+    if ((producto.stock !== undefined && producto.stock <= 0) || producto.mostrar === false) {
+        mostrarNotificacion("❌ Producto agotado o no disponible");
         return;
     }
 
@@ -965,9 +965,7 @@ async function cargarInventarioAdmin() {
 
     productos.forEach(p => {
         const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : '';
-        const estadoClass = p.mostrar ? 'status-active' : 'status-inactive';
-        const estadoText = p.mostrar ? 'Visible' : 'Oculto';
-        const stock = p.stock !== undefined ? p.stock : '∞';
+        const stock = p.stock !== undefined ? p.stock : 0;
 
         const row = `
             <tr>
@@ -977,14 +975,19 @@ async function cargarInventarioAdmin() {
                 <td>$${p.precio.toLocaleString('es-CL')}</td>
                 <td>${p.categorias.join(', ')}</td>
                 <td>
-                    <strong>${stock}</strong>
-                    <button onclick="cambiarStock(${p.id}, ${stock})" title="Editar Stock" style="cursor:pointer; border:1px solid #ccc; background:#fff; border-radius:4px; padding:2px 5px; margin-left:5px;">✏️</button>
+                    <input type="number" value="${stock}" min="0" 
+                        onchange="cambiarStock(${p.id}, this.value)" 
+                        style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;">
                 </td>
-                <td><span class="status-badge ${estadoClass}">${estadoText}</span></td>
                 <td>
-                    <button onclick="cambiarVisibilidad(${p.id}, ${!p.mostrar})" style="cursor:pointer; border:none; background:none; font-size:1.2rem;" title="Ocultar/Mostrar">
-                        ${p.mostrar ? '👁️' : '🚫'}
-                    </button>
+                    <select onchange="cambiarVisibilidad(${p.id}, this.value === 'true')" 
+                        style="padding: 5px; border-radius: 5px; border: 1px solid #ddd; background: ${p.mostrar ? '#d1fae5' : '#fee2e2'}; color: ${p.mostrar ? '#065f46' : '#991b1b'}; font-weight: bold;">
+                        <option value="true" ${p.mostrar ? 'selected' : ''}>Disponible</option>
+                        <option value="false" ${!p.mostrar ? 'selected' : ''}>Agotado</option>
+                    </select>
+                </td>
+                <td>
+                    <a href="detalle.html?id=${p.id}" target="_blank" title="Ver en tienda" style="text-decoration:none; font-size: 1.2rem;">🔗</a>
                 </td>
             </tr>
         `;
@@ -1093,11 +1096,7 @@ async function registrarVentaExitosa() {
 }
 
 // 5. Cambiar Stock (Nuevo)
-async function cambiarStock(id, stockActual) {
-    const nuevoStock = prompt(`Ingresa el nuevo stock para el producto ID ${id}:`, stockActual);
-    
-    if (nuevoStock === null) return; // Cancelado
-    
+async function cambiarStock(id, nuevoStock) {
     const stockNum = parseInt(nuevoStock);
     if (isNaN(stockNum) || stockNum < 0) {
         alert("Por favor ingresa un número válido.");
