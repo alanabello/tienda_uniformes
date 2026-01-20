@@ -925,6 +925,8 @@ async function abrirPromo() {
         if (res.ok) {
             const config = await res.json();
             
+            console.log("Promo config loaded (frontend):", config);
+            console.log("Promo activo status (frontend):", config.activo);
             // Si está desactivada, no hacemos nada
             if (!config.activo) return;
 
@@ -1347,6 +1349,8 @@ async function guardarConfigPromo(e) {
         contenido: document.getElementById('promoContenido').value,
         tag: document.getElementById('promoTag').value
     };
+
+    console.log("Saving promo config (admin):", config);
 
     try {
         await fetch('/api/promo', {
