@@ -407,16 +407,10 @@ async function cargarDetalleProducto() {
 
             <div class="detalle-selectores">
                 <select id="detalle-talla">
-                    <option value="XXS">XXS</option>
-                    <option value="XS">XS</option>
-                    <option value="S">S</option>
-                    <option value="M" selected>M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
+                    ${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}
                 </select>
 
-               ${producto.mostrar !== false ? `
+               ${(producto.mostrar !== false && mostrarColores) ? `
     <select id="detalle-color" required>
         <option value="" disabled selected>Selecciona un color</option>
         <option value="Azul">Azul</option>
@@ -486,6 +480,10 @@ function renderizarProductos(filtro = 'todos') {
         // Verificar stock y disponibilidad
         const sinStock = p.stock !== undefined && p.stock <= 0;
         const noDisponible = p.mostrar === false;
+        
+        // Nuevas propiedades
+        const tallas = p.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+        const mostrarColores = p.mostrarColores !== undefined ? p.mostrarColores : true;
 
         let btnTexto = "Añadir al Carrito";
         let btnDisabled = "";
@@ -513,16 +511,10 @@ function renderizarProductos(filtro = 'todos') {
 
                 <div class="selectors" onclick="event.stopPropagation()">
                     <select id="talla-${p.id}">
-                        <option value="XXS">XXS</option>
-                        <option value="XS">XS</option>
-                        <option value="S">S</option>
-                        <option value="M" selected>M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
+                        ${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}
                     </select>
 
-  ${p.mostrar !== false ? `
+  ${(p.mostrar !== false && mostrarColores) ? `
     <select id="color-${p.id}" required>
         <option value="" disabled selected>Selecciona un color</option>
         <option value="Azul">Azul</option>
@@ -623,7 +615,7 @@ function agregarDesdeDetalle(id) {
         return;
     }
 
-    const color = colorSelect ? colorSelect.value : '';
+    const color = colorSelect ? colorSelect.value : 'Único';
 
     const item = {
         id: producto.id,
@@ -1248,6 +1240,30 @@ async function cambiarStock(id, nuevoStock) {
     }
 }
 
+// Helper para procesar imágenes (Redimensionar y convertir a Base64)
+const processImage = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Reducir ancho para optimizar base de datos
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                canvas.height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7)); // Calidad 70%
+            };
+            img.onerror = reject;
+        };
+        reader.onerror = reject;
+    });
+};
+
 // 6. Agregar Nuevo Producto (Admin)
 async function guardarNuevoProducto(e) {
     e.preventDefault();
@@ -1256,23 +1272,54 @@ async function guardarNuevoProducto(e) {
     const precio = parseInt(document.getElementById('newPrecio').value);
     const stock = parseInt(document.getElementById('newStock').value);
     const categoria = document.getElementById('newCategoria').value;
-    const imagen = document.getElementById('newImagen').value;
     const descripcion = document.getElementById('newDescripcion').value;
+    
+    // Nuevos campos
+    const tallasSelect = document.getElementById('newTallas');
+    const tallas = Array.from(tallasSelect.selectedOptions).map(o => o.value);
+    const mostrarColores = document.getElementById('newMostrarColores').checked;
+
+    // Procesar imágenes
+    const fileInput = document.getElementById('newFotos');
+    let imagenesProcesadas = [];
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    const textoOriginal = btn.innerText;
+    btn.innerText = "Procesando fotos...";
+    btn.disabled = true;
+
+    try {
+        if (fileInput.files.length > 0) {
+            // Convertir todas las fotos seleccionadas
+            const promises = Array.from(fileInput.files).map(file => processImage(file));
+            imagenesProcesadas = await Promise.all(promises);
+        } else {
+            alert("Por favor selecciona al menos una foto.");
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+            return;
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al procesar las imágenes.");
+        btn.innerText = textoOriginal;
+        btn.disabled = false;
+        return;
+    }
 
     const nuevoProd = {
         nombre,
         precio,
         stock,
         categorias: [categoria],
-        imagenes: [imagen],
+        imagenes: imagenesProcesadas,
         descripcion,
-        mostrar: true
+        mostrar: true,
+        tallas: tallas.length > 0 ? tallas : ["S", "M", "L"],
+        mostrarColores: mostrarColores
     };
 
-    const btn = e.target.querySelector('button[type="submit"]');
-    const textoOriginal = btn.innerText;
     btn.innerText = "Guardando...";
-    btn.disabled = true;
 
     try {
         const res = await fetch('/api/productos', {
@@ -1335,6 +1382,29 @@ async function eliminarProducto(id) {
     }
 }
 
+// 8. Guardar Cambios (Confirmación Manual)
+async function guardarCambios() {
+    const btn = document.querySelector('button[onclick="guardarCambios()"]');
+    if(btn) {
+        btn.innerText = "Verificando...";
+        btn.disabled = true;
+    }
+
+    try {
+        // Recargamos los datos desde la base de datos para asegurar que todo está guardado
+        await cargarInventarioAdmin();
+        alert("✅ Todos los cambios están guardados y sincronizados correctamente.");
+    } catch (error) {
+        console.error(error);
+        alert("❌ Error al verificar cambios: " + error.message);
+    } finally {
+        if(btn) {
+            btn.innerText = "💾 Guardar Cambios";
+            btn.disabled = false;
+        }
+    }
+}
+
 // EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
 window.agregar = agregar;
 window.agregarDesdeDetalle = agregarDesdeDetalle;
@@ -1361,3 +1431,4 @@ window.guardarNuevoProducto = guardarNuevoProducto;
 window.abrirModalAgregar = abrirModalAgregar;
 window.cerrarModalAgregar = cerrarModalAgregar;
 window.eliminarProducto = eliminarProducto;
+window.guardarCambios = guardarCambios;

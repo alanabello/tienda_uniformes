@@ -23,6 +23,7 @@
             <div>
                 <button onclick="abrirModalAgregar()" style="background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">➕ Nuevo Producto</button>
                 <button onclick="migrarProductosANeon()" style="background:#f39c12; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">⚠️ Migrar Datos Iniciales</button>
+                <button onclick="guardarCambios()" style="background:#3498db; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; margin-right:10px;">💾 Guardar Cambios</button>
                 <a href="index.html" class="btn-primary" target="_blank">Ver Tienda</a>
             </div>
         </div>
@@ -104,9 +105,26 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>URL de la Imagen</label>
-                    <input type="url" id="newImagen" required placeholder="https://ejemplo.com/foto.jpg">
-                    <small style="color: #666;">Copia y pega el enlace de la imagen</small>
+                    <label>Fotos del Producto</label>
+                    <input type="file" id="newFotos" multiple accept="image/*" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    <small style="color: #666;">Selecciona una o varias fotos desde tu dispositivo.</small>
+                </div>
+                <div class="form-group">
+                    <label>Tallas Disponibles</label>
+                    <select id="newTallas" multiple style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; height: 100px;">
+                        <option value="XXS">XXS</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M" selected>M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                    </select>
+                    <small style="color: #666;">Usa Ctrl+Click para seleccionar varias.</small>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                    <input type="checkbox" id="newMostrarColores" checked style="width: 20px; height: 20px;">
+                    <label for="newMostrarColores" style="margin:0; cursor:pointer;">Mostrar opción de colores</label>
                 </div>
                 <div class="form-group">
                     <label>Descripción</label>
