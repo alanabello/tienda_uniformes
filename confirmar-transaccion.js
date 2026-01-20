@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   // Si el usuario cancela el pago en el formulario de Webpay
   if (!token_ws) {
-     return res.redirect("https://alanabello.github.io/pagina_uniformes/carrito.html?error=anulado");
+     return res.redirect("https://tiendauniformes.vercel.app/carrito.html?error=anulado");
   }
 
   try {
@@ -14,13 +14,13 @@ export default async function handler(req, res) {
 
     if (result.status === "AUTHORIZED") {
       // PAGO EXITOSO: Redirigir al index con mensaje de éxito
-      res.redirect("https://alanabello.github.io/pagina_uniformes/index.html?pago=exitoso");
+      res.redirect("https://tiendauniformes.vercel.app/index.html?pago=exitoso");
     } else {
       // PAGO RECHAZADO
-      res.redirect("https://alanabello.github.io/pagina_uniformes/carrito.html?error=rechazado");
+      res.redirect("https://tiendauniformes.vercel.app/carrito.html?error=rechazado");
     }
   } catch (error) {
     console.error(error);
-    res.redirect("https://alanabello.github.io/pagina_uniformes/carrito.html?error=error_tecnico");
+    res.redirect("https://tiendauniformes.vercel.app/carrito.html?error=error_tecnico");
   }
 }

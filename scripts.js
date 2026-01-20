@@ -719,7 +719,7 @@ async function pagarConWebpay() {
 
     try {
         // ⚠️ IMPORTANTE: Reemplaza esta URL por la de tu proyecto en Vercel cuando lo subas
-        const urlApi = "https://TU-SITIO.vercel.app/api/crear-transaccion";
+        const urlApi = "https://tiendauniformes.vercel.app/api/crear-transaccion";
         
         const res = await fetch(urlApi, {
             method: "POST",

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   const { monto, orden } = req.body;
 
   // IMPORTANTE: Cambiaremos esto cuando Vercel nos de el link final
-  const returnUrl = "https://TU-SITIO.vercel.app/api/confirmar-transaccion";
+  const returnUrl = "https://tiendauniformes.vercel.app/api/confirmar-transaccion";
 
   try {
     const response = await WebpayPlus.Transaction.create(
