@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Admin - Uniformes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+
+    <div class="login-box">
+        <h2>🔐 Administración</h2>
+        <form onsubmit="iniciarSesion(event)">
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="adminUser" placeholder="Ingresa tu usuario" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="adminPass" placeholder="Ingresa tu contraseña" required>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">Entrar</button>
+        </form>
+        <p id="loginError" style="color: red; margin-top: 10px; display: none;">Datos incorrectos</p>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
