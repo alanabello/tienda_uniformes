@@ -745,6 +745,7 @@ body {
     max-height: 90vh;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    overflow-y: auto; /* Permitir deslizar si la ventana es muy alta */
 }
 
 .close-modal {
@@ -1227,4 +1228,38 @@ body {
     color: white;
     border-color: var(--primary);
     box-shadow: 0 4px 10px rgba(0,128,128,0.3);
+}
+
+/* --- CORRECCIONES PARA MÓVIL (ADMIN) --- */
+@media (max-width: 768px) {
+    /* 1. Arreglar botones del encabezado */
+    .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .admin-header > div {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .admin-header button, 
+    .admin-header a {
+        width: 100%;
+        margin-right: 0 !important; /* Quitar márgenes laterales */
+        justify-content: center;
+    }
+
+    /* 2. Arreglar ventana de Nuevo Producto */
+    .login-box {
+        padding: 20px !important; /* Menos borde interno */
+        width: 95% !important; /* Usar todo el ancho disponible */
+    }
+
+    #modal-agregar .modal-content {
+        max-height: 85vh; /* Asegurar que quepa en la pantalla */
+    }
 }

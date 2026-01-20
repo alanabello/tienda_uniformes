@@ -1452,4 +1452,4 @@ window.cambiarVisibilidad = cambiarVisibilidad;
 window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
 window.cambiarStock = cambiarStock;
-window.guardarNuevoProducto = guardarNuevoProdu
+window.guardarNuevoProducto = guardarNuevoProducto;
