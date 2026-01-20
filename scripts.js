@@ -809,6 +809,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mostrar promo al cargar (1 segundo de retraso)
     setTimeout(abrirPromo, 1000);
+
+    // Cambiar texto del botón según método de pago
+    const selectPago = document.getElementById('payment');
+    const btnCheckout = document.querySelector('.btn-checkout');
+
+    if (selectPago && btnCheckout) {
+        selectPago.addEventListener('change', () => {
+            if (selectPago.value === 'Webpay') {
+                btnCheckout.innerHTML = 'Pagar con Webpay 💳';
+                btnCheckout.style.background = '#1a1a1a'; // Color oscuro elegante
+            } else {
+                btnCheckout.innerHTML = 'Enviar pedido por WhatsApp 📲';
+                btnCheckout.style.background = '#25D366'; // Verde WhatsApp
+            }
+        });
+    }
 });
 
 // Lógica del Carrusel Hero
