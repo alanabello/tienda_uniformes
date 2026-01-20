@@ -724,15 +724,44 @@ function eliminar(index) {
     renderizarPaginaCarrito();
 }
 
+function calcularEnvio(carrito) {
+    if (!carrito || carrito.length === 0) return 4000;
+    
+    // Verificamos si hay al menos un pantalón
+    const tienePantalon = carrito.some(item => item.categorias && item.categorias.includes('Pantalones'));
+    // Verificamos si hay al menos una pechera/top (cualquier cosa que no sea pantalón)
+    const tieneTop = carrito.some(item => item.categorias && !item.categorias.includes('Pantalones'));
+
+    // Si tiene ambos, el envío es gratis
+    if (tienePantalon && tieneTop) {
+        return 0;
+    }
+    return 4000;
+}
+
 function actualizarTotales() {
     const subtotal = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
-    const envio = 4000;
+    const envio = calcularEnvio(carrito);
     const total = subtotal > 0 ? subtotal + envio : 0;
 
     const subElem = document.getElementById('subtotal-price');
     const totElem = document.getElementById('total-price');
+    const shipElem = document.getElementById('shipping-cost');
 
     if(subElem) subElem.innerText = `$${subtotal.toLocaleString('es-CL')}`;
+    
+    if(shipElem) {
+        if (envio === 0 && subtotal > 0) {
+            shipElem.innerText = "Gratis";
+            shipElem.style.color = "#25D366"; // Verde WhatsApp
+            shipElem.style.fontWeight = "bold";
+        } else {
+            shipElem.innerText = `$${envio.toLocaleString('es-CL')}`;
+            shipElem.style.color = "";
+            shipElem.style.fontWeight = "";
+        }
+    }
+
     if(totElem) totElem.innerText = `$${total.toLocaleString('es-CL')}`;
 }
 
@@ -777,13 +806,13 @@ function enviarPedido() {
         mensaje += `   🖼️ Foto: ${imgUrl}\n\n`;
     });
 
-    const envio = 4000;
+    const envio = calcularEnvio(carrito);
     const total = subtotal + envio;
 
     mensaje += `--------------------------\n`;
     mensaje += `🧾 *DETALLE BOLETA*\n`;
     mensaje += `💰 Subtotal: $${subtotal.toLocaleString('es-CL')}\n`;
-    mensaje += `🚚 Envío: $${envio.toLocaleString('es-CL')}\n`;
+    mensaje += `🚚 Envío: ${envio === 0 ? 'Gratis' : '$' + envio.toLocaleString('es-CL')}\n`;
     mensaje += `⭐ *TOTAL A PAGAR: $${total.toLocaleString('es-CL')}*\n`;
     mensaje += `--------------------------\n`;
     mensaje += `💳 Método de pago: ${pago}`;
@@ -798,7 +827,7 @@ function enviarPedido() {
 async function pagarConWebpay() {
     // 1. Calcular total real del carrito
     const subtotal = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
-    const envio = 4000;
+    const envio = calcularEnvio(carrito);
     const total = subtotal + envio;
     
     // 2. Generar ID de orden único (Ej: ORDER-123456789)
@@ -1047,6 +1076,7 @@ async function cargarInventarioAdmin() {
                 </td>
                 <td>
                     <a href="detalle.html?id=${p.id}" target="_blank" title="Ver en tienda" style="text-decoration:none; font-size: 1.2rem;">🔗</a>
+                    <button onclick="eliminarProducto(${p.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 8px;">🗑️</button>
                 </td>
             </tr>
         `;
@@ -1058,7 +1088,6 @@ async function cargarInventarioAdmin() {
 
 // 1. Migrar productos locales a Neon (Solo usar una vez)
 async function migrarProductosANeon() {
-    if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
     if(!confirm("¿Estás seguro de subir los productos base a Neon? Se omitirán los que ya existan.")) return;
     
     // 1. Obtener productos actuales de la DB para evitar duplicados
@@ -1112,10 +1141,8 @@ async function migrarProductosANeon() {
     }
 
     if (errores > 0) {
-        alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}\n\nPosible causa: Tablas no creadas en Neon o DATABASE_URL incorrecta.`);
         alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n⏭️ Omitidos (Ya existen): ${omitidos}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}`);
     } else {
-        alert(`✅ Éxito: ${contador} productos migrados a la base de datos.`);
         alert(`✅ Proceso finalizado.\n✨ Nuevos subidos: ${contador}\n⏭️ Omitidos (Ya existen): ${omitidos}`);
         location.reload();
     }
@@ -1273,11 +1300,39 @@ async function guardarNuevoProducto(e) {
 }
 
 function abrirModalAgregar() {
-    document.getElementById('modal-agregar').classList.add('active');
+    const modal = document.getElementById('modal-agregar');
+    if(modal) {
+        modal.classList.add('active');
+        setTimeout(() => modal.classList.add('visible'), 10);
+    }
 }
 
 function cerrarModalAgregar() {
-    document.getElementById('modal-agregar').classList.remove('active');
+    const modal = document.getElementById('modal-agregar');
+    if(modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => modal.classList.remove('active'), 300);
+    }
+}
+
+// 7. Eliminar Producto (Admin)
+async function eliminarProducto(id) {
+    if(!confirm("¿Estás seguro de eliminar este producto permanentemente?")) return;
+
+    try {
+        const res = await fetch('/api/productos', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+
+        if (!res.ok) throw new Error("Error al eliminar");
+        
+        cargarInventarioAdmin(); // Recargar tabla
+    } catch (error) {
+        console.error(error);
+        alert("Error al eliminar producto");
+    }
 }
 
 // EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
@@ -1305,3 +1360,4 @@ window.cambiarStock = cambiarStock;
 window.guardarNuevoProducto = guardarNuevoProducto;
 window.abrirModalAgregar = abrirModalAgregar;
 window.cerrarModalAgregar = cerrarModalAgregar;
+window.eliminarProducto = eliminarProducto;

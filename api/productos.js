@@ -33,6 +33,10 @@ export default async function handler(req, res) {
       }
       
       res.json({ success: true });
+    } else if (req.method === 'DELETE') {
+      const { id } = req.body;
+      await pool.query('DELETE FROM productos WHERE id = $1', [id]);
+      res.json({ success: true });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
