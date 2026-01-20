@@ -961,6 +961,15 @@ async function cargarInventarioAdmin() {
     
     // Asegurar que tenemos datos frescos
     await cargarProductosDesdeDB();
+
+    // Verificar estado de conexión visualmente
+    const statusDiv = document.getElementById('db-status');
+    if(statusDiv) {
+        const esLocal = productos === productosBase;
+        statusDiv.innerHTML = esLocal ? "🔴 Modo Offline (Datos Locales)" : "🟢 Conectado a Neon DB";
+        statusDiv.style.color = esLocal ? "red" : "green";
+    }
+
     tbody.innerHTML = '';
 
     productos.forEach(p => {
@@ -998,7 +1007,7 @@ async function cargarInventarioAdmin() {
 // --- FUNCIONES ADMIN AVANZADAS ---
 
 // 1. Migrar productos locales a Neon (Solo usar una vez)
-async function migrarProductosAFirebase() {
+async function migrarProductosANeon() {
     if(!confirm("¿Estás seguro de subir todos los productos base a Neon? Esto puede duplicar si ya existen.")) return;
     
     let contador = 0;
@@ -1133,7 +1142,7 @@ window.verificarAutenticacion = verificarAutenticacion;
 window.cargarInventarioAdmin = cargarInventarioAdmin;
 window.cambiarImagen = cambiarImagen;
 window.irADetalle = irADetalle;
-window.migrarProductosAFirebase = migrarProductosAFirebase;
+window.migrarProductosANeon = migrarProductosANeon;
 window.cambiarVisibilidad = cambiarVisibilidad;
 window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
