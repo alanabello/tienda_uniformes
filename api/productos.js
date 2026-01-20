@@ -14,10 +14,10 @@ export default async function handler(req, res) {
       res.json(rows);
     } else if (req.method === 'POST') {
       // Crear producto (Usado para la migración)
-      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar } = req.body;
+      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores } = req.body;
       await pool.query(
-        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar]
+        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrar_colores) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores]
       );
       res.json({ success: true });
     } else if (req.method === 'PUT') {

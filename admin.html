@@ -111,16 +111,15 @@
                 </div>
                 <div class="form-group">
                     <label>Tallas Disponibles</label>
-                    <select id="newTallas" multiple style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; height: 100px;">
-                        <option value="XXS">XXS</option>
-                        <option value="XS">XS</option>
-                        <option value="S">S</option>
-                        <option value="M" selected>M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                    </select>
-                    <small style="color: #666;">Usa Ctrl+Click para seleccionar varias.</small>
+                    <div class="tallas-grid">
+                        <label class="talla-option"><input type="checkbox" value="XXS"><span class="talla-box">XXS</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XS"><span class="talla-box">XS</span></label>
+                        <label class="talla-option"><input type="checkbox" value="S"><span class="talla-box">S</span></label>
+                        <label class="talla-option"><input type="checkbox" value="M" checked><span class="talla-box">M</span></label>
+                        <label class="talla-option"><input type="checkbox" value="L"><span class="talla-box">L</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XL"><span class="talla-box">XL</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XXL"><span class="talla-box">XXL</span></label>
+                    </div>
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                     <input type="checkbox" id="newMostrarColores" checked style="width: 20px; height: 20px;">

@@ -310,6 +310,17 @@ async function cargarProductosDesdeDB() {
 
     try {
         const res = await fetch('/api/productos');
+
+        // Manejo especial para cuando no existe la API (Localhost / Móvil sin backend)
+        if (res.status === 404) {
+            console.warn("⚠️ API no encontrada (404). Usando datos locales.");
+            productos = productosBase;
+            conexionDB = false;
+            ultimoErrorDB = "Modo Local (Sin API)";
+            renderizarProductos();
+            return;
+        }
+
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             throw new Error(errData.error || `Error HTTP: ${res.status}`);
@@ -364,6 +375,9 @@ async function cargarDetalleProducto() {
             btnAttr = "disabled style='background:#ccc; cursor:not-allowed'";
         }
 
+        // Asegurar imágenes para evitar errores
+        const imgs = (producto.imagenes && producto.imagenes.length > 0) ? producto.imagenes : ['https://via.placeholder.com/400x400?text=Sin+Imagen'];
+
         document.getElementById("detalle-producto").innerHTML = `
 <div class="detalle-page">
     <div class="detalle-card">
@@ -376,12 +390,12 @@ async function cargarDetalleProducto() {
 
 
         <div class="galeria">
-            <img src="${producto.imagenes[0]}" 
+            <img src="${imgs[0]}" 
                  class="img-principal" 
                  id="imgPrincipal">
 
             <div class="miniaturas">
-                ${producto.imagenes.map(img => `
+                ${imgs.map(img => `
                     <img src="${img}" onclick="cambiarImagen('${img}')">
                 `).join('')}
             </div>
@@ -1036,8 +1050,14 @@ async function cargarInventarioAdmin() {
             statusDiv.innerHTML = esVacia ? "🟢 Conectado (Base de datos vacía - Dale a Migrar)" : "🟢 Conectado a Neon DB";
             statusDiv.style.color = esVacia ? "orange" : "green";
         } else {
-            statusDiv.innerHTML = `🔴 Error: ${ultimoErrorDB || 'Revisar Logs'}`;
-            statusDiv.style.color = "red";
+            // Si es modo local (404), lo mostramos como advertencia
+            if (ultimoErrorDB && ultimoErrorDB.includes("Modo Local")) {
+                statusDiv.innerHTML = `⚠️ ${ultimoErrorDB}`;
+                statusDiv.style.color = "orange";
+            } else {
+                statusDiv.innerHTML = `🔴 Error: ${ultimoErrorDB || 'Revisar Logs'}`;
+                statusDiv.style.color = "red";
+            }
         }
     }
 
@@ -1275,8 +1295,9 @@ async function guardarNuevoProducto(e) {
     const descripcion = document.getElementById('newDescripcion').value;
     
     // Nuevos campos
-    const tallasSelect = document.getElementById('newTallas');
-    const tallas = Array.from(tallasSelect.selectedOptions).map(o => o.value);
+    const checkboxes = document.querySelectorAll('.talla-option input:checked');
+    const tallas = Array.from(checkboxes).map(cb => cb.value);
+    
     const mostrarColores = document.getElementById('newMostrarColores').checked;
 
     // Procesar imágenes
@@ -1427,8 +1448,4 @@ window.cambiarVisibilidad = cambiarVisibilidad;
 window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
 window.cambiarStock = cambiarStock;
-window.guardarNuevoProducto = guardarNuevoProducto;
-window.abrirModalAgregar = abrirModalAgregar;
-window.cerrarModalAgregar = cerrarModalAgregar;
-window.eliminarProducto = eliminarProducto;
-window.guardarCambios = guardarCambios;
+window.guardarNuevoProducto = guardarNuevoProdu
