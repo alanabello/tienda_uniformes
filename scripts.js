@@ -1050,6 +1050,49 @@ function cerrarSesion() {
     window.location.href = 'login.html';
 }
 
+let ordenColumna = '';
+let ordenDireccion = 'asc';
+
+function ordenarInventario(columna) {
+    if (ordenColumna === columna) {
+        ordenDireccion = ordenDireccion === 'asc' ? 'desc' : 'asc';
+    } else {
+        ordenColumna = columna;
+        ordenDireccion = 'asc';
+    }
+
+    productos.sort((a, b) => {
+        let valA = a[columna];
+        let valB = b[columna];
+
+        if (columna === 'categorias') {
+            valA = (valA || []).join(', ');
+            valB = (valB || []).join(', ');
+        }
+
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return ordenDireccion === 'asc' ? -1 : 1;
+        if (valA > valB) return ordenDireccion === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    renderizarTablaInventario();
+    
+    // Actualizar iconos visuales
+    const headers = document.querySelectorAll('.inventory-table th[onclick]');
+    headers.forEach(th => {
+        const col = th.getAttribute('onclick').match(/'(.*?)'/)[1];
+        const titles = { 'id': 'ID', 'nombre': 'Nombre', 'precio': 'Precio', 'categorias': 'Categoría', 'stock': 'Stock', 'mostrar': 'Estado' };
+        if (titles[col]) {
+            let icon = '↕';
+            if (col === ordenColumna) icon = ordenDireccion === 'asc' ? '↑' : '↓';
+            th.innerHTML = `${titles[col]} ${icon}`;
+        }
+    });
+}
+
 async function cargarInventarioAdmin() {
     const tbody = document.getElementById('inventory-body');
     if (!tbody) return;
@@ -1080,7 +1123,13 @@ async function cargarInventarioAdmin() {
             }
         }
     }
+    
+    renderizarTablaInventario();
+}
 
+function renderizarTablaInventario() {
+    const tbody = document.getElementById('inventory-body');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     productos.forEach(p => {
@@ -1088,7 +1137,7 @@ async function cargarInventarioAdmin() {
         const stock = p.stock !== undefined ? p.stock : 0;
 
         const row = `
-            <tr>
+            <tr data-product-id="${p.id}">
                 <td>#${p.id}</td>
                 <td><img src="${img}" width="50" style="border-radius:5px;"></td>
                 <td><strong>${p.nombre}</strong></td>
@@ -1190,7 +1239,20 @@ async function cambiarVisibilidad(id, nuevoEstado) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: id, mostrar: nuevoEstado })
         });
-        cargarInventarioAdmin(); // Recargar tabla
+        
+        // Actualizar el producto en el array local
+        const productoIndex = productos.findIndex(p => p.id === id);
+        if (productoIndex !== -1) {
+            productos[productoIndex].mostrar = nuevoEstado;
+        }
+
+        // Actualizar el estilo del select en la fila específica
+        const rowElement = document.querySelector(`tr[data-product-id="${id}"]`);
+        const selectElement = rowElement ? rowElement.querySelector('select[onchange^="cambiarVisibilidad"]') : null;
+        if (selectElement) {
+            selectElement.style.background = nuevoEstado ? '#d1fae5' : '#fee2e2';
+            selectElement.style.color = nuevoEstado ? '#065f46' : '#991b1b';
+        }
     } catch (error) {
         console.error(error);
         alert("Error al cambiar visibilidad");
@@ -1273,7 +1335,14 @@ async function cambiarStock(id, nuevoStock) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: id, stock: stockNum })
         });
-        cargarInventarioAdmin(); // Recargar tabla para ver cambios
+
+        // Actualizar el producto en el array local
+        const productoIndex = productos.findIndex(p => p.id === id);
+        if (productoIndex !== -1) {
+            productos[productoIndex].stock = stockNum;
+        }
+        // El input ya actualizó su valor con this.value, no se necesita manipulación adicional del DOM.
+        // Solo se actualiza el estado interno para consistencia.
     } catch (error) {
         console.error(error);
         alert("Error al actualizar stock");
@@ -1469,3 +1538,4 @@ window.cargarVentasAdmin = cargarVentasAdmin;
 window.registrarVentaExitosa = registrarVentaExitosa;
 window.cambiarStock = cambiarStock;
 window.guardarNuevoProducto = guardarNuevoProducto;
+window.ordenarInventario = ordenarInventario;

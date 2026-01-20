@@ -39,13 +39,13 @@
             <table class="inventory-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th onclick="ordenarInventario('id')" style="cursor:pointer">ID ↕</th>
                         <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Categoría</th>
-                        <th>Stock</th>
-                        <th>Estado</th>
+                        <th onclick="ordenarInventario('nombre')" style="cursor:pointer">Nombre ↕</th>
+                        <th onclick="ordenarInventario('precio')" style="cursor:pointer">Precio ↕</th>
+                        <th onclick="ordenarInventario('categorias')" style="cursor:pointer">Categoría ↕</th>
+                        <th onclick="ordenarInventario('stock')" style="cursor:pointer">Stock ↕</th>
+                        <th onclick="ordenarInventario('mostrar')" style="cursor:pointer">Estado ↕</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
