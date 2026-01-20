@@ -1129,3 +1129,34 @@ body {
 .btn-logout {
     background: #e74c3c; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.9rem;
 }
+
+/* =========================================
+   SELECTOR DE TALLAS (CUADRITOS)
+   ========================================= */
+.tallas-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.talla-option input { display: none; }
+
+.talla-box {
+    display: inline-block;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: 0.2s;
+    font-weight: 600;
+    color: #555;
+}
+
+.talla-option input:checked + .talla-box {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(0,128,128,0.3);
+}
