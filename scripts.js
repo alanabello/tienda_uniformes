@@ -1,5 +1,6 @@
 let productos = []; // Ahora la lista es dinámica
 let conexionDB = false; // Variable para diagnosticar conexión
+let ultimoErrorDB = ""; // Variable para guardar el mensaje de error
 
 // 1. DATOS INICIALES (Solo para migración)
 // Estos son tus productos actuales. Usaremos una función en Admin para subirlos a la base de datos.
@@ -309,10 +310,14 @@ async function cargarProductosDesdeDB() {
 
     try {
         const res = await fetch('/api/productos');
-        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `Error HTTP: ${res.status}`);
+        }
         
         const data = await res.json();
         conexionDB = true; // ¡Conexión exitosa!
+        ultimoErrorDB = "";
         
         if (Array.isArray(data) && data.length > 0) {
             productos = data;
@@ -325,6 +330,7 @@ async function cargarProductosDesdeDB() {
     } catch (error) {
         console.error("Error cargando productos:", error);
         conexionDB = false; // Falló la conexión
+        ultimoErrorDB = error.message;
         productos = productosBase;
         renderizarProductos();
     }
@@ -986,7 +992,7 @@ async function cargarInventarioAdmin() {
             statusDiv.innerHTML = esVacia ? "🟢 Conectado (Base de datos vacía - Dale a Migrar)" : "🟢 Conectado a Neon DB";
             statusDiv.style.color = esVacia ? "orange" : "green";
         } else {
-            statusDiv.innerHTML = "🔴 Error de Conexión (Revisar Logs)";
+            statusDiv.innerHTML = `🔴 Error: ${ultimoErrorDB || 'Revisar Logs'}`;
             statusDiv.style.color = "red";
         }
     }
