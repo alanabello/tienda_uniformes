@@ -66,11 +66,15 @@
                 <h3>📋 Inventario General (Insumos/Materias Primas)</h3>
                 <button onclick="abrirModalAgregarInsumo()" class="btn-primary" style="background:#27ae60;">➕ Nuevo Insumo</button>
             </div>
+            <div id="inventario-general-summary" class="admin-toolbar" style="justify-content: space-around; margin-bottom: 20px;">
+                <!-- Se llena con JS -->
+            </div>
             <div style="overflow-x: auto;">
                 <table class="inventory-table">
                     <thead>
                         <tr>
                             <th>Nombre</th>
+                            <th>Código Barras</th>
                             <th>Categoría</th>
                             <th>Stock</th>
                             <th>Precio</th>
@@ -228,10 +232,18 @@
         <div class="modal-content login-box" style="text-align: left; max-width: 500px; width: 100%; position: relative; margin: auto;">
             <span onclick="cerrarModalAgregarInsumo()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
             <h2 style="text-align: center; margin-bottom: 20px;">Nuevo Insumo</h2>
-            <form onsubmit="guardarNuevoInsumo(event)">
+            <form onsubmit="guardarNuevoInsumo(event)" id="form-nuevo-insumo">
                 <div class="form-group">
                     <label>Nombre del Insumo/Producto</label>
                     <input type="text" id="insumoNombre" required placeholder="Ej: Tela Antifluido Azul">
+                </div>
+                <div class="form-group">
+                    <label>Código de Barras</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="insumoBarcode" placeholder="Escanear o ingresar manualmente" style="flex-grow: 1;" onblur="buscarInsumoPorBarcode(this.value)">
+                        <button type="button" onclick="iniciarEscaneoParaInput('insumoBarcode', true)" class="btn-primary" style="padding: 12px; background: #6c757d; line-height: 1;">📱</button>
+                    </div>
+                    <small id="insumo-barcode-status" style="color: green; margin-top: 5px; display: none;"></small>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
@@ -239,7 +251,7 @@
                         <input type="number" id="insumoPrecio" placeholder="5000">
                     </div>
                     <div class="form-group">
-                        <label>Stock Inicial</label>
+                        <label id="insumoStockLabel">Stock Inicial</label>
                         <input type="number" id="insumoStock" value="0" required>
                     </div>
                 </div>
@@ -265,6 +277,16 @@
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%;">Guardar Insumo</button>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA ESCÁNER GENÉRICO -->
+    <div id="modal-generic-scanner" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 20px; background: white; border-radius: 16px;">
+            <span onclick="detenerEscaneoGenerico()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 15px;">Escanear Código de Barras</h3>
+            <video id="generic-scanner-video" style="width: 100%; border-radius: 8px;"></video>
+            <p id="generic-scanner-status" style="text-align: center; margin-top: 10px; color: #666;">Iniciando cámara...</p>
         </div>
     </div>
 

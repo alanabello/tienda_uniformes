@@ -1767,6 +1767,7 @@ function renderizarTablaInsumos() {
         const row = `
             <tr data-insumo-id="${insumo.id}">
                 <td><strong>${insumo.nombre}</strong></td>
+                <td>${insumo.barcode || 'N/A'}</td>
                 <td>${insumo.categoria || 'N/A'}</td>
                 <td>
                     <input type="number" value="${insumo.stock}" min="0" 
@@ -1783,45 +1784,102 @@ function renderizarTablaInsumos() {
         `;
         tbody.innerHTML += row;
     });
+
+    const summaryContainer = document.getElementById('inventario-general-summary');
+    if (summaryContainer) {
+        const totalStock = insumos.reduce((acc, item) => acc + (item.stock || 0), 0);
+        const valorTotal = insumos.reduce((acc, item) => acc + ((item.stock || 0) * (item.precio || 0)), 0);
+
+        summaryContainer.innerHTML = `
+            <div>
+                <h4 style="margin:0; color: #666; font-size: 0.9rem;">Total de Insumos (Stock)</h4>
+                <p style="margin:0; font-size: 1.5rem; font-weight: 700;">${totalStock.toLocaleString('es-CL')}</p>
+            </div>
+            <div>
+                <h4 style="margin:0; color: #666; font-size: 0.9rem;">Valor Total del Inventario</h4>
+                <p style="margin:0; font-size: 1.5rem; font-weight: 700;">$${valorTotal.toLocaleString('es-CL')}</p>
+            </div>
+        `;
+    }
 }
+
+let insumoExistenteEncontrado = null;
 
 async function guardarNuevoInsumo(e) {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
     const textoOriginal = btn.innerText;
-
-    const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input:checked');
-
-    const nuevoInsumo = {
-        nombre: document.getElementById('insumoNombre').value,
-        precio: parseInt(document.getElementById('insumoPrecio').value) || 0,
-        stock: parseInt(document.getElementById('insumoStock').value) || 0,
-        categoria: document.getElementById('insumoCategoria').value,
-        tallas: Array.from(tallasCheckboxes).map(cb => cb.value),
-        descripcion: document.getElementById('insumoDescripcion').value
-    };
-
     btn.innerText = "Guardando...";
     btn.disabled = true;
 
-    try {
-        const res = await fetch('/api/inventario_general', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoInsumo)
-        });
-        if (!res.ok) throw new Error('Error del servidor al guardar.');
+    // Si se encontró un insumo existente, actualizamos el stock
+    if (insumoExistenteEncontrado) {
+        const cantidad = parseInt(document.getElementById('insumoStock').value);
+        if (isNaN(cantidad) || cantidad <= 0) {
+            alert("Por favor, ingresa una cantidad válida para añadir al stock.");
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+            return;
+        }
 
-        alert('✅ Insumo guardado correctamente.');
-        cerrarModalAgregarInsumo();
-        e.target.reset();
-        cargarInventarioGeneral(); // Recargar la tabla
-    } catch (error) {
-        console.error(error);
-        alert(`❌ Error: ${error.message}`);
-    } finally {
-        btn.innerText = textoOriginal;
-        btn.disabled = false;
+        try {
+            const res = await fetch('/api/inventario_general', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ barcode: insumoExistenteEncontrado.barcode, cantidad: cantidad })
+            });
+            if (!res.ok) throw new Error('Error del servidor al actualizar stock.');
+            
+            const result = await res.json();
+            alert(`✅ Stock actualizado. Nuevo stock para "${result.insumo.nombre}": ${result.insumo.stock}`);
+            cerrarModalAgregarInsumo();
+            cargarInventarioGeneral();
+        } catch (error) {
+            console.error(error);
+            alert(`❌ Error al actualizar stock: ${error.message}`);
+        } finally {
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+        }
+
+    } else {
+        // Si no, creamos uno nuevo
+        const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input:checked');
+        const nuevoInsumo = {
+            nombre: document.getElementById('insumoNombre').value,
+            precio: parseInt(document.getElementById('insumoPrecio').value) || 0,
+            stock: parseInt(document.getElementById('insumoStock').value) || 0,
+            categoria: document.getElementById('insumoCategoria').value,
+            tallas: Array.from(tallasCheckboxes).map(cb => cb.value),
+            descripcion: document.getElementById('insumoDescripcion').value,
+            barcode: document.getElementById('insumoBarcode').value
+        };
+
+        try {
+            const res = await fetch('/api/inventario_general', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoInsumo)
+            });
+            if (!res.ok) {
+                const errData = await res.json();
+                if (errData.error && errData.error.includes('duplicate key value violates unique constraint')) {
+                    throw new Error('El código de barras ya existe para otro producto.');
+                }
+                throw new Error('Error del servidor al guardar.');
+            }
+
+            alert('✅ Insumo guardado correctamente.');
+            cerrarModalAgregarInsumo();
+            e.target.reset();
+            cargarInventarioGeneral();
+        } catch (error) {
+            console.error(error);
+            alert(`❌ Error: ${error.message}`);
+        } finally {
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+        }
     }
 }
 
@@ -1863,11 +1921,142 @@ async function eliminarInsumo(id) {
 }
 
 function abrirModalAgregarInsumo() {
+    insumoExistenteEncontrado = null; // Reiniciar estado
+    const form = document.getElementById('form-nuevo-insumo');
+    if (form) form.reset();
+
+    // Reiniciar UI a modo "Nuevo Insumo"
+    document.getElementById('insumoStockLabel').innerText = 'Stock Inicial';
+    document.getElementById('insumoStock').value = '0';
+    document.getElementById('insumoNombre').readOnly = false;
+    document.getElementById('insumoPrecio').readOnly = false;
+    document.getElementById('insumoCategoria').readOnly = false;
+    document.getElementById('insumoDescripcion').readOnly = false;
+    document.querySelectorAll('#modal-agregar-insumo .talla-option input').forEach(cb => cb.disabled = false);
+    document.getElementById('insumo-barcode-status').style.display = 'none';
+
     abrirModal('modal-agregar-insumo');
 }
 
 function cerrarModalAgregarInsumo() {
     cerrarModal('modal-agregar-insumo');
+}
+
+async function buscarInsumoPorBarcode(barcode) {
+    const statusEl = document.getElementById('insumo-barcode-status');
+
+    const resetToNewMode = () => {
+        insumoExistenteEncontrado = null;
+        document.getElementById('insumoStockLabel').innerText = 'Stock Inicial';
+        document.getElementById('insumoNombre').readOnly = false;
+        document.getElementById('insumoPrecio').readOnly = false;
+        document.getElementById('insumoCategoria').readOnly = false;
+        document.getElementById('insumoDescripcion').readOnly = false;
+        document.querySelectorAll('#modal-agregar-insumo .talla-option input').forEach(cb => cb.disabled = false);
+        statusEl.style.display = 'none';
+    };
+
+    if (!barcode) {
+        resetToNewMode();
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/inventario_general?barcode=${barcode}`);
+        if (res.ok) {
+            const insumo = await res.json();
+            insumoExistenteEncontrado = insumo;
+
+            // Autocompletar formulario
+            document.getElementById('insumoNombre').value = insumo.nombre;
+            document.getElementById('insumoPrecio').value = insumo.precio;
+            document.getElementById('insumoCategoria').value = insumo.categoria;
+            document.getElementById('insumoDescripcion').value = insumo.descripcion;
+
+            const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input');
+            tallasCheckboxes.forEach(cb => {
+                cb.checked = (insumo.tallas || []).includes(cb.value);
+                cb.disabled = true;
+            });
+
+            document.getElementById('insumoStockLabel').innerText = 'Cantidad a AÑADIR al Stock';
+            document.getElementById('insumoStock').value = '1';
+            
+            document.getElementById('insumoNombre').readOnly = true;
+            document.getElementById('insumoPrecio').readOnly = true;
+            document.getElementById('insumoCategoria').readOnly = true;
+            document.getElementById('insumoDescripcion').readOnly = true;
+
+            statusEl.innerText = `✅ Insumo existente encontrado. Se actualizará el stock.`;
+            statusEl.style.color = 'green';
+            statusEl.style.display = 'block';
+        } else {
+            resetToNewMode();
+            statusEl.innerText = `Código de barras libre. Se creará un nuevo insumo.`;
+            statusEl.style.color = '#666';
+            statusEl.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error buscando insumo por barcode:', error);
+        resetToNewMode();
+    }
+}
+
+// --- ESCÁNER GENÉRICO PARA INPUTS ---
+let genericCodeReader = null;
+let targetInputIdForScanner = null;
+
+function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
+    targetInputIdForScanner = targetInputId;
+    const videoElement = document.getElementById('generic-scanner-video');
+    const statusElement = document.getElementById('generic-scanner-status');
+
+    if (!genericCodeReader) {
+        genericCodeReader = new ZXing.BrowserMultiFormatReader();
+    }
+
+    abrirModal('modal-generic-scanner');
+    statusElement.innerText = 'Iniciando cámara...';
+
+    genericCodeReader.getVideoInputDevices()
+        .then(videoInputDevices => {
+            if (videoInputDevices.length <= 0) {
+                throw new Error("No se encontraron cámaras.");
+            }
+            // Prefer back camera
+            const rearCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back')) || videoInputDevices[0];
+            statusElement.innerText = 'Apunte al código de barras...';
+            genericCodeReader.decodeFromVideoDevice(rearCamera.deviceId, videoElement, (result, err) => {
+                if (result) {
+                    const targetInput = document.getElementById(targetInputIdForScanner);
+                    targetInput.value = result.text;
+                    detenerEscaneoGenerico();
+                    mostrarNotificacion('✅ Código escaneado: ' + result.text);
+
+                    if (triggerSearch) {
+                        targetInput.dispatchEvent(new Event('blur'));
+                    }
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                    statusElement.innerText = 'Error de escaneo.';
+                }
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            statusElement.innerText = `Error: ${err.message}`;
+            alert(`Error al iniciar la cámara: ${err.message}`);
+            detenerEscaneoGenerico();
+        });
+}
+
+function detenerEscaneoGenerico() {
+    if (genericCodeReader) {
+        genericCodeReader.reset();
+    }
+    cerrarModal('modal-generic-scanner');
+    targetInputIdForScanner = null;
 }
 
 // EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
@@ -1906,3 +2095,6 @@ window.actualizarStockInsumo = actualizarStockInsumo;
 window.eliminarInsumo = eliminarInsumo;
 window.abrirModalAgregarInsumo = abrirModalAgregarInsumo;
 window.cerrarModalAgregarInsumo = cerrarModalAgregarInsumo;
+window.iniciarEscaneoParaInput = iniciarEscaneoParaInput;
+window.detenerEscaneoGenerico = detenerEscaneoGenerico;
+window.buscarInsumoPorBarcode = buscarInsumoPorBarcode;
