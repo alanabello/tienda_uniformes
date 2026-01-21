@@ -9,6 +9,13 @@ let ordenDireccion = 'asc';
 
 function manejarErrorApi(error) {
     console.error(error);
+    
+    // Evitar cerrar sesión si es un error de configuración o interno del servidor
+    if (error.message && (error.message.includes('Configuración') || error.message.includes('interno') || error.message.includes('faltante'))) {
+        alert(`❌ Error del sistema: ${error.message}\n\nNo se cerrará tu sesión.`);
+        return;
+    }
+
     if (error.message && (error.message.includes('Token inválido') || error.message.includes('expirado') || error.message.includes('No autorizado'))) {
         alert("⚠️ Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
         window.location.href = 'login.html';

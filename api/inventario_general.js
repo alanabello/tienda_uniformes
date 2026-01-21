@@ -14,6 +14,12 @@ const verifyToken = (req) => {
             return reject({ status: 401, message: 'Acceso no autorizado. Token no proporcionado.' });
         }
 
+        // Validación extra: Asegurar que el secreto existe antes de verificar
+        if (!process.env.JWT_SECRET) {
+            console.error("FATAL: JWT_SECRET no está definido en las variables de entorno.");
+            return reject({ status: 500, message: 'Error interno: Configuración de seguridad faltante (JWT_SECRET).' });
+        }
+
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
             if (err) {
                 return reject({ status: 403, message: 'Token inválido o expirado.' });
@@ -51,7 +57,9 @@ export default async function handler(req, res) {
         try {
             await verifyToken(req);
         } catch (authError) {
-            return res.status(authError.status).json({ error: authError.message });
+            // Asegurar que status sea un número válido para evitar caídas del servidor
+            const status = authError.status || 500;
+            return res.status(status).json({ error: authError.message || 'Error de autorización desconocido' });
         }
     }
 
