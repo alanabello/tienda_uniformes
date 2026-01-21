@@ -330,6 +330,13 @@ async function iniciarEscaneoBarcode() {
     if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares. Si estás probando con una IP local, es posible que no cargue.");
     }
+
+    // Verificación de seguridad del navegador
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("🚫 ERROR DE SEGURIDAD: Tu celular bloqueó la cámara.\n\nCausa: Estás entrando por una IP local (HTTP).\nSolución: Sube la página a Vercel (HTTPS) y prueba desde ahí.");
+        return;
+    }
+
     const videoElement = document.getElementById('scanner-video');
     const scannedBarcodeSpan = document.getElementById('scanned-barcode');
     const scannedProductInfo = document.getElementById('scanned-product-info');
@@ -458,7 +465,10 @@ async function guardarNuevoInsumo(e) {
                     'Content-Type': 'application/json',
                     ...getAuthHeader() // Añadir cabecera de autorización
                 }, body: JSON.stringify({ barcode: insumoExistenteEncontrado.barcode, cantidad: cantidad }) });
-            if (!res.ok) throw new Error('Error del servidor.');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Error del servidor.');
+            }
             const result = await res.json();
             alert(`✅ Stock actualizado. Nuevo stock: ${result.insumo.stock}`);
             cerrarModalAgregarInsumo();
@@ -478,7 +488,19 @@ async function guardarNuevoInsumo(e) {
         });
         const stockFinal = stockSumado > 0 ? stockSumado : (parseInt(document.getElementById('insumoStock').value) || 0);
 
-        const nuevoInsumo = { nombre: document.getElementById('insumoNombre').value, precio: parseInt(document.getElementById('insumoPrecio').value) || 0, stock: stockFinal, categoria: document.getElementById('insumoCategoria').value, tallas: tallasFormateadas, descripcion: document.getElementById('insumoDescripcion').value, barcode: document.getElementById('insumoBarcode').value };
+        // Corrección: Enviar null si el código de barras está vacío para evitar error de duplicados
+        const barcodeVal = document.getElementById('insumoBarcode').value.trim();
+        
+        const nuevoInsumo = { 
+            nombre: document.getElementById('insumoNombre').value, 
+            precio: parseInt(document.getElementById('insumoPrecio').value) || 0, 
+            stock: stockFinal, 
+            categoria: document.getElementById('insumoCategoria').value, 
+            tallas: tallasFormateadas, 
+            descripcion: document.getElementById('insumoDescripcion').value, 
+            barcode: barcodeVal === "" ? null : barcodeVal 
+        };
+
         try { // POST
             const res = await fetch('/api/inventario_general', {
                 method: 'POST',
@@ -486,7 +508,10 @@ async function guardarNuevoInsumo(e) {
                     'Content-Type': 'application/json',
                     ...getAuthHeader() // Añadir cabecera de autorización
                 }, body: JSON.stringify(nuevoInsumo) });
-            if (!res.ok) throw new Error('Error al guardar.');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Error al guardar.');
+            }
             alert('✅ Insumo guardado correctamente.');
             cerrarModalAgregarInsumo();
             e.target.reset();
@@ -586,6 +611,12 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares.");
     }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("🚫 ERROR: La cámara requiere HTTPS (candadito seguro) para funcionar en el celular.");
+        return;
+    }
+
     targetInputIdForScanner = targetInputId;
     const videoElement = document.getElementById('generic-scanner-video');
     const statusElement = document.getElementById('generic-scanner-status');
