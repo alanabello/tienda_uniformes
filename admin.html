@@ -239,6 +239,45 @@
         </div>
     </div>
 
+    <!-- Modal Editar Producto -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-content login-box" style="text-align: left; max-width: 500px; width: 100%; position: relative; margin: auto;">
+            <span onclick="cerrarModalEditar()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">Editar Producto</h2>
+            <form onsubmit="guardarProductoEditado(event)">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="editNombre" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Precio</label>
+                        <input type="number" id="editPrecio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" id="editStock" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="editCategoria" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="Mujer">Mujer</option>
+                        <option value="Hombre">Hombre</option>
+                        <option value="Pantalones">Pantalones</option>
+                        <option value="Top C/N Diseños">Top C/N Diseños</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="editDescripcion" rows="2" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL PARA NUEVO INSUMO -->
     <div id="modal-agregar-insumo" class="modal">
         <div class="modal-content login-box" style="text-align: left; max-width: 500px; width: 100%; position: relative; margin: auto;">
@@ -272,15 +311,36 @@
                     <input type="text" id="insumoCategoria" placeholder="Ej: Telas, Hilos, Botones">
                 </div>
                 <div class="form-group">
-                    <label>Tallas Aplicables (si corresponde)</label>
-                    <div class="tallas-grid">
-                        <label class="talla-option"><input type="checkbox" value="XXS"><span class="talla-box">XXS</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XS"><span class="talla-box">XS</span></label>
-                        <label class="talla-option"><input type="checkbox" value="S"><span class="talla-box">S</span></label>
-                        <label class="talla-option"><input type="checkbox" value="M"><span class="talla-box">M</span></label>
-                        <label class="talla-option"><input type="checkbox" value="L"><span class="talla-box">L</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XL"><span class="talla-box">XL</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XXL"><span class="talla-box">XXL</span></label>
+                    <label>Stock por Talla (Calcula el total automáticamente)</label>
+                    <div class="tallas-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">XXS</label>
+                            <input type="number" class="input-talla-stock" data-talla="XXS" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">XS</label>
+                            <input type="number" class="input-talla-stock" data-talla="XS" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">S</label>
+                            <input type="number" class="input-talla-stock" data-talla="S" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">M</label>
+                            <input type="number" class="input-talla-stock" data-talla="M" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">L</label>
+                            <input type="number" class="input-talla-stock" data-talla="L" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">XL</label>
+                            <input type="number" class="input-talla-stock" data-talla="XL" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem; display: block; margin-bottom: 2px;">XXL</label>
+                            <input type="number" class="input-talla-stock" data-talla="XXL" min="0" placeholder="0" style="width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -309,11 +369,16 @@
     </div>
 
     <!-- MODAL PARA ESCÁNER GENÉRICO -->
-    <div id="modal-generic-scanner" class="modal">
-        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 20px; background: white; border-radius: 16px;">
-            <span onclick="detenerEscaneoGenerico()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+    <div id="modal-generic-scanner" class="modal" style="z-index: 3001;">
+        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 20px; background: white; border-radius: 16px; position: relative;">
+            <span onclick="detenerEscaneoGenerico()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem; z-index: 10;">&times;</span>
             <h3 style="text-align: center; margin-bottom: 15px;">Escanear Código de Barras</h3>
-            <video id="generic-scanner-video" style="width: 100%; border-radius: 8px;" autoplay muted playsinline></video>
+            <div style="position: relative; width: 100%; overflow: hidden; border-radius: 8px; background: #000;">
+                <video id="generic-scanner-video" style="width: 100%; min-height: 250px; display: block;" autoplay muted playsinline></video>
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                    <div style="width: 80%; height: 2px; background-color: red; box-shadow: 0 0 4px red;"></div>
+                </div>
+            </div>
             <p id="generic-scanner-status" style="text-align: center; margin-top: 10px; color: #666;">Iniciando cámara...</p>
         </div>
     </div>
@@ -327,6 +392,7 @@
     <script src="js/productos.js"></script>
     <script src="js/carrito.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/admin-edit.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

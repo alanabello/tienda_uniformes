@@ -426,6 +426,20 @@ function renderizarTablaInsumos() {
     }
 }
 
+// Función auxiliar para sumar stock de tallas
+function calcularStockTotalInsumo() {
+    const inputs = document.querySelectorAll('.input-talla-stock');
+    let total = 0;
+    let hayValores = false;
+    inputs.forEach(input => {
+        const val = parseInt(input.value) || 0;
+        if (input.value !== '') hayValores = true;
+        total += val;
+    });
+    const stockInput = document.getElementById('insumoStock');
+    if (hayValores) stockInput.value = total;
+}
+
 async function guardarNuevoInsumo(e) {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
@@ -449,8 +463,20 @@ async function guardarNuevoInsumo(e) {
             cargarInventarioGeneral();
         } catch (error) { console.error(error); alert(`❌ Error: ${error.message}`); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
     } else {
-        const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input:checked');
-        const nuevoInsumo = { nombre: document.getElementById('insumoNombre').value, precio: parseInt(document.getElementById('insumoPrecio').value) || 0, stock: parseInt(document.getElementById('insumoStock').value) || 0, categoria: document.getElementById('insumoCategoria').value, tallas: Array.from(tallasCheckboxes).map(cb => cb.value), descripcion: document.getElementById('insumoDescripcion').value, barcode: document.getElementById('insumoBarcode').value };
+        // Recopilar stock por talla
+        const inputsTallas = document.querySelectorAll('.input-talla-stock');
+        let tallasFormateadas = [];
+        let stockSumado = 0;
+        inputsTallas.forEach(input => {
+            const val = parseInt(input.value);
+            if (!isNaN(val) && val > 0) {
+                tallasFormateadas.push(`${input.dataset.talla}: ${val}`);
+                stockSumado += val;
+            }
+        });
+        const stockFinal = stockSumado > 0 ? stockSumado : (parseInt(document.getElementById('insumoStock').value) || 0);
+
+        const nuevoInsumo = { nombre: document.getElementById('insumoNombre').value, precio: parseInt(document.getElementById('insumoPrecio').value) || 0, stock: stockFinal, categoria: document.getElementById('insumoCategoria').value, tallas: tallasFormateadas, descripcion: document.getElementById('insumoDescripcion').value, barcode: document.getElementById('insumoBarcode').value };
         try { // POST
             const res = await fetch('/api/inventario_general', {
                 method: 'POST',
@@ -503,7 +529,10 @@ function abrirModalAgregarInsumo() {
     document.getElementById('insumoPrecio').readOnly = false;
     document.getElementById('insumoCategoria').readOnly = false;
     document.getElementById('insumoDescripcion').readOnly = false;
-    document.querySelectorAll('#modal-agregar-insumo .talla-option input').forEach(cb => cb.disabled = false);
+    document.querySelectorAll('.input-talla-stock').forEach(input => {
+        input.value = '';
+        input.oninput = calcularStockTotalInsumo; // Activar cálculo automático
+    });
     document.getElementById('insumo-barcode-status').style.display = 'none';
     window.abrirModal('modal-agregar-insumo');
 }
@@ -519,7 +548,7 @@ async function buscarInsumoPorBarcode(barcode) {
         document.getElementById('insumoPrecio').readOnly = false;
         document.getElementById('insumoCategoria').readOnly = false;
         document.getElementById('insumoDescripcion').readOnly = false;
-        document.querySelectorAll('#modal-agregar-insumo .talla-option input').forEach(cb => cb.disabled = false);
+        document.querySelectorAll('.input-talla-stock').forEach(i => { i.value = ''; i.disabled = false; });
         statusEl.style.display = 'none';
     };
     if (!barcode) { resetToNewMode(); return; }
@@ -532,8 +561,7 @@ async function buscarInsumoPorBarcode(barcode) {
             document.getElementById('insumoPrecio').value = insumo.precio;
             document.getElementById('insumoCategoria').value = insumo.categoria;
             document.getElementById('insumoDescripcion').value = insumo.descripcion;
-            const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input');
-            tallasCheckboxes.forEach(cb => { cb.checked = (insumo.tallas || []).includes(cb.value); cb.disabled = true; });
+            document.querySelectorAll('.input-talla-stock').forEach(i => i.disabled = true); // Deshabilitar edición de tallas al añadir stock
             document.getElementById('insumoStockLabel').innerText = 'Cantidad a AÑADIR al Stock';
             document.getElementById('insumoStock').value = '1';
             document.getElementById('insumoNombre').readOnly = true;
