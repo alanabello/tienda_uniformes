@@ -9,7 +9,11 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { user, pass } = req.body;
+    let { user, pass } = req.body;
+    // Limpiar espacios en blanco accidentales al inicio o final
+    user = String(user || '').trim();
+    pass = String(pass || '').trim();
+
     const JWT_SECRET = process.env.JWT_SECRET;
 
     if (!JWT_SECRET) {
