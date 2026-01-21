@@ -56,7 +56,7 @@ async function cargarInventarioAdmin() {
             statusDiv.style.color = "orange";
         } else if (conexionDB) {
             const esVacia = productos === productosBase;
-            statusDiv.innerHTML = esVacia ? "🟢 Conectado (Base de datos vacía - Dale a Migrar)" : "🟢 Conectado a Neon DB";
+            statusDiv.innerHTML = esVacia ? "🟢 Conectado (Base de datos vacía)" : "🟢 Conectado a Neon DB";
             statusDiv.style.color = esVacia ? "orange" : "green";
         } else {
             if (ultimoErrorDB && ultimoErrorDB.includes("Modo Local")) {
@@ -102,40 +102,6 @@ function renderizarTablaInventario() {
             </tr>`;
         tbody.innerHTML += row;
     });
-}
-
-async function migrarProductosANeon() {
-    if(!confirm("¿Estás seguro de subir los productos base a Neon? Se omitirán los que ya existan.")) return;
-    let productosEnDB = [];
-    try {
-        const res = await fetch('/api/productos');
-        if (res.ok) productosEnDB = await res.json();
-    } catch (e) { console.error(e); }
-
-    let contador = 0, errores = 0, omitidos = 0, ultimoError = "";
-    const btn = document.querySelector('button[onclick="migrarProductosANeon()"]');
-    if(btn) { btn.innerText = "⏳ Subiendo..."; btn.disabled = true; }
-
-    for (const p of productosBase) {
-        const existe = productosEnDB.find(dbProd => dbProd.nombre === p.nombre);
-        if (existe) { omitidos++; continue; }
-        const nuevoProd = { ...p, stock: 100, barcode: p.barcode || null };
-        try {
-            const res = await fetch('/api/productos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...getAuthHeader() // Añadir cabecera de autorización
-                },
-                body: JSON.stringify(nuevoProd) });
-            if (!res.ok) throw new Error(`Error ${res.status}`);
-            contador++;
-        } catch (e) { errores++; ultimoError = e.message; }
-    }
-
-    if (errores > 0) alert(`⚠️ Proceso con errores.\n✅ Subidos: ${contador}\n⏭️ Omitidos: ${omitidos}\n❌ Fallidos: ${errores}\n\nÚltimo error: ${ultimoError}`);
-    else { alert(`✅ Proceso finalizado.\n✨ Nuevos subidos: ${contador}\n⏭️ Omitidos: ${omitidos}`); location.reload(); }
-    if(btn) { btn.innerText = "⚠️ Migrar Datos Iniciales"; btn.disabled = false; }
 }
 
 async function cambiarVisibilidad(id, nuevoEstado) {
@@ -278,6 +244,14 @@ async function cargarConfigPromo() {
             document.getElementById('promoSubtitulo').value = config.subtitulo || "";
             document.getElementById('promoContenido').value = config.contenido || "";
             document.getElementById('promoTag').value = config.tag || "";
+            if (config.expiracion) {
+                // Convertir fecha UTC a formato local para el input datetime-local
+                const date = new Date(config.expiracion);
+                const localIsoString = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                document.getElementById('promoExpiracion').value = localIsoString;
+            } else {
+                document.getElementById('promoExpiracion').value = "";
+            }
         }
     } catch (e) { console.error("Error cargando config promo:", e); }
 }
@@ -287,16 +261,17 @@ async function guardarConfigPromo(e) {
     const btn = e.target.querySelector('button');
     const txtOriginal = btn.innerText;
     btn.innerText = "Guardando..."; btn.disabled = true;
-    const config = { activo: document.getElementById('promoActivo').checked, titulo: document.getElementById('promoTitulo').value, subtitulo: document.getElementById('promoSubtitulo').value, contenido: document.getElementById('promoContenido').value, tag: document.getElementById('promoTag').value };
+    const config = { activo: document.getElementById('promoActivo').checked, titulo: document.getElementById('promoTitulo').value, subtitulo: document.getElementById('promoSubtitulo').value, contenido: document.getElementById('promoContenido').value, tag: document.getElementById('promoTag').value, expiracion: document.getElementById('promoExpiracion').value };
     try {
-        await fetch('/api/promo', {
+        const res = await fetch('/api/promo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 ...getAuthHeader() // Añadir cabecera de autorización
             }, body: JSON.stringify(config) });
+        if (!res.ok) throw new Error("Error en el servidor al guardar");
         mostrarNotificacion("✅ Configuración de oferta actualizada");
-    } catch (error) { mostrarNotificacion("❌ Error al guardar"); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
+    } catch (error) { console.error(error); mostrarNotificacion("❌ Error: " + error.message); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
 }
 
 async function abrirPromo() {
@@ -309,6 +284,14 @@ async function abrirPromo() {
             const config = await res.json();
             const estaActivo = config.activo === true || config.activo === "true" || config.activo === 1;
             if (!estaActivo) return;
+
+            // Verificar si la oferta ha expirado
+            if (config.expiracion) {
+                const ahora = new Date();
+                const fechaExpiracion = new Date(config.expiracion);
+                if (ahora > fechaExpiracion) return; // No mostrar si ya pasó la fecha
+            }
+
             const titulo = document.getElementById('promo-display-titulo');
             const subtitulo = document.getElementById('promo-display-subtitulo');
             const contenido = document.getElementById('promo-display-contenido');
@@ -326,7 +309,27 @@ async function abrirPromo() {
 }
 
 // --- Escáner ---
+function playBeep() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = 1200; // Tono agudo suave
+        gain.gain.value = 0.1; // Volumen bajo
+        osc.start();
+        setTimeout(() => { osc.stop(); ctx.close(); }, 150); // Duración corta
+    } catch (e) { console.error("Error beep:", e); }
+}
+
 async function iniciarEscaneoBarcode() {
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares. Si estás probando con una IP local, es posible que no cargue.");
+    }
     const videoElement = document.getElementById('scanner-video');
     const scannedBarcodeSpan = document.getElementById('scanned-barcode');
     const scannedProductInfo = document.getElementById('scanned-product-info');
@@ -344,11 +347,10 @@ async function iniciarEscaneoBarcode() {
     }
     if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
     try {
-        const videoInputDevices = await codeReader.getVideoInputDevices();
-        if (videoInputDevices.length === 0) { alert('No se encontraron cámaras.'); scannedBarcodeSpan.innerText = 'Error: No hay cámaras.'; return; }
-        selectedDeviceId = videoInputDevices.find(device => device.label.toLowerCase().includes('back'))?.deviceId || videoInputDevices[0].deviceId;
-        codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+        const constraints = { video: { facingMode: "environment" } };
+        await codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
             if (result) {
+                playBeep();
                 scannedBarcodeSpan.innerText = result.text;
                 detenerEscaneoBarcode(); 
                 mostrarInfoProductoEscaneado(result.text);
@@ -357,7 +359,7 @@ async function iniciarEscaneoBarcode() {
             }
         });
         scannedBarcodeSpan.innerText = 'Escaneando...';
-    } catch (error) { console.error(error); scannedBarcodeSpan.innerText = 'Error al iniciar la cámara.'; alert('Error al iniciar el escáner.'); }
+    } catch (error) { console.error(error); scannedBarcodeSpan.innerText = 'Error al iniciar la cámara.'; alert('Error al iniciar el escáner: ' + error.message); }
 }
 
 function detenerEscaneoBarcode() {
@@ -581,6 +583,9 @@ async function buscarInsumoPorBarcode(barcode) {
 }
 
 function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares.");
+    }
     targetInputIdForScanner = targetInputId;
     const videoElement = document.getElementById('generic-scanner-video');
     const statusElement = document.getElementById('generic-scanner-status');
@@ -591,19 +596,19 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     if (!genericCodeReader) genericCodeReader = new ZXing.BrowserMultiFormatReader();
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
-    genericCodeReader.getVideoInputDevices().then(videoInputDevices => {
-        if (videoInputDevices.length <= 0) throw new Error("No se encontraron cámaras.");
-        const rearCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back')) || videoInputDevices[0];
+    
+    const constraints = { video: { facingMode: "environment" } };
+    genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
+        if (result) {
+            playBeep();
+            const targetInput = document.getElementById(targetInputIdForScanner);
+            targetInput.value = result.text;
+            detenerEscaneoGenerico();
+            window.mostrarNotificacion('✅ Código escaneado: ' + result.text);
+            if (triggerSearch) targetInput.dispatchEvent(new Event('blur'));
+        }
+    }).then(() => {
         statusElement.innerText = 'Apunte al código de barras...';
-        genericCodeReader.decodeFromVideoDevice(rearCamera.deviceId, videoElement, (result, err) => {
-            if (result) {
-                const targetInput = document.getElementById(targetInputIdForScanner);
-                targetInput.value = result.text;
-                detenerEscaneoGenerico();
-                window.mostrarNotificacion('✅ Código escaneado: ' + result.text);
-                if (triggerSearch) targetInput.dispatchEvent(new Event('blur'));
-            }
-        });
     }).catch(err => { console.error(err); statusElement.innerText = `Error: ${err.message}`; alert(`Error al iniciar la cámara: ${err.message}`); detenerEscaneoGenerico(); });
 }
 
@@ -662,7 +667,6 @@ async function guardarTallasEditadas(e) {
 // Exponer funciones globales
 window.ordenarInventario = ordenarInventario;
 window.cargarInventarioAdmin = cargarInventarioAdmin;
-window.migrarProductosANeon = migrarProductosANeon;
 window.cambiarVisibilidad = cambiarVisibilidad;
 window.cambiarStock = cambiarStock;
 window.eliminarProducto = eliminarProducto;
