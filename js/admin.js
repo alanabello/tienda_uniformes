@@ -336,6 +336,11 @@ async function iniciarEscaneoBarcode() {
     addStockBtn.style.display = 'none';
     removeStockBtn.style.display = 'none';
 
+    if (typeof ZXing === 'undefined') {
+        alert('Error: La librería del escáner no se ha cargado. Verifique su conexión a internet.');
+        scannedBarcodeSpan.innerText = 'Error: Librería ZXing no cargada.';
+        return;
+    }
     if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
     try {
         const videoInputDevices = await codeReader.getVideoInputDevices();
@@ -550,6 +555,10 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     targetInputIdForScanner = targetInputId;
     const videoElement = document.getElementById('generic-scanner-video');
     const statusElement = document.getElementById('generic-scanner-status');
+    if (typeof ZXing === 'undefined') {
+        alert('Error: La librería del escáner no se ha cargado.');
+        return;
+    }
     if (!genericCodeReader) genericCodeReader = new ZXing.BrowserMultiFormatReader();
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';

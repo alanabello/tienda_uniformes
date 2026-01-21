@@ -155,7 +155,7 @@
             <h3>📱 Escáner de Inventario</h3>
             <p style="margin-bottom: 20px; color: #666;">Usa la cámara de tu dispositivo para escanear códigos de barras y actualizar el stock.</p>
             <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto; border: 2px solid #ccc; border-radius: 10px; overflow: hidden;">
-                <video id="scanner-video" style="width: 100%; display: block;"></video>
+                <video id="scanner-video" style="width: 100%; display: block;" autoplay muted playsinline></video>
                 <div id="scanner-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none;">
                     <div style="width: 80%; height: 3px; background-color: red; animation: scan-line 2s infinite alternate; box-shadow: 0 0 10px red;"></div>
                 </div>
@@ -297,7 +297,7 @@
         <div class="modal-content" style="max-width: 500px; width: 100%; padding: 20px; background: white; border-radius: 16px;">
             <span onclick="detenerEscaneoGenerico()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
             <h3 style="text-align: center; margin-bottom: 15px;">Escanear Código de Barras</h3>
-            <video id="generic-scanner-video" style="width: 100%; border-radius: 8px;"></video>
+            <video id="generic-scanner-video" style="width: 100%; border-radius: 8px;" autoplay muted playsinline></video>
             <p id="generic-scanner-status" style="text-align: center; margin-top: 10px; color: #666;">Iniciando cámara...</p>
         </div>
     </div>

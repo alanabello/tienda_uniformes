@@ -117,7 +117,7 @@ function renderizarProductos(filtro = 'todos') {
                     <select id="talla-${p.id}">
                         ${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}
                     </select>
-                    ${(p.mostrar !== false && mostrarColores) ? `
+                    ${(p.mostrar !== false && mostrarColores && !sinStock) ? `
                     <select id="color-${p.id}" required>
                         <option value="" disabled selected>Selecciona un color</option>
                         <option value="Azul">Azul</option>
@@ -198,7 +198,7 @@ async function cargarDetalleProducto() {
                     <p class="detalle-desc">${producto.descripcion}</p>
                     <div class="detalle-selectores">
                         <select id="detalle-talla">${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
-                        ${(producto.mostrar !== false && mostrarColores) ? `
+                        ${(producto.mostrar !== false && mostrarColores && !sinStock) ? `
                         <select id="detalle-color" required>
                             <option value="" disabled selected>Selecciona un color</option>
                             <option value="Azul">Azul</option>
