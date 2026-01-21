@@ -987,7 +987,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarPaginaCarrito();
 
     // Mostrar promo al cargar (1 segundo de retraso)
-    setTimeout(abrirPromo, 1000);
+    // Solo mostrar la promo si no estamos en el admin
+    if (!window.location.pathname.includes('admin.html')) {
+        setTimeout(abrirPromo, 1000);
+    }
+
 
     // Cambiar texto del botón según método de pago
     const radioPagos = document.querySelectorAll('input[name="payment"]');
@@ -1099,13 +1103,24 @@ function cerrarSesion() {
     window.location.href = 'login.html';
 }
 
-// Helper para mostrar vistas en el admin
+// Helper para mostrar vistas en el admin y gestionar botones de pestaña
 function mostrarVista(vistaId) {
     const vistas = ['vista-inventario', 'vista-ventas', 'vista-promo', 'vista-scanner', 'vista-inventario-general'];
     vistas.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.style.display = (id === vistaId) ? 'block' : 'none';
+        }
+    });
+
+    // Actualizar clase 'active' en los botones de pestaña
+    const tabButtons = document.querySelectorAll('.tab-navigation .btn-tab');
+    tabButtons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${vistaId}'`)) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
         }
     });
 }

@@ -1097,13 +1097,123 @@ body {
     width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
 }
 
+/* --- ADMIN GLOBAL ACTIONS (DROPDOWN) --- */
+.admin-global-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: var(--primary); /* O un color neutral */
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.dropbtn:hover {
+    background-color: var(--primary-dark);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+    right: 0; /* Alinear a la derecha */
+    top: 100%; /* Debajo del botón */
+    overflow: hidden; /* Para que los bordes redondeados se vean bien */
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
+    white-space: nowrap; /* Evitar que el texto se envuelva */
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1;}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* --- ADMIN STATUS BAR --- */
+.admin-status-bar {
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* --- TAB NAVIGATION --- */
+.tab-navigation {
+    display: flex;
+    flex-wrap: wrap; /* Permitir que los botones se envuelvan en pantallas pequeñas */
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.btn-tab {
+    background: #f0f2f5; /* Fondo neutral para pestañas inactivas */
+    color: #555;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-tab:hover {
+    background: #e0e2e5;
+}
+
+.btn-tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
 /* Tabla de Inventario */
 .admin-container {
     max-width: 1200px; margin: 40px auto; padding: 0 20px;
 }
 
-/* --- BARRA DE HERRAMIENTAS ADMIN --- */
-.admin-toolbar {
+/* --- VIEW HEADER (Dentro de cada vista) --- */
+.admin-view .view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+.admin-view .view-header h2,
+.admin-view .view-header h3 {
+    margin: 0;
+}
+
+/* --- ADMIN TOOLBAR (para el resumen de inventario general) --- */
+.admin-toolbar { /* Mantener este estilo para el resumen de inventario general */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1114,64 +1224,6 @@ body {
     margin-bottom: 30px;
     flex-wrap: wrap;
     gap: 20px;
-}
-
-.toolbar-group {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.btn-admin {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-.btn-admin:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
-}
-
-.btn-new {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-}
-
-.btn-save {
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-}
-.btn-save:hover { background: #e5e7eb; color: #111; }
-
-.btn-view {
-    background: #e0f2fe;
-    color: #0284c7;
-    border: 1px solid #bae6fd;
-}
-.btn-view:hover { background: #bae6fd; color: #0369a1; }
-
-.btn-migrate {
-    background: #fff1f2;
-    color: #e11d48;
-    border: 1px solid #fecdd3;
-    font-size: 0.85rem;
-    padding: 10px 16px;
-}
-.btn-migrate:hover { background: #ffe4e6; }
-
-.admin-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
 }
 
 .inventory-table {
