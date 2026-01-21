@@ -1670,6 +1670,7 @@ async function iniciarEscaneoBarcode() {
     if (!codeReader) {
         codeReader = new ZXing.BrowserMultiFormatReader();
     }
+    console.log("Initializing barcode scanner...");
 
     try {
         const videoInputDevices = await codeReader.getVideoInputDevices();
@@ -1677,6 +1678,7 @@ async function iniciarEscaneoBarcode() {
             alert('No se encontraron cámaras en este dispositivo.');
             scannedBarcodeSpan.innerText = 'Error: No hay cámaras.';
             return;
+
         }
 
         // Seleccionar la cámara trasera si está disponible, de lo contrario la primera
@@ -1684,6 +1686,7 @@ async function iniciarEscaneoBarcode() {
 
         codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
             if (result) {
+
                 console.log('Código de barras escaneado:', result.text);
                 scannedBarcodeSpan.innerText = result.text;
                 // Detener el escáner automáticamente después de un escaneo exitoso
@@ -1692,16 +1695,20 @@ async function iniciarEscaneoBarcode() {
                 mostrarInfoProductoEscaneado(result.text);
                 addStockBtn.style.display = 'inline-block';
                 removeStockBtn.style.display = 'inline-block';
+
             }
             if (err && !(err instanceof ZXing.NotFoundException)) {
                 console.error('Error al escanear:', err);
                 scannedBarcodeSpan.innerText = 'Error de escaneo.';
+
             }
         });
         scannedBarcodeSpan.innerText = 'Escaneando...';
+
     } catch (error) {
         console.error('Error al iniciar el escáner:', error);
         scannedBarcodeSpan.innerText = 'Error al iniciar la cámara.';
+
         alert('Error al iniciar el escáner. Asegúrate de dar permisos a la cámara.');
     }
 }
@@ -2033,6 +2040,7 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     if (!genericCodeReader) {
         genericCodeReader = new ZXing.BrowserMultiFormatReader();
     }
+    console.log("Initializing generic barcode scanner...");
 
     abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
@@ -2040,6 +2048,7 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     genericCodeReader.getVideoInputDevices()
         .then(videoInputDevices => {
             if (videoInputDevices.length <= 0) {
+
                 throw new Error("No se encontraron cámaras.");
             }
             // Prefer back camera
@@ -2047,10 +2056,12 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
             statusElement.innerText = 'Apunte al código de barras...';
             genericCodeReader.decodeFromVideoDevice(rearCamera.deviceId, videoElement, (result, err) => {
                 if (result) {
+
                     const targetInput = document.getElementById(targetInputIdForScanner);
                     targetInput.value = result.text;
                     detenerEscaneoGenerico();
                     mostrarNotificacion('✅ Código escaneado: ' + result.text);
+
 
                     if (triggerSearch) {
                         targetInput.dispatchEvent(new Event('blur'));
@@ -2072,6 +2083,7 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
 
 function detenerEscaneoGenerico() {
     if (genericCodeReader) {
+
         genericCodeReader.reset();
     }
     cerrarModal('modal-generic-scanner');
