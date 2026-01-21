@@ -371,7 +371,7 @@ async function iniciarEscaneoBarcode() {
     }
     if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
     try {
-        const constraints = { video: { facingMode: "environment" } };
+        const constraints = { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
         await codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
             if (result) {
                 playBeep();
@@ -645,7 +645,7 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
     
-    const constraints = { video: { facingMode: "environment" } };
+    const constraints = { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
     genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
         if (result) {
             playBeep();
