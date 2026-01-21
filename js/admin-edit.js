@@ -51,21 +51,28 @@ async function guardarProductoEditado(e) {
 
     // 1. Actualizar en Base de Datos (si tienes el endpoint configurado)
     try {
-        await fetch('/api/productos', {
+        const res = await fetch('/api/productos', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // IMPORTANTE: Enviar credenciales
+            },
             body: JSON.stringify(datosActualizados)
         });
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || 'Error al actualizar');
+        }
+        alert('✅ Producto actualizado correctamente.');
+        cerrarModalEditar();
+        window.location.reload();
     } catch (error) {
-        console.log('Guardando solo localmente (API no disponible)');
+        if (window.manejarErrorApi) {
+            window.manejarErrorApi(error);
+        } else {
+            alert("❌ Error: " + error.message);
+        }
     }
-
-    // 2. Actualizar visualmente y recargar
-    alert('Producto actualizado.');
-    cerrarModalEditar();
-    
-    // Recargar la página para ver cambios en la tabla
-    window.location.reload();
 }
 
 // Exponer funciones

@@ -7,6 +7,16 @@
 let ordenColumna = '';
 let ordenDireccion = 'asc';
 
+function manejarErrorApi(error) {
+    console.error(error);
+    if (error.message && (error.message.includes('Token inválido') || error.message.includes('expirado') || error.message.includes('No autorizado'))) {
+        alert("⚠️ Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        window.location.href = 'login.html';
+    } else {
+        alert(`❌ Error: ${error.message}`);
+    }
+}
+
 function ordenarInventario(columna) {
     if (ordenColumna === columna) {
         ordenDireccion = ordenDireccion === 'asc' ? 'desc' : 'asc';
@@ -193,7 +203,7 @@ async function guardarNuevoProducto(e) {
         cerrarModalAgregar();
         e.target.reset();
         cargarInventarioAdmin();
-    } catch (error) { console.error(error); alert("❌ Error: " + error.message); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
+    } catch (error) { manejarErrorApi(error); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
 }
 
 function abrirModalAgregar() {
@@ -271,7 +281,7 @@ async function guardarConfigPromo(e) {
             }, body: JSON.stringify(config) });
         if (!res.ok) throw new Error("Error en el servidor al guardar");
         mostrarNotificacion("✅ Configuración de oferta actualizada");
-    } catch (error) { console.error(error); mostrarNotificacion("❌ Error: " + error.message); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
+    } catch (error) { manejarErrorApi(error); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
 }
 
 async function abrirPromo() {
@@ -473,7 +483,7 @@ async function guardarNuevoInsumo(e) {
             alert(`✅ Stock actualizado. Nuevo stock: ${result.insumo.stock}`);
             cerrarModalAgregarInsumo();
             cargarInventarioGeneral();
-        } catch (error) { console.error(error); alert(`❌ Error: ${error.message}`); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
+        } catch (error) { manejarErrorApi(error); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
     } else {
         // Recopilar stock por talla
         const inputsTallas = document.querySelectorAll('.input-talla-stock');
@@ -516,7 +526,7 @@ async function guardarNuevoInsumo(e) {
             cerrarModalAgregarInsumo();
             e.target.reset();
             cargarInventarioGeneral();
-        } catch (error) { console.error(error); alert(`❌ Error: ${error.message}`); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
+        } catch (error) { manejarErrorApi(error); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
     }
 }
 
@@ -696,6 +706,7 @@ async function guardarTallasEditadas(e) {
 }
 
 // Exponer funciones globales
+window.manejarErrorApi = manejarErrorApi;
 window.ordenarInventario = ordenarInventario;
 window.cargarInventarioAdmin = cargarInventarioAdmin;
 window.cambiarVisibilidad = cambiarVisibilidad;
