@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
             // 2. Comparar contraseña encriptada
             if (await bcrypt.compare(pass, dbUser.password)) {
-                const token = jwt.sign({ user: dbUser.username, role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
+                const token = jwt.sign({ user: dbUser.username, role: 'admin' }, JWT_SECRET, { expiresIn: '7d' });
                 return res.status(200).json({ success: true, token: token });
             }
         }
