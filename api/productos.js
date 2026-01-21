@@ -13,11 +13,11 @@ export default async function handler(req, res) {
       const { rows } = await pool.query('SELECT * FROM productos ORDER BY id ASC');
       res.json(rows);
     } else if (req.method === 'POST') {
-      // Crear producto (Usado para la migración)
-      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores } = req.body;
+      // Crear producto
+      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores, barcode } = req.body;
       await pool.query(
-        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrar_colores) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores]
+        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrar_colores, barcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores, barcode]
       );
       res.json({ success: true });
     } else if (req.method === 'PUT') {
@@ -30,6 +30,16 @@ export default async function handler(req, res) {
       
       if (mostrar !== undefined) {
         await pool.query('UPDATE productos SET mostrar = $1 WHERE id = $2', [mostrar, id]);
+      }
+      
+      res.json({ success: true });
+    } else if (req.method === 'PATCH') { // Nuevo método para actualizar stock por barcode
+      const { barcode, cantidad } = req.body; // cantidad puede ser +1, -1, etc.
+      if (barcode && cantidad !== undefined) {
+        await pool.query(
+          'UPDATE productos SET stock = stock + $1 WHERE barcode = $2 RETURNING id, nombre, stock',
+          [cantidad, barcode]
+        );
       }
       
       res.json({ success: true });

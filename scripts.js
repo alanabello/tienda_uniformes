@@ -1,6 +1,7 @@
 let productos = []; // Ahora la lista es dinámica
 let conexionDB = false; // Variable para diagnosticar conexión
 let ultimoErrorDB = ""; // Variable para guardar el mensaje de error
+let zxingScanner = null; // Variable global para el escáner ZXing
 
 // 1. DATOS INICIALES (Solo para migración)
 // Estos son tus productos actuales. Usaremos una función en Admin para subirlos a la base de datos.
@@ -15,7 +16,8 @@ const productosBase = [
             "imagenes/conjuntoazulmarino.jpeg",
             "imagenes/conjuntoazulmarino2.jpeg",
             "imagenes/conjuntoazulmarino3.jpeg"
-        ],
+        ], 
+        barcode: "7801234567890", // Ejemplo de código de barras
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -28,7 +30,8 @@ const productosBase = [
             "imagenes/toplila4.jpeg",
             "imagenes/toplila2.jpeg",
             "imagenes/toplila.jpeg"
-        ],
+        ], 
+        barcode: "7801234567891",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -41,7 +44,8 @@ const productosBase = [
             "imagenes/topceleste.jpeg",
             "imagenes/topceleste2.jpeg",
             "imagenes/topceleste3.jpeg"
-        ],
+        ], 
+        barcode: "7801234567892",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     }
     ,
@@ -55,7 +59,8 @@ const productosBase = [
             "imagenes/topcelestecielo2.jpeg",
             "imagenes/topcelestecielo.jpeg",
             "imagenes/topcelestecielo3.jpeg"
-        ],
+        ], 
+        barcode: "7801234567893",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -68,7 +73,8 @@ const productosBase = [
             "imagenes/topmenta6.jpeg",
             "imagenes/topmenta4.jpeg",
             "imagenes/topmenta5.jpeg"
-        ],
+        ], 
+        barcode: "7801234567894",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -81,7 +87,8 @@ const productosBase = [
             "imagenes/conjuntonegro2.jpeg",
             "imagenes/topnegro.jpeg",
             "imagenes/topnegro3.jpeg"
-        ],
+        ], 
+        barcode: "7801234567895",
         descripcion: "Top clínico elasticado de alta calidad, sin tachas. Este mismo modelo está disponible en distintos colores para que elijas el que más te guste."
     },
     {
@@ -94,7 +101,8 @@ const productosBase = [
             "imagenes/toprosa.jpeg",
             "imagenes/toprosa3.jpeg",
             "imagenes/toprosa4.jpeg"
-        ],
+        ], 
+        barcode: "7801234567896",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile.."
     },
     {
@@ -107,7 +115,8 @@ const productosBase = [
             "imagenes/topverdeesperanza3.jpeg",
             "imagenes/topverdeesperanza2.jpeg",
             "imagenes/topverdeesperanza.jpeg"
-        ],
+        ], 
+        barcode: "7801234567897",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -120,7 +129,8 @@ const productosBase = [
             "imagenes/topcalipso3.jpeg",
             "imagenes/topcalipso.jpeg",
             "imagenes/topcalipso4.jpeg"
-        ],
+        ], 
+        barcode: "7801234567898",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     }
     ,
@@ -134,7 +144,8 @@ const productosBase = [
             "imagenes/topburdeo.jpeg",
             "imagenes/topburdeo3.jpeg",
             "imagenes/topburdeo5.jpeg"
-        ],
+        ], 
+        barcode: "7801234567899",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     {
@@ -144,9 +155,10 @@ const productosBase = [
         categorias: ["Mujer"],
         mostrar: false,
         imagenes: [
-            "imagenes/topazulrey1.jpeg",
+            "imagenes/topazulrey1.jpeg", // Corregido: era "topazulrey1.jpeg"
             "imagenes/topazulrey.jpeg",
         ],
+        barcode: "7801234567900",
         descripcion: "Top clínico elasticado, antifluido, confeccionado en Chile."
     },
     //Tops diseños hombres
@@ -159,7 +171,8 @@ const productosBase = [
         imagenes: [
             "imagenes/hdise.jpeg",
             "imagenes/hdise2.jpeg",
-        ],
+        ], 
+        barcode: "7801234567901",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
     },
     {
@@ -172,7 +185,8 @@ const productosBase = [
             "imagenes/topdiseh.jpeg",
             "imagenes/topdiseh2.jpeg",
             "imagenes/topdiseh3.jpeg",
-            "imagenes/topdiseh4.jpeg",
+            "imagenes/topdiseh4.jpeg", 
+            barcode: "7801234567902",
         ],
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
     },
@@ -185,7 +199,8 @@ const productosBase = [
         imagenes: [
             "imagenes/topmi.jpeg",
             "imagenes/topmi1.jpeg",
-        ],
+        ], 
+        barcode: "7801234567903",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
         
     
@@ -205,7 +220,8 @@ const productosBase = [
         imagenes: [
             "imagenes/cancertop2.png",
             "imagenes/top-cancer-de-mama-2.jpeg",
-        ],
+        ], 
+        barcode: "7801234567904",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido." 
     },
     {
@@ -217,7 +233,8 @@ const productosBase = [
         imagenes: [ 
             "imagenes/gatitoluna2.png",
             "imagenes/gatitoluna.jpeg",
-        ],
+        ], 
+        barcode: "7801234567905",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido." 
     },
     {
@@ -229,7 +246,8 @@ const productosBase = [
         imagenes: [
             "imagenes/topamorpropio.png",
             "imagenes/topamorpropio2.png",
-        ],
+        ], 
+        barcode: "7801234567906",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
     },
     {
@@ -241,7 +259,8 @@ const productosBase = [
         imagenes: [
             "imagenes/topretro.jpeg",
             "imagenes/retro1.jpeg",
-        ],
+        ], 
+        barcode: "7801234567907",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
     },
     //Pantalones
@@ -255,7 +274,8 @@ const productosBase = [
             "imagenes/pantalonmujernegro.jpeg",
             "imagenes/pantallonmujernegro.jpeg",
             "imagenes/pantalonmujernegro1.jpeg",
-            "imagenes/patalonmujernegro.jpeg",
+            "imagenes/patalonmujernegro.jpeg", 
+            barcode: "7801234567908",
         
         ],
         descripcion: "Pantalón antifluido para mujer, cómodos y de mucha durabilidad."
@@ -271,7 +291,8 @@ const productosBase = [
             "imagenes/jogerazulrey2.jpeg",
             "imagenes/jogerazulrey3.jpeg",
             "imagenes/jogerazulrey4.jpeg",
-            "imagenes/jogerazulrey5.jpeg",
+            "imagenes/jogerazulrey5.jpeg", 
+            barcode: "7801234567909",
             "imagenes/jogerazulrey6.jpeg",
         ],
         descripcion:  "Pantalón jogger antifluido diseñado para profesionales que buscan comodidad, protección y un aspecto profesional. Confeccionado con tela de alta calidad que repele líquidos y evita la absorción de fluidos, ideal para largas jornadas laborales. Su diseño moderno permite libertad de movimiento, fácil limpieza y alta durabilidad."
@@ -286,7 +307,8 @@ const productosBase = [
             "imagenes/paAzuRe.jpeg",
             "imagenes/paAzuRe2.jpeg",
             "imagenes/paAzuRe3.jpeg",
-            "imagenes/paAzuRe4.jpeg",
+            "imagenes/paAzuRe4.jpeg", 
+            barcode: "7801234567910",
 
         
         ],
@@ -921,14 +943,19 @@ function cerrarGuiaTallas() {
 async function abrirPromo() {
     // Intentar cargar configuración desde el servidor
     try {
-        const res = await fetch('/api/promo');
+        // Agregamos timestamp (?_t=...) para evitar que el navegador use la caché vieja
+        const res = await fetch(`/api/promo?_t=${Date.now()}`);
         if (res.ok) {
             const config = await res.json();
             
             console.log("Promo config loaded (frontend):", config);
-            console.log("Promo activo status (frontend):", config.activo);
+            
+            // Asegurar que sea booleano (por si viene como string "true" o número 1)
+            const estaActivo = config.activo === true || config.activo === "true" || config.activo === 1;
+            console.log("Promo activo status (calculado):", estaActivo);
+
             // Si está desactivada, no hacemos nada
-            if (!config.activo) return;
+            if (!estaActivo) return;
 
             // Actualizar textos en el DOM
             const titulo = document.getElementById('promo-display-titulo');
@@ -1075,6 +1102,17 @@ function cerrarSesion() {
     window.location.href = 'login.html';
 }
 
+// Helper para mostrar vistas en el admin
+function mostrarVista(vistaId) {
+    const vistas = ['vista-inventario', 'vista-ventas', 'vista-promo', 'vista-scanner', 'vista-inventario-general'];
+    vistas.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = (id === vistaId) ? 'block' : 'none';
+        }
+    });
+}
+
 let ordenColumna = '';
 let ordenDireccion = 'asc';
 
@@ -1085,6 +1123,7 @@ function ordenarInventario(columna) {
         ordenColumna = columna;
         ordenDireccion = 'asc';
     }
+    console.log(`Ordenando por ${ordenColumna}, dirección ${ordenDireccion}`);
 
     productos.sort((a, b) => {
         let valA = a[columna];
@@ -1109,7 +1148,7 @@ function ordenarInventario(columna) {
     const headers = document.querySelectorAll('.inventory-table th[onclick]');
     headers.forEach(th => {
         const col = th.getAttribute('onclick').match(/'(.*?)'/)[1];
-        const titles = { 'id': 'ID', 'nombre': 'Nombre', 'precio': 'Precio', 'categorias': 'Categoría', 'stock': 'Stock', 'mostrar': 'Estado' };
+        const titles = { 'id': 'ID', 'nombre': 'Nombre', 'barcode': 'Código Barras', 'precio': 'Precio', 'categorias': 'Categoría', 'stock': 'Stock', 'mostrar': 'Estado' };
         if (titles[col]) {
             let icon = '↕';
             if (col === ordenColumna) icon = ordenDireccion === 'asc' ? '↑' : '↓';
@@ -1226,7 +1265,7 @@ async function migrarProductosANeon() {
         }
 
         // Añadimos campo stock por defecto
-        const nuevoProd = { ...p, stock: 100 };
+        const nuevoProd = { ...p, stock: 100, barcode: p.barcode || null }; // Asegurar que el barcode se envíe
         
         try {
             const res = await fetch('/api/productos', {
@@ -1457,6 +1496,11 @@ async function guardarNuevoProducto(e) {
     const stock = parseInt(document.getElementById('newStock').value);
     const categoria = document.getElementById('newCategoria').value;
     const descripcion = document.getElementById('newDescripcion').value;
+    const barcode = document.getElementById('newBarcode').value.trim(); // Nuevo campo barcode
+    if (barcode === "") {
+        alert("El código de barras no puede estar vacío.");
+        return;
+    }
     
     // Nuevos campos
     const checkboxes = document.querySelectorAll('.talla-option input:checked');
@@ -1501,7 +1545,8 @@ async function guardarNuevoProducto(e) {
         descripcion,
         mostrar: true,
         tallas: tallas.length > 0 ? tallas : ["S", "M", "L"],
-        mostrarColores: mostrarColores
+        mostrarColores: mostrarColores,
+        barcode: barcode // Incluir el código de barras
     };
 
     btn.innerText = "Guardando...";
@@ -1590,6 +1635,244 @@ async function guardarCambios() {
     }
 }
 
+// --- FUNCIONES DE ESCÁNER DE CÓDIGO DE BARRAS ---
+let codeReader = null;
+let selectedDeviceId = null;
+
+async function iniciarEscaneoBarcode() {
+    const videoElement = document.getElementById('scanner-video');
+    const scannedBarcodeSpan = document.getElementById('scanned-barcode');
+    const scannedProductInfo = document.getElementById('scanned-product-info');
+    const addStockBtn = document.getElementById('add-stock-btn');
+    const removeStockBtn = document.getElementById('remove-stock-btn');
+
+    scannedBarcodeSpan.innerText = 'Iniciando escáner...';
+    scannedProductInfo.innerText = '';
+    addStockBtn.style.display = 'none';
+    removeStockBtn.style.display = 'none';
+
+    if (!codeReader) {
+        codeReader = new ZXing.BrowserMultiFormatReader();
+    }
+
+    try {
+        const videoInputDevices = await codeReader.getVideoInputDevices();
+        if (videoInputDevices.length === 0) {
+            alert('No se encontraron cámaras en este dispositivo.');
+            scannedBarcodeSpan.innerText = 'Error: No hay cámaras.';
+            return;
+        }
+
+        // Seleccionar la cámara trasera si está disponible, de lo contrario la primera
+        selectedDeviceId = videoInputDevices.find(device => device.label.toLowerCase().includes('back'))?.deviceId || videoInputDevices[0].deviceId;
+
+        codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+            if (result) {
+                console.log('Código de barras escaneado:', result.text);
+                scannedBarcodeSpan.innerText = result.text;
+                // Detener el escáner automáticamente después de un escaneo exitoso
+                detenerEscaneoBarcode(); 
+                // Buscar producto y mostrar info
+                mostrarInfoProductoEscaneado(result.text);
+                addStockBtn.style.display = 'inline-block';
+                removeStockBtn.style.display = 'inline-block';
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error('Error al escanear:', err);
+                scannedBarcodeSpan.innerText = 'Error de escaneo.';
+            }
+        });
+        scannedBarcodeSpan.innerText = 'Escaneando...';
+    } catch (error) {
+        console.error('Error al iniciar el escáner:', error);
+        scannedBarcodeSpan.innerText = 'Error al iniciar la cámara.';
+        alert('Error al iniciar el escáner. Asegúrate de dar permisos a la cámara.');
+    }
+}
+
+function detenerEscaneoBarcode() {
+    if (codeReader) {
+        codeReader.reset();
+        const scannedBarcodeSpan = document.getElementById('scanned-barcode');
+        if (scannedBarcodeSpan.innerText === 'Escaneando...') {
+            scannedBarcodeSpan.innerText = 'Escáner detenido.';
+        }
+        document.getElementById('add-stock-btn').style.display = 'none';
+        document.getElementById('remove-stock-btn').style.display = 'none';
+        document.getElementById('scanned-product-info').innerText = '';
+    }
+}
+
+async function mostrarInfoProductoEscaneado(barcode) {
+    const productInfoSpan = document.getElementById('scanned-product-info');
+    const producto = productos.find(p => p.barcode === barcode);
+
+    if (producto) {
+        productInfoSpan.innerHTML = `Producto: <strong>${producto.nombre}</strong> (Stock actual: ${producto.stock})`;
+    } else {
+        productInfoSpan.innerHTML = `<span style="color: red;">Producto no encontrado con este código de barras.</span>`;
+        document.getElementById('add-stock-btn').style.display = 'none';
+        document.getElementById('remove-stock-btn').style.display = 'none';
+    }
+}
+
+async function actualizarStockPorBarcode(barcode, cantidad) {
+    if (!barcode || barcode === 'Ninguno' || barcode === 'Escáner detenido.' || barcode === 'Error de escaneo.') {
+        alert('Por favor, escanea un código de barras válido primero.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/productos', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ barcode, cantidad })
+        });
+        if (!res.ok) throw new Error('Error al actualizar stock.');
+        alert(`Stock actualizado para el producto con código ${barcode}. Cantidad: ${cantidad > 0 ? '+' : ''}${cantidad}`);
+        await cargarInventarioAdmin(); // Recargar la tabla para ver el cambio
+    } catch (error) {
+        console.error('Error actualizando stock por barcode:', error);
+        alert('Error al actualizar stock: ' + error.message);
+    }
+}
+
+// --- INVENTARIO GENERAL (INSUMOS) ---
+let insumos = [];
+
+async function cargarInventarioGeneral() {
+    const tbody = document.getElementById('inventario-general-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
+
+    try {
+        const res = await fetch('/api/inventario_general');
+        if (!res.ok) throw new Error('No se pudo cargar el inventario general.');
+        
+        insumos = await res.json();
+        renderizarTablaInsumos();
+    } catch (error) {
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan="7" style="color:red;">${error.message}</td></tr>`;
+    }
+}
+
+function renderizarTablaInsumos() {
+    const tbody = document.getElementById('inventario-general-body');
+    tbody.innerHTML = '';
+
+    if (insumos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">No hay insumos en el inventario.</td></tr>';
+        return;
+    }
+
+    insumos.forEach(insumo => {
+        const row = `
+            <tr data-insumo-id="${insumo.id}">
+                <td><strong>${insumo.nombre}</strong></td>
+                <td>${insumo.categoria || 'N/A'}</td>
+                <td>
+                    <input type="number" value="${insumo.stock}" min="0" 
+                        onchange="actualizarStockInsumo(${insumo.id}, this.value)" 
+                        style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;">
+                </td>
+                <td>$${(insumo.precio || 0).toLocaleString('es-CL')}</td>
+                <td>${(insumo.tallas || []).join(', ') || 'N/A'}</td>
+                <td>${insumo.descripcion || 'Sin descripción'}</td>
+                <td>
+                    <button onclick="eliminarInsumo(${insumo.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem;">🗑️</button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+async function guardarNuevoInsumo(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const textoOriginal = btn.innerText;
+
+    const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input:checked');
+
+    const nuevoInsumo = {
+        nombre: document.getElementById('insumoNombre').value,
+        precio: parseInt(document.getElementById('insumoPrecio').value) || 0,
+        stock: parseInt(document.getElementById('insumoStock').value) || 0,
+        categoria: document.getElementById('insumoCategoria').value,
+        tallas: Array.from(tallasCheckboxes).map(cb => cb.value),
+        descripcion: document.getElementById('insumoDescripcion').value
+    };
+
+    btn.innerText = "Guardando...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/inventario_general', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoInsumo)
+        });
+        if (!res.ok) throw new Error('Error del servidor al guardar.');
+
+        alert('✅ Insumo guardado correctamente.');
+        cerrarModalAgregarInsumo();
+        e.target.reset();
+        cargarInventarioGeneral(); // Recargar la tabla
+    } catch (error) {
+        console.error(error);
+        alert(`❌ Error: ${error.message}`);
+    } finally {
+        btn.innerText = textoOriginal;
+        btn.disabled = false;
+    }
+}
+
+async function actualizarStockInsumo(id, nuevoStock) {
+    const stockNum = parseInt(nuevoStock);
+    if (isNaN(stockNum) || stockNum < 0) return;
+
+    try {
+        await fetch('/api/inventario_general', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, stock: stockNum })
+        });
+        const insumoIndex = insumos.findIndex(i => i.id === id);
+        if (insumoIndex !== -1) {
+            insumos[insumoIndex].stock = stockNum;
+        }
+    } catch (error) {
+        console.error('Error al actualizar stock de insumo:', error);
+        alert('No se pudo actualizar el stock.');
+        cargarInventarioGeneral();
+    }
+}
+
+async function eliminarInsumo(id) {
+    if (!confirm('¿Estás seguro de eliminar este insumo permanentemente?')) return;
+
+    try {
+        await fetch('/api/inventario_general', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        cargarInventarioGeneral();
+    } catch (error) {
+        console.error('Error al eliminar insumo:', error);
+        alert('No se pudo eliminar el insumo.');
+    }
+}
+
+function abrirModalAgregarInsumo() {
+    abrirModal('modal-agregar-insumo');
+}
+
+function cerrarModalAgregarInsumo() {
+    cerrarModal('modal-agregar-insumo');
+}
+
 // EXPORTAR FUNCIONES AL ÁMBITO GLOBAL
 window.agregar = agregar;
 window.agregarDesdeDetalle = agregarDesdeDetalle;
@@ -1616,3 +1899,13 @@ window.guardarNuevoProducto = guardarNuevoProducto;
 window.ordenarInventario = ordenarInventario;
 window.cargarConfigPromo = cargarConfigPromo;
 window.guardarConfigPromo = guardarConfigPromo;
+window.iniciarEscaneoBarcode = iniciarEscaneoBarcode;
+window.detenerEscaneoBarcode = detenerEscaneoBarcode;
+window.actualizarStockPorBarcode = actualizarStockPorBarcode;
+window.mostrarVista = mostrarVista;
+window.cargarInventarioGeneral = cargarInventarioGeneral;
+window.guardarNuevoInsumo = guardarNuevoInsumo;
+window.actualizarStockInsumo = actualizarStockInsumo;
+window.eliminarInsumo = eliminarInsumo;
+window.abrirModalAgregarInsumo = abrirModalAgregarInsumo;
+window.cerrarModalAgregarInsumo = cerrarModalAgregarInsumo;

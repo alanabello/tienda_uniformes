@@ -30,9 +30,11 @@
 
         <!-- Pestañas simples -->
         <div style="margin-bottom: 20px;">
-            <button onclick="document.getElementById('vista-inventario').style.display='block'; document.getElementById('vista-ventas').style.display='none';" class="btn-primary">Inventario</button>
-            <button onclick="document.getElementById('vista-inventario').style.display='none'; document.getElementById('vista-ventas').style.display='block'; cargarVentasAdmin();" class="btn-secondary" style="background:#ddd; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">Ver Ventas</button>
-            <button onclick="document.getElementById('vista-inventario').style.display='none'; document.getElementById('vista-ventas').style.display='none'; document.getElementById('vista-promo').style.display='block'; cargarConfigPromo();" class="btn-secondary" style="background:#f39c12; color:white; border:none; padding:16px 32px; border-radius:4px; cursor:pointer; margin-left: 10px;">⚡ Oferta Flash</button>
+            <button onclick="mostrarVista('vista-inventario')" class="btn-primary">Inventario Tienda</button>
+            <button onclick="mostrarVista('vista-inventario-general'); cargarInventarioGeneral();" class="btn-secondary" style="background:#17a2b8; color:white; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">Inventario General</button>
+            <button onclick="mostrarVista('vista-ventas'); cargarVentasAdmin();" class="btn-secondary" style="background:#ddd; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">Ver Ventas</button>
+            <button onclick="mostrarVista('vista-promo'); cargarConfigPromo();" class="btn-secondary" style="background:#f39c12; color:white; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">⚡ Oferta Flash</button>
+            <button onclick="mostrarVista('vista-scanner');" class="btn-secondary" style="background:#6c757d; color:white; border:none; padding:16px 32px; border-radius:4px; cursor:pointer;">📱 Escáner</button>
         </div>
 
         <div id="vista-inventario">
@@ -43,6 +45,7 @@
                         <th onclick="ordenarInventario('id')" style="cursor:pointer">ID ↕</th>
                         <th>Imagen</th>
                         <th onclick="ordenarInventario('nombre')" style="cursor:pointer">Nombre ↕</th>
+                        <th onclick="ordenarInventario('barcode')" style="cursor:pointer">Código Barras ↕</th>
                         <th onclick="ordenarInventario('precio')" style="cursor:pointer">Precio ↕</th>
                         <th onclick="ordenarInventario('categorias')" style="cursor:pointer">Categoría ↕</th>
                         <th onclick="ordenarInventario('stock')" style="cursor:pointer">Stock ↕</th>
@@ -55,6 +58,32 @@
                 </tbody>
             </table>
         </div>
+        </div>
+
+        <!-- NUEVA VISTA: INVENTARIO GENERAL -->
+        <div id="vista-inventario-general" style="display:none;">
+            <div class="admin-header" style="margin-bottom: 20px;">
+                <h3>📋 Inventario General (Insumos/Materias Primas)</h3>
+                <button onclick="abrirModalAgregarInsumo()" class="btn-primary" style="background:#27ae60;">➕ Nuevo Insumo</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Tallas</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventario-general-body">
+                        <!-- Se llena con JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div id="vista-ventas" style="display:none;">
@@ -105,6 +134,30 @@
             </div>
         </div>
 
+        <!-- Nueva Vista: Escáner de Inventario -->
+        <div id="vista-scanner" style="display:none; max-width: 800px; margin: 0 auto; text-align: center;">
+            <h3>📱 Escáner de Inventario</h3>
+            <p style="margin-bottom: 20px; color: #666;">Usa la cámara de tu dispositivo para escanear códigos de barras y actualizar el stock.</p>
+            <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto; border: 2px solid #ccc; border-radius: 10px; overflow: hidden;">
+                <video id="scanner-video" style="width: 100%; display: block;"></video>
+                <div id="scanner-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                    <div style="width: 80%; height: 3px; background-color: red; animation: scan-line 2s infinite alternate; box-shadow: 0 0 10px red;"></div>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button onclick="iniciarEscaneoBarcode()" class="btn-primary" style="background:#28a745; margin-right: 10px;">▶️ Iniciar Escáner</button>
+                <button onclick="detenerEscaneoBarcode()" class="btn-primary" style="background:#dc3545;">⏹️ Detener Escáner</button>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 8px;">
+                <p style="font-weight: bold; margin-bottom: 5px;">Último Código Escaneado:</p>
+                <span id="scanned-barcode" style="font-size: 1.2rem; color: #007bff; font-weight: 600;">Ninguno</span>
+                <p id="scanned-product-info" style="margin-top: 10px; font-size: 0.9rem; color: #333;"></p>
+                <button id="add-stock-btn" onclick="actualizarStockPorBarcode(document.getElementById('scanned-barcode').innerText, 1)" class="btn-primary" style="background:#007bff; margin-top: 15px; display: none;">➕ Añadir 1 al Stock</button>
+                <button id="remove-stock-btn" onclick="actualizarStockPorBarcode(document.getElementById('scanned-barcode').innerText, -1)" class="btn-primary" style="background:#dc3545; margin-top: 15px; margin-left: 10px; display: none;">➖ Quitar 1 del Stock</button>
+            </div>
+        </div>
+
+
     </div>
 
     <!-- Modal Agregar Producto -->
@@ -126,6 +179,10 @@
                         <label>Stock Inicial</label>
                         <input type="number" id="newStock" value="100" required>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>Código de Barras (Opcional)</label>
+                    <input type="text" id="newBarcode" placeholder="Ej: 7801234567890">
                 </div>
                 <div class="form-group">
                     <label>Categoría</label>
@@ -166,12 +223,61 @@
         </div>
     </div>
 
+    <!-- MODAL PARA NUEVO INSUMO -->
+    <div id="modal-agregar-insumo" class="modal">
+        <div class="modal-content login-box" style="text-align: left; max-width: 500px; width: 100%; position: relative; margin: auto;">
+            <span onclick="cerrarModalAgregarInsumo()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">Nuevo Insumo</h2>
+            <form onsubmit="guardarNuevoInsumo(event)">
+                <div class="form-group">
+                    <label>Nombre del Insumo/Producto</label>
+                    <input type="text" id="insumoNombre" required placeholder="Ej: Tela Antifluido Azul">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Precio (Costo)</label>
+                        <input type="number" id="insumoPrecio" placeholder="5000">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Inicial</label>
+                        <input type="number" id="insumoStock" value="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <input type="text" id="insumoCategoria" placeholder="Ej: Telas, Hilos, Botones">
+                </div>
+                <div class="form-group">
+                    <label>Tallas Aplicables (si corresponde)</label>
+                    <div class="tallas-grid">
+                        <label class="talla-option"><input type="checkbox" value="XXS"><span class="talla-box">XXS</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XS"><span class="talla-box">XS</span></label>
+                        <label class="talla-option"><input type="checkbox" value="S"><span class="talla-box">S</span></label>
+                        <label class="talla-option"><input type="checkbox" value="M"><span class="talla-box">M</span></label>
+                        <label class="talla-option"><input type="checkbox" value="L"><span class="talla-box">L</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XL"><span class="talla-box">XL</span></label>
+                        <label class="talla-option"><input type="checkbox" value="XXL"><span class="talla-box">XXL</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Detalles/Descripción</label>
+                    <textarea id="insumoDescripcion" rows="2" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" placeholder="Descripción breve..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Insumo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Incluir la librería ZXing-JS para el escáner -->
+    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
     <script src="scripts.js"></script>
     <script>
         // Verificar seguridad al cargar
         window.onload = function() {
             if(window.verificarAutenticacion) verificarAutenticacion();
             if(window.cargarInventarioAdmin) cargarInventarioAdmin();
+            // Asegurarse de detener el escáner si se cierra la página o se navega
+            window.addEventListener('beforeunload', detenerEscaneoBarcode);
         };
     </script>
 </body>
