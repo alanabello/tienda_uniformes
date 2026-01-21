@@ -292,6 +292,22 @@
         </div>
     </div>
 
+    <!-- Modal Editar Tallas (Gestión de Stock por Talla) -->
+    <div id="modal-editar-tallas" class="modal">
+        <div class="modal-content login-box" style="text-align: left; max-width: 400px; width: 100%; position: relative; margin: auto;">
+            <span onclick="cerrarModalTallas()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 20px;">Gestionar Tallas Disponibles</h3>
+            <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 15px;">Desmarca las tallas que se han agotado.</p>
+            <form onsubmit="guardarTallasEditadas(event)">
+                <input type="hidden" id="editTallaId">
+                <div class="tallas-grid" id="editTallasContainer">
+                    <!-- Se llena con JS -->
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 20px;">Guardar Disponibilidad</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL PARA ESCÁNER GENÉRICO -->
     <div id="modal-generic-scanner" class="modal">
         <div class="modal-content" style="max-width: 500px; width: 100%; padding: 20px; background: white; border-radius: 16px;">

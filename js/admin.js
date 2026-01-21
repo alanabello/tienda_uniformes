@@ -96,6 +96,7 @@ function renderizarTablaInventario() {
                 </td>
                 <td>
                     <a href="detalle.html?id=${p.id}" target="_blank" title="Ver en tienda" style="text-decoration:none; font-size: 1.2rem;">🔗</a>
+                    <button onclick="abrirModalTallas(${p.id})" title="Gestionar Tallas" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 5px;">📏</button>
                     <button onclick="eliminarProducto(${p.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 8px;">🗑️</button>
                 </td>
             </tr>`;
@@ -584,6 +585,52 @@ function detenerEscaneoGenerico() {
     targetInputIdForScanner = null;
 }
 
+// --- Gestión de Tallas (Disponibilidad) ---
+function abrirModalTallas(id) {
+    const producto = productos.find(p => p.id === id);
+    if (!producto) return;
+
+    document.getElementById('editTallaId').value = id;
+    const container = document.getElementById('editTallasContainer');
+    container.innerHTML = '';
+
+    const todasLasTallas = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+    // Si el producto no tiene tallas definidas (null), asumimos que todas están disponibles por defecto
+    const tallasProducto = producto.tallas || todasLasTallas;
+
+    todasLasTallas.forEach(talla => {
+        const isChecked = tallasProducto.includes(talla) ? 'checked' : '';
+        const html = `
+            <label class="talla-option">
+                <input type="checkbox" value="${talla}" ${isChecked}>
+                <span class="talla-box">${talla}</span>
+            </label>
+        `;
+        container.innerHTML += html;
+    });
+
+    window.abrirModal('modal-editar-tallas');
+}
+
+function cerrarModalTallas() {
+    window.cerrarModal('modal-editar-tallas');
+}
+
+async function guardarTallasEditadas(e) {
+    e.preventDefault();
+    const id = parseInt(document.getElementById('editTallaId').value);
+    const checkboxes = document.querySelectorAll('#editTallasContainer input:checked');
+    const nuevasTallas = Array.from(checkboxes).map(cb => cb.value);
+
+    try {
+        await fetch('/api/productos', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ id: id, tallas: nuevasTallas }) });
+        const p = productos.find(p => p.id === id);
+        if(p) p.tallas = nuevasTallas; // Actualizar localmente
+        window.mostrarNotificacion("✅ Tallas actualizadas");
+        cerrarModalTallas();
+    } catch (error) { console.error(error); window.mostrarNotificacion("❌ Error al actualizar"); }
+}
+
 // Exponer funciones globales
 window.ordenarInventario = ordenarInventario;
 window.cargarInventarioAdmin = cargarInventarioAdmin;
@@ -611,3 +658,6 @@ window.cerrarModalAgregarInsumo = cerrarModalAgregarInsumo;
 window.buscarInsumoPorBarcode = buscarInsumoPorBarcode;
 window.iniciarEscaneoParaInput = iniciarEscaneoParaInput;
 window.detenerEscaneoGenerico = detenerEscaneoGenerico;
+window.abrirModalTallas = abrirModalTallas;
+window.cerrarModalTallas = cerrarModalTallas;
+window.guardarTallasEditadas = guardarTallasEditadas;

@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       res.json({ success: true });
     } else if (req.method === 'PUT') {
       // Actualizar producto (Stock o Visibilidad)
-      const { id, stock, mostrar } = req.body;
+      const { id, stock, mostrar, tallas } = req.body;
       
       if (stock !== undefined) {
         await pool.query('UPDATE productos SET stock = $1 WHERE id = $2', [stock, id]);
@@ -30,6 +30,10 @@ export default async function handler(req, res) {
       
       if (mostrar !== undefined) {
         await pool.query('UPDATE productos SET mostrar = $1 WHERE id = $2', [mostrar, id]);
+      }
+
+      if (tallas !== undefined) {
+        await pool.query('UPDATE productos SET tallas = $1 WHERE id = $2', [tallas, id]);
       }
       
       res.json({ success: true });
