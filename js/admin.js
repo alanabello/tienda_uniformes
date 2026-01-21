@@ -120,7 +120,13 @@ async function migrarProductosANeon() {
         if (existe) { omitidos++; continue; }
         const nuevoProd = { ...p, stock: 100, barcode: p.barcode || null };
         try {
-            const res = await fetch('/api/productos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoProd) });
+            const res = await fetch('/api/productos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader() // Añadir cabecera de autorización
+                },
+                body: JSON.stringify(nuevoProd) });
             if (!res.ok) throw new Error(`Error ${res.status}`);
             contador++;
         } catch (e) { errores++; ultimoError = e.message; }
@@ -133,7 +139,12 @@ async function migrarProductosANeon() {
 
 async function cambiarVisibilidad(id, nuevoEstado) {
     try {
-        await fetch('/api/productos', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, mostrar: nuevoEstado }) });
+        await fetch('/api/productos', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify({ id: id, mostrar: nuevoEstado }) });
         const productoIndex = productos.findIndex(p => p.id === id);
         if (productoIndex !== -1) productos[productoIndex].mostrar = nuevoEstado;
         const rowElement = document.querySelector(`tr[data-product-id="${id}"]`);
@@ -149,7 +160,12 @@ async function cambiarStock(id, nuevoStock) {
     const stockNum = parseInt(nuevoStock);
     if (isNaN(stockNum) || stockNum < 0) { alert("Por favor ingresa un número válido."); return; }
     try {
-        await fetch('/api/productos', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, stock: stockNum }) });
+        await fetch('/api/productos', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify({ id: id, stock: stockNum }) });
         const productoIndex = productos.findIndex(p => p.id === id);
         if (productoIndex !== -1) productos[productoIndex].stock = stockNum;
     } catch (error) { console.error(error); alert("Error al actualizar stock"); }
@@ -158,7 +174,12 @@ async function cambiarStock(id, nuevoStock) {
 async function eliminarProducto(id) {
     if(!confirm("¿Estás seguro de eliminar este producto permanentemente?")) return;
     try {
-        const res = await fetch('/api/productos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        const res = await fetch('/api/productos', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify({ id }) });
         if (!res.ok) throw new Error("Error al eliminar");
         cargarInventarioAdmin();
     } catch (error) { console.error(error); alert("Error al eliminar producto"); }
@@ -194,7 +215,12 @@ async function guardarNuevoProducto(e) {
     btn.innerText = "Guardando...";
 
     try {
-        const res = await fetch('/api/productos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoProd) });
+        const res = await fetch('/api/productos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify(nuevoProd) });
         if (!res.ok) throw new Error("Error al guardar");
         alert("✅ Producto agregado correctamente");
         cerrarModalAgregar();
@@ -225,8 +251,11 @@ async function guardarCambios() {
 async function cargarVentasAdmin() {
     const container = document.getElementById('ventas-body');
     if(!container) return;
-    container.innerHTML = 'Cargando ventas...';
-    const res = await fetch('/api/ventas');
+    container.innerHTML = '<tr><td colspan="5">Cargando ventas...</td></tr>';
+    const res = await fetch('/api/ventas', {
+        headers: { ...getAuthHeader() } // Proteger lectura de ventas
+    });
+    if (!res.ok) { container.innerHTML = `<tr><td colspan="5" style="color:red">Error al cargar ventas: Acceso denegado.</td></tr>`; return; }
     const ventas = await res.json();
     container.innerHTML = '';
     ventas.forEach(venta => {
@@ -240,7 +269,7 @@ async function cargarVentasAdmin() {
 // --- Promo ---
 async function cargarConfigPromo() {
     try {
-        const res = await fetch('/api/promo');
+        const res = await fetch('/api/promo'); // GET es público para que la tienda lo vea
         if (res.ok) {
             const config = await res.json();
             document.getElementById('promoActivo').checked = config.activo;
@@ -259,7 +288,12 @@ async function guardarConfigPromo(e) {
     btn.innerText = "Guardando..."; btn.disabled = true;
     const config = { activo: document.getElementById('promoActivo').checked, titulo: document.getElementById('promoTitulo').value, subtitulo: document.getElementById('promoSubtitulo').value, contenido: document.getElementById('promoContenido').value, tag: document.getElementById('promoTag').value };
     try {
-        await fetch('/api/promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+        await fetch('/api/promo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify(config) });
         alert("✅ Configuración de oferta actualizada");
     } catch (error) { alert("❌ Error al guardar"); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
 }
@@ -339,7 +373,12 @@ async function mostrarInfoProductoEscaneado(barcode) {
 async function actualizarStockPorBarcode(barcode, cantidad) {
     if (!barcode || barcode === 'Ninguno' || barcode.includes('Error') || barcode.includes('detenido')) { alert('Por favor, escanea un código de barras válido primero.'); return; }
     try {
-        const res = await fetch('/api/productos', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ barcode, cantidad }) });
+        const res = await fetch('/api/productos', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify({ barcode, cantidad }) });
         if (!res.ok) throw new Error('Error al actualizar stock.');
         alert(`Stock actualizado. Cantidad: ${cantidad > 0 ? '+' : ''}${cantidad}`);
         await cargarInventarioAdmin();
@@ -384,8 +423,13 @@ async function guardarNuevoInsumo(e) {
     if (insumoExistenteEncontrado) {
         const cantidad = parseInt(document.getElementById('insumoStock').value);
         if (isNaN(cantidad) || cantidad <= 0) { alert("Por favor, ingresa una cantidad válida."); btn.innerText = textoOriginal; btn.disabled = false; return; }
-        try {
-            const res = await fetch('/api/inventario_general', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ barcode: insumoExistenteEncontrado.barcode, cantidad: cantidad }) });
+        try { // PATCH
+            const res = await fetch('/api/inventario_general', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader() // Añadir cabecera de autorización
+                }, body: JSON.stringify({ barcode: insumoExistenteEncontrado.barcode, cantidad: cantidad }) });
             if (!res.ok) throw new Error('Error del servidor.');
             const result = await res.json();
             alert(`✅ Stock actualizado. Nuevo stock: ${result.insumo.stock}`);
@@ -395,8 +439,13 @@ async function guardarNuevoInsumo(e) {
     } else {
         const tallasCheckboxes = document.querySelectorAll('#modal-agregar-insumo .talla-option input:checked');
         const nuevoInsumo = { nombre: document.getElementById('insumoNombre').value, precio: parseInt(document.getElementById('insumoPrecio').value) || 0, stock: parseInt(document.getElementById('insumoStock').value) || 0, categoria: document.getElementById('insumoCategoria').value, tallas: Array.from(tallasCheckboxes).map(cb => cb.value), descripcion: document.getElementById('insumoDescripcion').value, barcode: document.getElementById('insumoBarcode').value };
-        try {
-            const res = await fetch('/api/inventario_general', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoInsumo) });
+        try { // POST
+            const res = await fetch('/api/inventario_general', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader() // Añadir cabecera de autorización
+                }, body: JSON.stringify(nuevoInsumo) });
             if (!res.ok) throw new Error('Error al guardar.');
             alert('✅ Insumo guardado correctamente.');
             cerrarModalAgregarInsumo();
@@ -410,7 +459,12 @@ async function actualizarStockInsumo(id, nuevoStock) {
     const stockNum = parseInt(nuevoStock);
     if (isNaN(stockNum) || stockNum < 0) return;
     try {
-        await fetch('/api/inventario_general', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, stock: stockNum }) });
+        await fetch('/api/inventario_general', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader() // Añadir cabecera de autorización
+            }, body: JSON.stringify({ id, stock: stockNum }) });
         const insumoIndex = insumos.findIndex(i => i.id === id);
         if (insumoIndex !== -1) insumos[insumoIndex].stock = stockNum;
     } catch (error) { console.error(error); alert('No se pudo actualizar el stock.'); cargarInventarioGeneral(); }
@@ -418,7 +472,12 @@ async function actualizarStockInsumo(id, nuevoStock) {
 
 async function eliminarInsumo(id) {
     if (!confirm('¿Estás seguro de eliminar este insumo permanentemente?')) return;
-    try { await fetch('/api/inventario_general', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); cargarInventarioGeneral(); }
+    try { await fetch('/api/inventario_general', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader() // Añadir cabecera de autorización
+        }, body: JSON.stringify({ id }) }); cargarInventarioGeneral(); }
     catch (error) { console.error(error); alert('No se pudo eliminar el insumo.'); }
 }
 

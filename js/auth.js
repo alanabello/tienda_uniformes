@@ -20,7 +20,8 @@ async function iniciarSesion(e) {
         const data = await res.json();
 
         if (res.ok && data.success) {
-            sessionStorage.setItem('adminAuth', 'true');
+            // Guardar el token JWT en localStorage para persistencia entre sesiones
+            localStorage.setItem('authToken', data.token);
             window.location.href = 'admin.html';
         } else {
             errorMsg.innerText = data.error || 'Error de autenticación';
@@ -34,17 +35,27 @@ async function iniciarSesion(e) {
 }
 
 function verificarAutenticacion() {
-    if (sessionStorage.getItem('adminAuth') !== 'true') {
+    // La verificación real de validez del token se hace en el backend en cada petición.
+    // Esto es solo una redirección rápida en el cliente si el token no existe.
+    if (!localStorage.getItem('authToken')) {
         window.location.href = 'login.html';
     }
 }
 
 function cerrarSesion() {
-    sessionStorage.removeItem('adminAuth');
+    localStorage.removeItem('authToken');
     window.location.href = 'login.html';
+}
+
+// Nueva función helper para obtener las cabeceras de autenticación
+function getAuthHeader() {
+    const token = localStorage.getItem('authToken');
+    if (!token) return {};
+    return { 'Authorization': `Bearer ${token}` };
 }
 
 // Exponer funciones globales
 window.iniciarSesion = iniciarSesion;
 window.verificarAutenticacion = verificarAutenticacion;
 window.cerrarSesion = cerrarSesion;
+window.getAuthHeader = getAuthHeader; // Exponer para que otros scripts la usen

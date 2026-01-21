@@ -1,7 +1,28 @@
 import { Pool } from '@neondatabase/serverless';
+import jwt from 'jsonwebtoken';
 
 // Instanciar el pool fuera del handler para reutilizar la conexión en entornos serverless
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// Middleware/helper para verificar el token en cada petición protegida
+const verifyToken = (req) => {
+    return new Promise((resolve, reject) => {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; // Formato "Bearer TOKEN"
+
+        if (token == null) {
+            return reject({ status: 401, message: 'Acceso no autorizado. Token no proporcionado.' });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) {
+                return reject({ status: 403, message: 'Token inválido o expirado.' });
+            }
+            req.user = user; // Opcional: adjuntar info del usuario al request
+            resolve();
+        });
+    });
+};
 
 export default async function handler(req, res) {
   try {
@@ -24,6 +45,15 @@ export default async function handler(req, res) {
     //     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
     //   );
     // `);
+
+    // Proteger rutas que modifican datos (POST, PUT, PATCH, DELETE)
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+        try {
+            await verifyToken(req);
+        } catch (authError) {
+            return res.status(authError.status).json({ error: authError.message });
+        }
+    }
 
     if (req.method === 'GET') {
       const { barcode } = req.query;
