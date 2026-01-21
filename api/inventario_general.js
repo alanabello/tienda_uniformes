@@ -1,26 +1,29 @@
 import { Pool } from '@neondatabase/serverless';
 
+// Instanciar el pool fuera del handler para reutilizar la conexión en entornos serverless
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
 export default async function handler(req, res) {
   try {
     if (!process.env.DATABASE_URL) {
       throw new Error("DATABASE_URL no está configurada.");
     }
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-    // Crear tabla si no existe. Se ejecuta una sola vez.
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS inventario_general (
-        id SERIAL PRIMARY KEY,
-        nombre TEXT NOT NULL,
-        precio INTEGER,
-        stock INTEGER DEFAULT 0,
-        categoria TEXT,
-        tallas TEXT[],
-        descripcion TEXT,
-        barcode TEXT UNIQUE,
-        fecha_creacion TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+    // OPTIMIZACIÓN: La creación de tablas no debería ejecutarse en cada petición.
+    // Idealmente, esto se corre una sola vez manualmente o mediante migraciones.
+    // await pool.query(`
+    //   CREATE TABLE IF NOT EXISTS inventario_general (
+    //     id SERIAL PRIMARY KEY,
+    //     nombre TEXT NOT NULL,
+    //     precio INTEGER,
+    //     stock INTEGER DEFAULT 0,
+    //     categoria TEXT,
+    //     tallas TEXT[],
+    //     descripcion TEXT,
+    //     barcode TEXT UNIQUE,
+    //     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
+    //   );
+    // `);
 
     if (req.method === 'GET') {
       const { barcode } = req.query;
