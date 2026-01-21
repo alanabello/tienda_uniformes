@@ -294,11 +294,14 @@ async function guardarConfigPromo(e) {
                 'Content-Type': 'application/json',
                 ...getAuthHeader() // Añadir cabecera de autorización
             }, body: JSON.stringify(config) });
-        alert("✅ Configuración de oferta actualizada");
-    } catch (error) { alert("❌ Error al guardar"); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
+        mostrarNotificacion("✅ Configuración de oferta actualizada");
+    } catch (error) { mostrarNotificacion("❌ Error al guardar"); } finally { btn.innerText = txtOriginal; btn.disabled = false; }
 }
 
 async function abrirPromo() {
+    // Verificar si ya se mostró en esta sesión
+    if (sessionStorage.getItem('promoVisto') === 'true') return;
+
     try {
         const res = await fetch(`/api/promo?_t=${Date.now()}`);
         if (res.ok) {
@@ -314,6 +317,9 @@ async function abrirPromo() {
             if(contenido) contenido.innerText = config.contenido;
             if(tag) tag.innerText = config.tag;
             window.abrirModal("modal-promo");
+            
+            // Marcar como visto para no volver a mostrar en esta sesión
+            sessionStorage.setItem('promoVisto', 'true');
         }
     } catch (e) { console.error("Error cargando promo:", e); }
 }
