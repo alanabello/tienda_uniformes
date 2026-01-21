@@ -185,9 +185,9 @@ const productosBase = [
             "imagenes/topdiseh.jpeg",
             "imagenes/topdiseh2.jpeg",
             "imagenes/topdiseh3.jpeg",
-            "imagenes/topdiseh4.jpeg", 
-            barcode: "7801234567902",
+            "imagenes/topdiseh4.jpeg"
         ],
+        barcode: "7801234567902",
         descripcion: "Top clínico elasticado, con diseños exclusivos, antifluido."
     },
     {
@@ -274,10 +274,9 @@ const productosBase = [
             "imagenes/pantalonmujernegro.jpeg",
             "imagenes/pantallonmujernegro.jpeg",
             "imagenes/pantalonmujernegro1.jpeg",
-            "imagenes/patalonmujernegro.jpeg", 
-            barcode: "7801234567908",
-        
+            "imagenes/patalonmujernegro.jpeg"
         ],
+        barcode: "7801234567908",
         descripcion: "Pantalón antifluido para mujer, cómodos y de mucha durabilidad."
     },
     {
@@ -291,10 +290,10 @@ const productosBase = [
             "imagenes/jogerazulrey2.jpeg",
             "imagenes/jogerazulrey3.jpeg",
             "imagenes/jogerazulrey4.jpeg",
-            "imagenes/jogerazulrey5.jpeg", 
-            barcode: "7801234567909",
-            "imagenes/jogerazulrey6.jpeg",
+            "imagenes/jogerazulrey5.jpeg",
+            "imagenes/jogerazulrey6.jpeg"
         ],
+        barcode: "7801234567909",
         descripcion:  "Pantalón jogger antifluido diseñado para profesionales que buscan comodidad, protección y un aspecto profesional. Confeccionado con tela de alta calidad que repele líquidos y evita la absorción de fluidos, ideal para largas jornadas laborales. Su diseño moderno permite libertad de movimiento, fácil limpieza y alta durabilidad."
     },
     {
@@ -307,11 +306,9 @@ const productosBase = [
             "imagenes/paAzuRe.jpeg",
             "imagenes/paAzuRe2.jpeg",
             "imagenes/paAzuRe3.jpeg",
-            "imagenes/paAzuRe4.jpeg", 
-            barcode: "7801234567910",
-
-        
+            "imagenes/paAzuRe4.jpeg"
         ],
+        barcode: "7801234567910",
         descripcion: "Pantalón antifluido para mujer, cómodos y de mucha durabilidad." 
 
 
