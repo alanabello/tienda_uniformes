@@ -305,14 +305,5 @@
     <!-- Incluir la librería ZXing-JS para el escáner -->
     <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
     <script src="scripts.js"></script>
-    <script>
-        // Verificar seguridad al cargar
-        window.onload = function() {
-            if(window.verificarAutenticacion) verificarAutenticacion();
-            if(window.cargarInventarioAdmin) cargarInventarioAdmin();
-            // Asegurarse de detener el escáner si se cierra la página o se navega
-            window.addEventListener('beforeunload', detenerEscaneoBarcode);
-        };
-    </script>
 </body>
 </html>

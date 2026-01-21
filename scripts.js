@@ -978,71 +978,74 @@ function cerrarPromo() {
     cerrarModal("modal-promo");
 }
 
-// Inicializar
+// --- INICIALIZACIÓN DE LA APLICACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {
+    const path = window.location.pathname;
+
+    // Lógica para todas las páginas
     actualizarContador();
-    renderizarProductos();
-    cargarProductosDesdeDB(); // Cargar DB al iniciar
-    cargarDetalleProducto(); // Cargar detalle si estamos en esa página
-    renderizarPaginaCarrito();
 
-    // Mostrar promo al cargar (1 segundo de retraso)
-    // Solo mostrar la promo si no estamos en el admin
-    if (!window.location.pathname.includes('admin.html')) {
+    // Lógica específica para el sitio público (tienda)
+    if (path.includes('index.html') || path.endsWith('/') || path.includes('detalle.html') || path.includes('carrito.html')) {
+        renderizarProductos();
+        cargarProductosDesdeDB();
+        cargarDetalleProducto();
+        renderizarPaginaCarrito();
+
+        // Mostrar promo
         setTimeout(abrirPromo, 1000);
+
+        // Lógica del Carrusel Hero
+        const track = document.getElementById('heroTrack');
+        const bubblesContainer = document.getElementById('heroBubbles');
+        if (track && bubblesContainer) {
+            const slides = track.querySelectorAll('.hero-slide');
+            slides.forEach((_, index) => {
+                const bubble = document.createElement('div');
+                bubble.className = `bubble ${index === 0 ? 'active' : ''}`;
+                bubble.onclick = () => {
+                    track.scrollTo({ left: track.clientWidth * index, behavior: 'smooth' });
+                };
+                bubblesContainer.appendChild(bubble);
+            });
+            track.addEventListener('scroll', () => {
+                const index = Math.round(track.scrollLeft / track.clientWidth);
+                const bubbles = bubblesContainer.querySelectorAll('.bubble');
+                bubbles.forEach(b => b.classList.remove('active'));
+                if (bubbles[index]) bubbles[index].classList.add('active');
+            });
+        }
+
+        // Lógica de botones de pago
+        const radioPagos = document.querySelectorAll('input[name="payment"]');
+        const btnCheckout = document.querySelector('.btn-checkout');
+        if (radioPagos.length > 0 && btnCheckout) {
+            radioPagos.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'Webpay') {
+                        btnCheckout.innerHTML = 'Pagar con Webpay 💳';
+                        btnCheckout.style.background = '#1a1a1a';
+                    } else {
+                        btnCheckout.innerHTML = 'Enviar pedido por WhatsApp 📲';
+                        btnCheckout.style.background = '#25D366';
+                    }
+                });
+            });
+            const checked = document.querySelector('input[name="payment"]:checked');
+            if (checked) checked.dispatchEvent(new Event('change'));
+        }
     }
 
-
-    // Cambiar texto del botón según método de pago
-    const radioPagos = document.querySelectorAll('input[name="payment"]');
-    const btnCheckout = document.querySelector('.btn-checkout');
-
-    if (radioPagos.length > 0 && btnCheckout) {
-        radioPagos.forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (radio.value === 'Webpay') {
-                    btnCheckout.innerHTML = 'Pagar con Webpay 💳';
-                    btnCheckout.style.background = '#1a1a1a'; // Color oscuro elegante
-                } else {
-                    btnCheckout.innerHTML = 'Enviar pedido por WhatsApp 📲';
-                    btnCheckout.style.background = '#25D366'; // Verde WhatsApp
-                }
-            });
+    // Lógica específica para la página de admin
+    if (path.includes('admin.html')) {
+        verificarAutenticacion();
+        cargarInventarioAdmin();
+        mostrarVista('vista-inventario'); // Establecer la vista inicial
+        window.addEventListener('beforeunload', () => {
+            detenerEscaneoBarcode();
+            detenerEscaneoGenerico();
         });
-        // Ejecutar una vez al inicio para asegurar el estado correcto
-        const checked = document.querySelector('input[name="payment"]:checked');
-        if(checked) checked.dispatchEvent(new Event('change'));
     }
-});
-
-// Lógica del Carrusel Hero
-document.addEventListener('DOMContentLoaded', () => {
-    const track = document.getElementById('heroTrack');
-    const bubblesContainer = document.getElementById('heroBubbles');
-    if (!track || !bubblesContainer) return;
-
-    const slides = track.querySelectorAll('.hero-slide');
-    
-    // Crear burbujas
-    slides.forEach((_, index) => {
-        const bubble = document.createElement('div');
-        bubble.className = `bubble ${index === 0 ? 'active' : ''}`;
-        bubble.onclick = () => {
-            track.scrollTo({
-                left: track.clientWidth * index,
-                behavior: 'smooth'
-            });
-        };
-        bubblesContainer.appendChild(bubble);
-    });
-
-    // Actualizar burbujas al hacer scroll
-    track.addEventListener('scroll', () => {
-        const index = Math.round(track.scrollLeft / track.clientWidth);
-        const bubbles = bubblesContainer.querySelectorAll('.bubble');
-        bubbles.forEach(b => b.classList.remove('active'));
-        if(bubbles[index]) bubbles[index].classList.add('active');
-    });
 });
 
 function moverCarrusel(direction) {
@@ -1217,6 +1220,7 @@ function renderizarTablaInventario() {
                 <td>#${p.id}</td>
                 <td><img src="${img}" width="50" style="border-radius:5px;"></td>
                 <td><strong>${p.nombre}</strong></td>
+                <td>${p.barcode || 'N/A'}</td>
                 <td>$${p.precio.toLocaleString('es-CL')}</td>
                 <td>${p.categorias.join(', ')}</td>
                 <td>
