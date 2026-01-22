@@ -123,7 +123,8 @@ function renderizarTablaInventario() {
 
 async function cambiarVisibilidad(id, nuevoEstado) {
     try {
-        await fetch('/api/productos', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -144,7 +145,8 @@ async function cambiarStock(id, nuevoStock) {
     const stockNum = parseInt(nuevoStock);
     if (isNaN(stockNum) || stockNum < 0) { alert("Por favor ingresa un número válido."); return; }
     try {
-        await fetch('/api/productos', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,7 +160,8 @@ async function cambiarStock(id, nuevoStock) {
 async function eliminarProducto(id) {
     if(!confirm("¿Estás seguro de eliminar este producto permanentemente?")) return;
     try {
-        const res = await fetch('/api/productos', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        const res = await fetch(url, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -199,7 +202,8 @@ async function guardarNuevoProducto(e) {
     btn.innerText = "Guardando...";
 
     try {
-        const res = await fetch('/api/productos', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        const res = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -236,7 +240,8 @@ async function cargarVentasAdmin() {
     const container = document.getElementById('ventas-body');
     if(!container) return;
     container.innerHTML = '<tr><td colspan="5">Cargando ventas...</td></tr>';
-    const res = await fetch('/api/ventas', {
+    const url = window.getApiUrl ? window.getApiUrl('/api/ventas') : '/api/ventas';
+    const res = await fetch(url, {
         headers: { ...getAuthHeader() } // Proteger lectura de ventas
     });
     if (!res.ok) { container.innerHTML = `<tr><td colspan="5" style="color:red">Error al cargar ventas: Acceso denegado.</td></tr>`; return; }
@@ -253,7 +258,8 @@ async function cargarVentasAdmin() {
 // --- Promo ---
 async function cargarConfigPromo() {
     try {
-        const res = await fetch('/api/promo'); // GET es público para que la tienda lo vea
+        const url = window.getApiUrl ? window.getApiUrl('/api/promo') : '/api/promo';
+        const res = await fetch(url); // GET es público para que la tienda lo vea
         if (res.ok) {
             const config = await res.json();
             document.getElementById('promoActivo').checked = config.activo;
@@ -280,7 +286,8 @@ async function guardarConfigPromo(e) {
     btn.innerText = "Guardando..."; btn.disabled = true;
     const config = { activo: document.getElementById('promoActivo').checked, titulo: document.getElementById('promoTitulo').value, subtitulo: document.getElementById('promoSubtitulo').value, contenido: document.getElementById('promoContenido').value, tag: document.getElementById('promoTag').value, expiracion: document.getElementById('promoExpiracion').value };
     try {
-        const res = await fetch('/api/promo', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/promo') : '/api/promo';
+        const res = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -296,7 +303,8 @@ async function abrirPromo() {
     if (sessionStorage.getItem('promoVisto') === 'true') return;
 
     try {
-        const res = await fetch(`/api/promo?_t=${Date.now()}`);
+        const url = window.getApiUrl ? window.getApiUrl(`/api/promo?_t=${Date.now()}`) : `/api/promo?_t=${Date.now()}`;
+        const res = await fetch(url);
         if (res.ok) {
             const config = await res.json();
             const estaActivo = config.activo === true || config.activo === "true" || config.activo === 1;
@@ -344,13 +352,20 @@ function playBeep() {
 }
 
 async function iniciarEscaneoBarcode() {
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // Permitir ejecución si es localhost, https o ambiente de App (Capacitor)
+    const isApp = window.location.protocol === 'file:' || window.location.protocol === 'capacitor:' || window.Capacitor;
+    
+    if (!isApp && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares. Si estás probando con una IP local, es posible que no cargue.");
     }
 
     // Verificación de seguridad del navegador
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("🚫 ERROR DE SEGURIDAD: Tu celular bloqueó la cámara.\n\nCausa: Estás entrando por una IP local (HTTP).\nSolución: Sube la página a Vercel (HTTPS) y prueba desde ahí.");
+        if (isApp) {
+            alert("🚫 Error de Permisos: La App no puede acceder a la cámara.\n\nVe a Ajustes del celular > Aplicaciones > StyleProUniformes > Permisos y activa la Cámara.");
+        } else {
+            alert("🚫 ERROR DE SEGURIDAD: Tu celular bloqueó la cámara.\n\nCausa: Estás entrando por una IP local (HTTP).\nSolución: Sube la página a Vercel (HTTPS) y prueba desde ahí.");
+        }
         return;
     }
 
@@ -371,7 +386,15 @@ async function iniciarEscaneoBarcode() {
     }
     if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
     try {
-        const constraints = { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
+        // CONFIGURACIÓN CORREGIDA: Rango flexible para mayor compatibilidad Android
+        const constraints = { 
+            video: { 
+                facingMode: "environment",
+                focusMode: "continuous", // Intenta forzar el autoenfoque
+                width: { min: 640, ideal: 1280, max: 1920 }, 
+                height: { min: 480, ideal: 720, max: 1080 } 
+            } 
+        };
         await codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
             if (result) {
                 playBeep();
@@ -411,7 +434,8 @@ async function mostrarInfoProductoEscaneado(barcode) {
 async function actualizarStockPorBarcode(barcode, cantidad) {
     if (!barcode || barcode === 'Ninguno' || barcode.includes('Error') || barcode.includes('detenido')) { alert('Por favor, escanea un código de barras válido primero.'); return; }
     try {
-        const res = await fetch('/api/productos', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        const res = await fetch(url, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -429,7 +453,8 @@ async function cargarInventarioGeneral() {
     if (!tbody) return;
     tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
     try {
-        const res = await fetch('/api/inventario_general');
+        const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
+        const res = await fetch(url);
         if (!res.ok) throw new Error('No se pudo cargar el inventario general.');
         insumos = await res.json();
         renderizarTablaInsumos();
@@ -476,7 +501,8 @@ async function guardarNuevoInsumo(e) {
         const cantidad = parseInt(document.getElementById('insumoStock').value);
         if (isNaN(cantidad) || cantidad <= 0) { alert("Por favor, ingresa una cantidad válida."); btn.innerText = textoOriginal; btn.disabled = false; return; }
         try { // PATCH
-            const res = await fetch('/api/inventario_general', {
+            const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
+            const res = await fetch(url, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -519,7 +545,8 @@ async function guardarNuevoInsumo(e) {
         };
 
         try { // POST
-            const res = await fetch('/api/inventario_general', {
+            const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -541,7 +568,8 @@ async function actualizarStockInsumo(id, nuevoStock) {
     const stockNum = parseInt(nuevoStock);
     if (isNaN(stockNum) || stockNum < 0) return;
     try {
-        await fetch('/api/inventario_general', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
+        await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -554,7 +582,8 @@ async function actualizarStockInsumo(id, nuevoStock) {
 
 async function eliminarInsumo(id) {
     if (!confirm('¿Estás seguro de eliminar este insumo permanentemente?')) return;
-    try { await fetch('/api/inventario_general', {
+    try { const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
+        await fetch(url, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -597,7 +626,8 @@ async function buscarInsumoPorBarcode(barcode) {
     };
     if (!barcode) { resetToNewMode(); return; }
     try {
-        const res = await fetch(`/api/inventario_general?barcode=${barcode}`);
+        const url = window.getApiUrl ? window.getApiUrl(`/api/inventario_general?barcode=${barcode}`) : `/api/inventario_general?barcode=${barcode}`;
+        const res = await fetch(url);
         if (res.ok) {
             const insumo = await res.json();
             insumoExistenteEncontrado = insumo;
@@ -625,12 +655,18 @@ async function buscarInsumoPorBarcode(barcode) {
 }
 
 function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const isApp = window.location.protocol === 'file:' || window.location.protocol === 'capacitor:' || window.Capacitor;
+
+    if (!isApp && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         alert("⚠️ Aviso: La cámara requiere HTTPS para funcionar en celulares.");
     }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("🚫 ERROR: La cámara requiere HTTPS (candadito seguro) para funcionar en el celular.");
+        if (isApp) {
+            alert("🚫 Error de Permisos: La App no puede acceder a la cámara.\n\nVe a Ajustes del celular > Aplicaciones > StyleProUniformes > Permisos y activa la Cámara.");
+        } else {
+            alert("🚫 ERROR: La cámara requiere HTTPS (candadito seguro) para funcionar en el celular.");
+        }
         return;
     }
 
@@ -645,7 +681,14 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
     
-    const constraints = { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
+    const constraints = { 
+        video: { 
+            facingMode: "environment", 
+            focusMode: "continuous",
+            width: { min: 640, ideal: 1280, max: 1920 }, 
+            height: { min: 480, ideal: 720, max: 1080 } 
+        } 
+    };
     genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
         if (result) {
             playBeep();

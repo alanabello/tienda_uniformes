@@ -19,6 +19,20 @@ var targetInputIdForScanner = null;
 var insumos = [];
 var insumoExistenteEncontrado = null;
 
+// --- CONFIGURACIÓN DE CONEXIÓN ---
+// IMPORTANTE: Cambia esta URL por la dirección real de tu proyecto en Vercel
+const API_BASE_URL = "https://tu-proyecto-uniformes.vercel.app"; 
+
+function getApiUrl(endpoint) {
+    // Detectar si estamos en la App (Capacitor) o en archivo local
+    const isApp = window.location.protocol === 'file:' || 
+                  window.location.protocol === 'capacitor:' || 
+                  window.Capacitor;
+    
+    // Si es App, forzar la conexión al servidor en la nube. Si es web, usar relativa.
+    return isApp ? `${API_BASE_URL}${endpoint}` : endpoint;
+}
+
 // Helper para mostrar notificaciones tipo "Toast"
 function mostrarNotificacion(mensaje) {
     let container = document.querySelector('.flash-container');
@@ -66,3 +80,4 @@ const processImage = (file) => {
 // Exponer helpers globales
 window.mostrarNotificacion = mostrarNotificacion;
 window.processImage = processImage;
+window.getApiUrl = getApiUrl;

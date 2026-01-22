@@ -30,15 +30,10 @@ const productosBase = [
 
 // Cargar productos desde Neon
 async function cargarProductosDesdeDB() {
-    if (window.location.protocol === 'file:') {
-        console.warn("⚠️ Ejecutando en local. La base de datos requiere Vercel.");
-        productos = productosBase;
-        renderizarProductos();
-        return;
-    }
-
     try {
-        const res = await fetch('/api/productos');
+        // Usar getApiUrl para conectar a la nube si es App
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        const res = await fetch(url);
         if (res.status === 404) {
             console.warn("⚠️ API no encontrada (404). Usando datos locales.");
             productos = productosBase;

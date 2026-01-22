@@ -11,7 +11,8 @@ async function iniciarSesion(e) {
     errorMsg.style.display = 'none';
 
     try {
-        const res = await fetch('/api/login', {
+        const url = window.getApiUrl ? window.getApiUrl('/api/login') : '/api/login';
+        const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user, pass })
