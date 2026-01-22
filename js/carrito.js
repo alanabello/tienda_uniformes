@@ -303,7 +303,7 @@ async function registrarVentaExitosa() {
         await fetch('/api/ventas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orden, total, items: carritoGuardado, estado: "Pagado" })
+            body: JSON.stringify({ orden, total, items: carritoGuardado, estado: "PAGADO" })
         });
 
         localStorage.removeItem('carrito');

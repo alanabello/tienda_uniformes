@@ -5,10 +5,14 @@ import { Pool } from '@neondatabase/serverless';
 export default async function handler(req, res) {
     try {
         // Configuración Transbank
+        const commerceCode = process.env.WEBPAY_COMMERCE_CODE || IntegrationCommerceCodes.WEBPAY_PLUS;
+        const apiKey = process.env.WEBPAY_API_KEY || IntegrationApiKeys.WEBPAY;
+        const environment = process.env.WEBPAY_ENV === 'production' ? Environment.Production : Environment.Integration;
+
         const tx = new WebpayPlus.Transaction(new Options(
-            IntegrationCommerceCodes.WEBPAY_PLUS,
-            IntegrationApiKeys.WEBPAY,
-            Environment.Integration
+            commerceCode,
+            apiKey,
+            environment
         ));
 
         // Transbank envía el token por POST o GET

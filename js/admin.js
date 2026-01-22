@@ -247,16 +247,73 @@ async function cargarVentasAdmin() {
     if (!res.ok) { container.innerHTML = `<tr><td colspan="5" style="color:red">Error al cargar ventas: Acceso denegado.</td></tr>`; return; }
     const ventas = await res.json();
     container.innerHTML = '';
+
+    // Actualizar encabezados de la tabla dinámicamente para reflejar las nuevas columnas
+    const table = container.closest('table');
+    if (table) {
+        const thead = table.querySelector('thead tr');
+        if (thead && thead.children.length >= 3) {
+             if(thead.children[1]) thead.children[1].innerText = "Orden / Estado";
+             if(thead.children[2]) thead.children[2].innerText = "Cliente / Acciones";
+        }
+    }
+
     ventas.forEach(venta => {
         const fecha = venta.fecha ? new Date(venta.fecha).toLocaleDateString() : '-';
         const items = venta.items || [];
+        
         // Formatear datos del cliente para mostrar
         const cliente = venta.datos_cliente || {};
         const infoCliente = cliente.nombre 
             ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📞 ${cliente.telefono}<br>📍 ${cliente.direccion}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
             : 'Cliente Web (Sin datos)';
 
-        const row = `<tr><td>${fecha}</td><td>${venta.orden}</td><td>${infoCliente}</td><td>$${(venta.total || 0).toLocaleString('es-CL')}</td><td><ul style="font-size:0.8rem; padding-left:15px; margin:0;">${items.map(i => `<li>${i.nombre} (x${i.cantidad})</li>`).join('')}</ul></td></tr>`;
+        // Estado (Badge de color)
+        const estado = venta.estado || 'PENDIENTE';
+        let badgeColor = '#fef3c7'; // Amarillo (Pendiente)
+        let badgeText = '#92400e';
+        if (estado === 'PAGADO') {
+            badgeColor = '#d1fae5'; // Verde
+            badgeText = '#065f46';
+        } else if (estado === 'RECHAZADO' || estado === 'ANULADO') {
+            badgeColor = '#fee2e2'; // Rojo
+            badgeText = '#991b1b';
+        }
+        const badge = `<span style="background:${badgeColor}; color:${badgeText}; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-top: 5px;">${estado}</span>`;
+
+        // Botón WhatsApp (Enviar comprobante al admin)
+        const adminPhone = "56929395568";
+        const itemsList = items.map(i => `- ${i.nombre} (x${i.cantidad}) ${i.talla ? '['+i.talla+']' : ''}`).join('%0A');
+        const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${cliente.direccion || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
+        
+        const btnWhatsapp = `
+            <a href="https://wa.me/${adminPhone}?text=${mensaje}" target="_blank" 
+               style="display:inline-flex; align-items:center; gap:5px; margin-top:8px; text-decoration:none; background:#25D366; color:white; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-weight:600; transition:0.2s;">
+               <span>📲</span> Enviarme Comprobante
+            </a>`;
+
+        // Lista de productos más ordenada
+        const productosHtml = items.map(i => 
+            `<div style="border-bottom:1px solid #eee; padding:4px 0; font-size:0.85rem;">
+                <span style="font-weight:700;">x${i.cantidad}</span> ${i.nombre}
+                ${i.talla ? `<span style="color:#666; font-size:0.75rem;">(${i.talla})</span>` : ''}
+             </div>`
+        ).join('');
+
+        const row = `
+            <tr>
+                <td style="vertical-align:top;">${fecha}</td>
+                <td style="vertical-align:top;">
+                    <div style="font-weight:600; color:#333;">${venta.orden}</div>
+                    ${badge}
+                </td>
+                <td style="vertical-align:top;">
+                    ${infoCliente}<br>
+                    ${btnWhatsapp}
+                </td>
+                <td style="vertical-align:top; font-weight:bold; color:#2d5a27;">$${(venta.total || 0).toLocaleString('es-CL')}</td>
+                <td style="vertical-align:top;">${productosHtml}</td>
+            </tr>`;
         container.innerHTML += row;
     });
 }
