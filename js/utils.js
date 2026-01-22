@@ -21,7 +21,7 @@ var insumoExistenteEncontrado = null;
 
 // --- CONFIGURACIÓN DE CONEXIÓN ---
 // IMPORTANTE: Cambia esta URL por la dirección real de tu proyecto en Vercel
-const API_BASE_URL = "https://styleprouniformes.vercel.app/"; // <--- PON AQUÍ TU URL REAL DE VERCEL
+const API_BASE_URL = "https://styleprouniformes.vercel.app"; // <--- Sin barra al final
 
 function getApiUrl(endpoint) {
     // Detectar si estamos en la App (Capacitor) o en archivo local

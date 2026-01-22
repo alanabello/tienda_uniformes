@@ -187,10 +187,18 @@ async function pagarConWebpay() {
     mostrarNotificacion("🔄 Conectando con Webpay...");
 
     try {
-        const res = await fetch("/api/crear-transaccion", {
+        // Usar getApiUrl para compatibilidad con App y Web
+        const url = window.getApiUrl ? window.getApiUrl('/api/webpay_init') : '/api/webpay_init';
+        
+        const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ monto: total, orden: orden })
+            body: JSON.stringify({ 
+                amount: total, 
+                buyOrder: orden, 
+                sessionId: "S-" + Date.now(),
+                items: carrito // Enviamos el carrito para guardarlo en la BD
+            })
         });
         const data = await res.json();
 
