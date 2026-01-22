@@ -44,7 +44,7 @@ export default async function handler(req, res) {
                 )
             `);
             // Insertar la orden
-            await pool.query('INSERT INTO ventas (orden, total, items, estado) VALUES ($1, $2, $3, $4)', [buyOrder, amount, JSON.stringify(items), 'PENDIENTE']);
+            await pool.query('INSERT INTO ventas (orden, total, items, estado) VALUES ($1, $2, $3, $4)', [buyOrder, amount, JSON.stringify(items || []), 'PENDIENTE']);
         }
 
         const createResponse = await tx.create(buyOrder, sessionId, amount, returnUrl);
