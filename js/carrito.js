@@ -78,6 +78,15 @@ function renderizarPaginaCarrito() {
     const container = document.getElementById('cart-items');
     if (!container) return;
 
+    // Guardar valores del formulario si ya existen (para no perderlos al eliminar items)
+    const savedValues = {
+        nombre: document.getElementById('cliente-nombre')?.value || '',
+        telefono: document.getElementById('cliente-telefono')?.value || '',
+        direccion: document.getElementById('cliente-direccion')?.value || '',
+        comuna: document.getElementById('cliente-comuna')?.value || '',
+        referencia: document.getElementById('cliente-referencia')?.value || ''
+    };
+
     if (carrito.length === 0) {
         container.innerHTML = "<p>Tu carrito está vacío.</p>";
         actualizarTotales();
@@ -102,6 +111,43 @@ function renderizarPaginaCarrito() {
         `;
         container.appendChild(div);
     });
+
+    // --- INYECTAR FORMULARIO DE ENVÍO ---
+    const formDiv = document.createElement('div');
+    formDiv.className = 'shipping-form';
+    formDiv.style.cssText = "background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);";
+    formDiv.innerHTML = `
+        <h3 style="margin-bottom: 15px; color: #333;">📍 Datos de Envío</h3>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Nombre Completo</label>
+            <input type="text" id="cliente-nombre" placeholder="Ej: Juan Pérez" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Teléfono</label>
+            <input type="tel" id="cliente-telefono" placeholder="Ej: 9 1234 5678" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Dirección (Calle y Número)</label>
+            <input type="text" id="cliente-direccion" placeholder="Ej: Av. Siempre Viva 742" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Comuna</label>
+            <input type="text" id="cliente-comuna" placeholder="Ej: Santiago" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Referencia (Opcional)</label>
+            <input type="text" id="cliente-referencia" placeholder="Ej: Portón negro, dejar en conserjería" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+    `;
+    container.appendChild(formDiv);
+
+    // Restaurar valores
+    if (savedValues.nombre) document.getElementById('cliente-nombre').value = savedValues.nombre;
+    if (savedValues.telefono) document.getElementById('cliente-telefono').value = savedValues.telefono;
+    if (savedValues.direccion) document.getElementById('cliente-direccion').value = savedValues.direccion;
+    if (savedValues.comuna) document.getElementById('cliente-comuna').value = savedValues.comuna;
+    if (savedValues.referencia) document.getElementById('cliente-referencia').value = savedValues.referencia;
+
     actualizarTotales();
 }
 
