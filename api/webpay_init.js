@@ -26,6 +26,9 @@ export default async function handler(req, res) {
 
     const { amount, buyOrder, sessionId, items } = req.body;
     
+    // Transbank requiere monto entero (sin decimales)
+    const amountInt = Math.floor(amount);
+    
     // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
     const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';
 
@@ -44,10 +47,10 @@ export default async function handler(req, res) {
                 )
             `);
             // Insertar la orden
-            await pool.query('INSERT INTO ventas (orden, total, items, estado) VALUES ($1, $2, $3, $4)', [buyOrder, amount, JSON.stringify(items || []), 'PENDIENTE']);
+            await pool.query('INSERT INTO ventas (orden, total, items, estado) VALUES ($1, $2, $3, $4)', [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE']);
         }
 
-        const createResponse = await tx.create(buyOrder, sessionId, amount, returnUrl);
+        const createResponse = await tx.create(buyOrder, sessionId, amountInt, returnUrl);
         res.status(200).json(createResponse);
     } catch (error) {
         console.error("Error Webpay Init:", error);

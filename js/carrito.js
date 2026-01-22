@@ -200,6 +200,19 @@ async function pagarConWebpay() {
                 items: carrito // Enviamos el carrito para guardarlo en la BD
             })
         });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            let errorMessage = `Error del servidor (${res.status})`;
+            try {
+                const errorJson = JSON.parse(errorText);
+                if (errorJson.error) errorMessage = errorJson.error;
+            } catch (e) {
+                errorMessage = errorText || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+
         const data = await res.json();
 
         const form = document.createElement("form");
@@ -214,7 +227,8 @@ async function pagarConWebpay() {
         form.submit();
     } catch (error) {
         console.error("Error al iniciar pago:", error);
-        mostrarNotificacion("❌ Error de conexión con Webpay");
+        alert("❌ Error: " + error.message);
+        mostrarNotificacion("❌ Error al iniciar pago");
     }
 }
 
