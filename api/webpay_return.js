@@ -2,27 +2,27 @@ import { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Envi
 import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
-    // Configuración Transbank
-    const tx = new WebpayPlus.Transaction(new Options(
-        IntegrationCommerceCodes.WEBPAY_PLUS,
-        IntegrationApiKeys.WEBPAY,
-        Environment.Integration
-    ));
-
-    // Transbank envía el token por POST o GET
-    const token = req.query.token_ws || req.body.token_ws;
-    const tbkToken = req.query.TBK_TOKEN || req.body.TBK_TOKEN; // Caso anular compra
-
-    // Si el usuario anuló la compra en el formulario bancario
-    if (tbkToken && !token) {
-        return res.redirect('/carrito.html?error=compra_anulada');
-    }
-
-    if (!token) {
-        return res.redirect('/carrito.html?error=token_faltante');
-    }
-
     try {
+        // Configuración Transbank
+        const tx = new WebpayPlus.Transaction(new Options(
+            IntegrationCommerceCodes.WEBPAY_PLUS,
+            IntegrationApiKeys.WEBPAY,
+            Environment.Integration
+        ));
+
+        // Transbank envía el token por POST o GET
+        const token = req.query.token_ws || req.body.token_ws;
+        const tbkToken = req.query.TBK_TOKEN || req.body.TBK_TOKEN; // Caso anular compra
+
+        // Si el usuario anuló la compra en el formulario bancario
+        if (tbkToken && !token) {
+            return res.redirect('/carrito.html?error=compra_anulada');
+        }
+
+        if (!token) {
+            return res.redirect('/carrito.html?error=token_faltante');
+        }
+
         // Confirmar la transacción con Transbank
         const commitResponse = await tx.commit(token);
 

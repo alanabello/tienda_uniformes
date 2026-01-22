@@ -17,22 +17,26 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: "Método no permitido" });
     }
 
-    // Configuración Transbank (Modo Integración/Pruebas)
-    const tx = new WebpayPlus.Transaction(new Options(
-        IntegrationCommerceCodes.WEBPAY_PLUS,
-        IntegrationApiKeys.WEBPAY,
-        Environment.Integration
-    ));
-
-    const { amount, buyOrder, sessionId, items } = req.body;
-    
-    // Transbank requiere monto entero (sin decimales)
-    const amountInt = Math.floor(amount);
-    
-    // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
-    const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';
-
     try {
+        // Configuración Transbank (Modo Integración/Pruebas)
+        const tx = new WebpayPlus.Transaction(new Options(
+            IntegrationCommerceCodes.WEBPAY_PLUS,
+            IntegrationApiKeys.WEBPAY,
+            Environment.Integration
+        ));
+
+        const { amount, buyOrder, sessionId, items } = req.body;
+        
+        if (!amount || !buyOrder || !sessionId) {
+            throw new Error("Faltan datos requeridos (monto, orden o sesión)");
+        }
+        
+        // Transbank requiere monto entero (sin decimales)
+        const amountInt = Math.floor(amount);
+        
+        // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
+        const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';
+
         // 1. Guardar la venta como PENDIENTE en la base de datos
         if (process.env.DATABASE_URL) {
             const pool = new Pool({ connectionString: process.env.DATABASE_URL });
