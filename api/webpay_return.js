@@ -11,16 +11,27 @@ export default async function handler(req, res) {
         ));
 
         // Transbank envía el token por POST o GET
-        const token = req.query.token_ws || req.body.token_ws;
-        const tbkToken = req.query.TBK_TOKEN || req.body.TBK_TOKEN; // Caso anular compra
+        // BLINDAJE: Usar encadenamiento opcional (?.) o valores por defecto para evitar crash
+        const query = req.query || {};
+        const body = req.body || {};
+        
+        const token = query.token_ws || body.token_ws;
+        const tbkToken = query.TBK_TOKEN || body.TBK_TOKEN; // Caso anular compra
+
+        // Función segura para redirigir (compatible con Vercel y Node puro)
+        const safeRedirect = (url) => {
+            if (typeof res.redirect === 'function') return res.redirect(url);
+            res.writeHead(302, { Location: url });
+            res.end();
+        };
 
         // Si el usuario anuló la compra en el formulario bancario
         if (tbkToken && !token) {
-            return res.redirect('/carrito.html?error=compra_anulada');
+            return safeRedirect('/carrito.html?error=compra_anulada');
         }
 
         if (!token) {
-            return res.redirect('/carrito.html?error=token_faltante');
+            return safeRedirect('/carrito.html?error=token_faltante');
         }
 
         // Confirmar la transacción con Transbank
@@ -46,14 +57,16 @@ export default async function handler(req, res) {
             }
             
             // Redirigir a página de éxito
-            res.redirect(`/exito.html?orden=${commitResponse.buy_order}&monto=${commitResponse.amount}`);
+            safeRedirect(`/exito.html?orden=${commitResponse.buy_order}&monto=${commitResponse.amount}`);
         } else {
             // PAGO RECHAZADO
-            res.redirect('/carrito.html?error=pago_rechazado');
+            safeRedirect('/carrito.html?error=pago_rechazado');
         }
     } catch (error) {
         console.error("Error Webpay Commit:", error);
         // Si el token ya fue usado o expiró
-        res.redirect('/carrito.html?error=transaccion_invalida');
+        // Usamos writeHead manual por si res.redirect falló
+        res.writeHead(302, { Location: '/carrito.html?error=transaccion_invalida' });
+        res.end();
     }
 }

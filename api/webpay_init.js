@@ -25,7 +25,9 @@ export default async function handler(req, res) {
             Environment.Integration
         ));
 
-        const { amount, buyOrder, sessionId, items } = req.body;
+        // BLINDAJE: Asegurar que body existe, si no, usar objeto vacío
+        const body = req.body || {};
+        const { amount, buyOrder, sessionId, items } = body;
         
         if (!amount || !buyOrder || !sessionId) {
             throw new Error("Faltan datos requeridos (monto, orden o sesión)");
