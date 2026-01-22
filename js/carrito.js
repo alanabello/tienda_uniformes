@@ -184,6 +184,19 @@ async function pagarConWebpay() {
     const total = subtotal + envio;
     const orden = "ORDER-" + Date.now();
 
+    // --- VALIDACIÓN DE DATOS DE ENVÍO ---
+    const nombre = document.getElementById('cliente-nombre')?.value.trim();
+    const telefono = document.getElementById('cliente-telefono')?.value.trim();
+    const direccion = document.getElementById('cliente-direccion')?.value.trim();
+    const comuna = document.getElementById('cliente-comuna')?.value.trim();
+    const referencia = document.getElementById('cliente-referencia')?.value.trim() || '';
+
+    if (!nombre || !telefono || !direccion || !comuna) {
+        alert("⚠️ Por favor completa los Datos de Envío (Nombre, Teléfono, Dirección y Comuna) antes de pagar.");
+        return;
+    }
+    const datosCliente = { nombre, telefono, direccion, comuna, referencia };
+
     mostrarNotificacion("🔄 Conectando con Webpay...");
 
     try {
@@ -197,7 +210,8 @@ async function pagarConWebpay() {
                 amount: total, 
                 buyOrder: orden, 
                 sessionId: "S-" + Date.now(),
-                items: carrito // Enviamos el carrito para guardarlo en la BD
+                items: carrito, // Enviamos el carrito para guardarlo en la BD
+                datosCliente: datosCliente // <--- Enviamos los datos del cliente
             })
         });
 

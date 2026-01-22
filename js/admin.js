@@ -250,7 +250,13 @@ async function cargarVentasAdmin() {
     ventas.forEach(venta => {
         const fecha = venta.fecha ? new Date(venta.fecha).toLocaleDateString() : '-';
         const items = venta.items || [];
-        const row = `<tr><td>${fecha}</td><td>${venta.orden}</td><td>Cliente Web</td><td>$${(venta.total || 0).toLocaleString('es-CL')}</td><td><ul style="font-size:0.8rem; padding-left:15px; margin:0;">${items.map(i => `<li>${i.nombre} (x${i.cantidad})</li>`).join('')}</ul></td></tr>`;
+        // Formatear datos del cliente para mostrar
+        const cliente = venta.datos_cliente || {};
+        const infoCliente = cliente.nombre 
+            ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📞 ${cliente.telefono}<br>📍 ${cliente.direccion}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
+            : 'Cliente Web (Sin datos)';
+
+        const row = `<tr><td>${fecha}</td><td>${venta.orden}</td><td>${infoCliente}</td><td>$${(venta.total || 0).toLocaleString('es-CL')}</td><td><ul style="font-size:0.8rem; padding-left:15px; margin:0;">${items.map(i => `<li>${i.nombre} (x${i.cantidad})</li>`).join('')}</ul></td></tr>`;
         container.innerHTML += row;
     });
 }

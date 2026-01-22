@@ -1,4 +1,5 @@
-import { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } from 'transbank-sdk';
+import Transbank from 'transbank-sdk';
+const { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } = Transbank;
 import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
@@ -27,7 +28,7 @@ export default async function handler(req, res) {
 
         // BLINDAJE: Asegurar que body existe, si no, usar objeto vacío
         const body = req.body || {};
-        const { amount, buyOrder, sessionId, items } = body;
+        const { amount, buyOrder, sessionId, items, datosCliente } = body;
         
         if (!amount || !buyOrder || !sessionId) {
             throw new Error("Faltan datos requeridos (monto, orden o sesión)");
@@ -52,8 +53,14 @@ export default async function handler(req, res) {
                     fecha TIMESTAMP DEFAULT NOW()
                 )
             `);
+            
+            // Agregar columna para datos del cliente si no existe (Migración al vuelo)
+            try {
+                await pool.query("ALTER TABLE ventas ADD COLUMN IF NOT EXISTS datos_cliente JSONB");
+            } catch (e) { /* Ignorar si ya existe */ }
+
             // Insertar la orden
-            await pool.query('INSERT INTO ventas (orden, total, items, estado) VALUES ($1, $2, $3, $4)', [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE']);
+            await pool.query('INSERT INTO ventas (orden, total, items, estado, datos_cliente) VALUES ($1, $2, $3, $4, $5)', [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE', JSON.stringify(datosCliente || {})]);
         }
 
         const createResponse = await tx.create(buyOrder, sessionId, amountInt, returnUrl);

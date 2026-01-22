@@ -1,4 +1,5 @@
-import { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } from 'transbank-sdk';
+import Transbank from 'transbank-sdk';
+const { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } = Transbank;
 import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
