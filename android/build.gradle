@@ -24,6 +24,14 @@ allprojects {
     }
 }
 
+subprojects {
+    tasks.whenTaskAdded { task ->
+        if (task.name.contains("generateDebugResValues")) {
+            task.dependsOn('clean')
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

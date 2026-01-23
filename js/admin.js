@@ -476,6 +476,9 @@ async function iniciarEscaneoBarcode() {
         return;
     }
 
+    // Asegurar que el escáner genérico esté detenido para evitar conflictos
+    detenerEscaneoGenerico();
+
     const videoElement = document.getElementById('scanner-video');
     const scannedBarcodeSpan = document.getElementById('scanned-barcode');
     const scannedProductInfo = document.getElementById('scanned-product-info');
@@ -777,6 +780,9 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
         return;
     }
 
+    // Asegurar que el escáner principal esté detenido para liberar la cámara
+    detenerEscaneoBarcode();
+
     targetInputIdForScanner = targetInputId;
     const videoElement = document.getElementById('generic-scanner-video');
     const statusElement = document.getElementById('generic-scanner-status');
@@ -788,26 +794,31 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
     
-    const constraints = { 
-        video: { 
-            facingMode: "environment", 
-            focusMode: "continuous",
-            width: { min: 640, ideal: 1280, max: 1920 }, 
-            height: { min: 480, ideal: 720, max: 1080 } 
-        } 
-    };
-    genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
-        if (result) {
-            playBeep();
-            const targetInput = document.getElementById(targetInputIdForScanner);
-            targetInput.value = result.text;
-            detenerEscaneoGenerico();
-            window.mostrarNotificacion('✅ Código escaneado: ' + result.text);
-            if (triggerSearch) targetInput.dispatchEvent(new Event('blur'));
-        }
-    }).then(() => {
-        statusElement.innerText = 'Apunte al código de barras...';
-    }).catch(err => { console.error(err); statusElement.innerText = `Error: ${err.message}`; alert(`Error al iniciar la cámara: ${err.message}`); detenerEscaneoGenerico(); });
+    // Dar tiempo al modal para abrirse y que el video tenga dimensiones antes de iniciar
+    setTimeout(() => {
+        const constraints = { 
+            video: { 
+                facingMode: "environment", 
+                focusMode: "continuous",
+                width: { min: 640, ideal: 1280, max: 1920 }, 
+                height: { min: 480, ideal: 720, max: 1080 } 
+            } 
+        };
+        genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
+            if (result) {
+                playBeep();
+                const targetInput = document.getElementById(targetInputIdForScanner);
+                if (targetInput) {
+                    targetInput.value = result.text;
+                    window.mostrarNotificacion('✅ Código escaneado: ' + result.text);
+                    if (triggerSearch) targetInput.dispatchEvent(new Event('blur'));
+                }
+                detenerEscaneoGenerico();
+            }
+        }).then(() => {
+            statusElement.innerText = 'Apunte al código de barras...';
+        }).catch(err => { console.error(err); statusElement.innerText = `Error: ${err.message}`; alert(`Error al iniciar la cámara: ${err.message}`); detenerEscaneoGenerico(); });
+    }, 300);
 }
 
 function detenerEscaneoGenerico() {
