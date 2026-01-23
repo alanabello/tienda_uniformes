@@ -1,5 +1,13 @@
 {
-  "appId": "com.stylepro.app",
+  "appId": "com.styleprouniformes.app",
   "appName": "StyleProUniformes",
-  "webDir": "www"
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "styleprouniformes.vercel.app",
+      "*.transbank.cl"
+    ]
+  }
 }

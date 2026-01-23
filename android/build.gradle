@@ -27,3 +27,9 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task cleanCapacitorAndroid(type: Delete) {
+    delete "C:/Users/manue/OneDrive/Escritorio/pagina_uniformes/node_modules/@capacitor/android/capacitor/build"
+}
+
+clean.dependsOn(cleanCapacitorAndroid)
