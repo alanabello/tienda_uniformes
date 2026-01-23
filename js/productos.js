@@ -112,14 +112,6 @@ function renderizarProductos(filtro = 'todos') {
                     <select id="talla-${p.id}">
                         ${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}
                     </select>
-                    ${(p.mostrar !== false && mostrarColores && !sinStock) ? `
-                    <select id="color-${p.id}" required>
-                        <option value="" disabled selected>Selecciona un color</option>
-                        <option value="Azul">Azul</option>
-                        <option value="Azul Rey">Azul Rey</option>
-                        <option value="Negro">Negro</option>
-                        <option value="Azul Marino">Azul Marino</option>
-                    </select>` : ''}
                 </div>
                 <button class="btn-add" ${btnDisabled} onclick="event.stopPropagation(); agregar(${p.id})">
                     ${btnTexto}
@@ -193,14 +185,6 @@ async function cargarDetalleProducto() {
                     <p class="detalle-desc">${producto.descripcion}</p>
                     <div class="detalle-selectores">
                         <select id="detalle-talla">${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
-                        ${(producto.mostrar !== false && mostrarColores && !sinStock) ? `
-                        <select id="detalle-color" required>
-                            <option value="" disabled selected>Selecciona un color</option>
-                            <option value="Azul">Azul</option>
-                            <option value="Azul Rey">Azul Rey</option>
-                            <option value="Negro">Negro</option>
-                            <option value="Azul Marino">Azul Marino</option>
-                        </select>` : ''}
                     </div>
                     <button class="btn-add" ${btnAttr}>${btnTexto}</button>
                     <p class="envio-info">🚚 Despacho en <strong>3 días hábiles</strong></p>

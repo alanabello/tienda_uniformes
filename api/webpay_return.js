@@ -32,11 +32,11 @@ export default async function handler(req, res) {
 
         // Si el usuario anuló la compra en el formulario bancario
         if (tbkToken && !token) {
-            return safeRedirect('/carrito.html?error=compra_anulada');
+            return safeRedirect('/pago-fallido.html?motivo=anulado');
         }
 
         if (!token) {
-            return safeRedirect('/carrito.html?error=token_faltante');
+            return safeRedirect('/pago-fallido.html?motivo=error');
         }
 
         // Confirmar la transacción con Transbank
@@ -55,8 +55,25 @@ export default async function handler(req, res) {
                 if (result.rows.length > 0) {
                     const items = result.rows[0].items; // Postgres parsea el JSONB automáticamente
                     for (const item of items) {
-                        // Restar la cantidad comprada al stock actual
+                        // 1. Actualizar inventario_general si existe coincidencia por barcode
+                        await pool.query(`
+                            UPDATE inventario_general 
+                            SET stock = stock - $1 
+                            WHERE barcode = (SELECT barcode FROM productos WHERE id = $2)
+                        `, [item.cantidad, item.id]);
+
+                        // 2. Actualizar productos (siempre, como respaldo)
                         await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [item.cantidad, item.id]);
+
+                        // 3. Ocultar automáticamente si el stock llega a 0
+                        await pool.query(`
+                            UPDATE productos 
+                            SET mostrar = false 
+                            WHERE id = $1 AND (
+                                stock <= 0 OR 
+                                (barcode IS NOT NULL AND (SELECT stock FROM inventario_general WHERE barcode = productos.barcode) <= 0)
+                            )
+                        `, [item.id]);
                     }
                 }
             }
@@ -65,13 +82,13 @@ export default async function handler(req, res) {
             safeRedirect(`/exito.html?orden=${commitResponse.buy_order}&monto=${commitResponse.amount}`);
         } else {
             // PAGO RECHAZADO
-            safeRedirect('/carrito.html?error=pago_rechazado');
+            safeRedirect('/pago-fallido.html?motivo=rechazado');
         }
     } catch (error) {
         console.error("Error Webpay Commit:", error);
         // Si el token ya fue usado o expiró
         // Usamos writeHead manual por si res.redirect falló
-        res.writeHead(302, { Location: '/carrito.html?error=transaccion_invalida' });
+        res.writeHead(302, { Location: '/pago-fallido.html?motivo=excepcion' });
         res.end();
     }
 }

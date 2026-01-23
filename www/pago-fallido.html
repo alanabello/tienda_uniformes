@@ -3,16 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago Rechazado</title>
+    <title>Pago No Completado - StylePro</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; }
-        h1 { color: #e74c3c; }
+        .error-container {
+            max-width: 500px;
+            margin: 60px auto;
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .error-icon { font-size: 5rem; margin-bottom: 20px; display: inline-block; }
     </style>
 </head>
 <body>
-    <h1>❌ Pago rechazado</h1>
-    <p>Intenta nuevamente</p>
-    <a href="carrito.html" class="btn-primary" style="margin-top: 20px; background: #333;">Volver al Carrito</a>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">StylePro<span>Uniformes</span></a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="error-container">
+            <div class="error-icon">❌</div>
+            <h1 style="color: #e74c3c; margin-bottom: 10px;">Pago No Completado</h1>
+            <p id="mensaje-error" style="color: #666; margin-bottom: 30px;">Hubo un problema con tu transacción o fue anulada.</p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <a href="carrito.html" class="btn-primary" style="text-decoration: none; padding: 15px 25px; border-radius: 50px;">Reintentar Pago</a>
+                <a href="index.html" class="btn-secondary" style="text-decoration: none; padding: 15px 25px;">Volver al Inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const motivo = params.get('motivo');
+        const msg = document.getElementById('mensaje-error');
+        
+        if (motivo === 'anulado') msg.innerText = "Has anulado la compra en el portal de pago.";
+        else if (motivo === 'rechazado') msg.innerText = "El banco ha rechazado la transacción. Revisa tus fondos o intenta con otra tarjeta.";
+        else if (motivo === 'excepcion') msg.innerText = "La sesión de pago ha expirado o hubo un error técnico.";
+    </script>
 </body>
 </html>

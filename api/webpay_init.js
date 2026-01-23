@@ -1,5 +1,6 @@
 import Transbank from 'transbank-sdk';
 const { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } = Transbank;
+import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
     // Configuración de CORS para permitir peticiones desde tu App/Web
@@ -36,9 +37,57 @@ export default async function handler(req, res) {
         if (!amount || !buyOrder || !sessionId) {
             throw new Error("Faltan datos requeridos (monto, orden o sesión)");
         }
-        
-        // Transbank requiere monto entero (sin decimales)
-        const amountInt = Math.floor(amount);
+
+        let amountInt = Math.floor(amount);
+
+        // --- SEGURIDAD: Validar precios con la base de datos ---
+        // Esto evita que un usuario modifique el HTML/JS para pagar $1
+        if (process.env.DATABASE_URL && items && Array.isArray(items)) {
+            const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+            let totalCalculado = 0;
+            let tienePantalon = false;
+            let tieneTop = false;
+
+            for (const item of items) {
+                const resProd = await pool.query('SELECT precio, categorias FROM productos WHERE id = $1', [item.id]);
+                if (resProd.rows.length > 0) {
+                    const prod = resProd.rows[0];
+                    totalCalculado += (prod.precio * item.cantidad);
+                    
+                    // Lógica de envío (Debe coincidir con carrito.js)
+                    const cats = prod.categorias || [];
+                    if (cats.includes('Pantalones')) tienePantalon = true;
+                    else tieneTop = true; // Si no es pantalón, cuenta como top/otro
+                }
+            }
+
+            let envio = (tienePantalon && tieneTop) ? 0 : 4000;
+            const totalReal = totalCalculado + envio;
+
+            // Si el monto enviado es menor al real, usamos el real para evitar fraudes
+            if (totalReal > amountInt) {
+                console.log(`⚠️ ALERTA DE SEGURIDAD: Cliente envió $${amountInt}, pero el total real es $${totalReal}. Se forzó el precio real.`);
+                amountInt = Math.floor(totalReal);
+            }
+        }
+
+        // --- PERSISTENCIA: Guardar venta PENDIENTE ---
+        // Necesario para que webpay_return.js pueda confirmar la venta y descontar stock
+        if (process.env.DATABASE_URL) {
+            const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+            
+            // Asegurar que la tabla existe (por si es la primera venta)
+            await pool.query(`CREATE TABLE IF NOT EXISTS ventas (orden TEXT PRIMARY KEY, total INTEGER, items JSONB, estado TEXT, fecha TIMESTAMP DEFAULT NOW(), datos_cliente JSONB)`);
+            
+            // Insertar o actualizar la orden pendiente
+            // Usamos ON CONFLICT por si el usuario reintenta pagar la misma orden
+            await pool.query(`
+                INSERT INTO ventas (orden, total, items, estado, datos_cliente) 
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (orden) DO UPDATE 
+                SET total = $2, items = $3, estado = $4, datos_cliente = $5, fecha = NOW()
+            `, [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE', JSON.stringify(datosCliente || {})]);
+        }
         
         // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
         const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';

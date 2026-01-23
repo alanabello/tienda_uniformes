@@ -25,8 +25,13 @@ export default async function handler(req, res) {
     } catch (e) { /* Ignorar si ya existe */ }
 
     if (req.method === 'GET') {
-      // Obtener últimas 20 ventas
-      const { rows } = await pool.query('SELECT * FROM ventas ORDER BY fecha DESC LIMIT 20');
+      // SEGURIDAD: Verificar que la petición viene autorizada (evitar acceso público a datos de clientes)
+      if (!req.headers.authorization) {
+          return res.status(401).json({ error: "Acceso denegado: Falta autorización" });
+      }
+
+      // Obtener últimas 20 ventas (Ocultando las PENDIENTES para mantener el admin limpio)
+      const { rows } = await pool.query("SELECT * FROM ventas WHERE estado != 'PENDIENTE' ORDER BY fecha DESC LIMIT 20");
       res.json(rows);
     } else if (req.method === 'POST') {
       const { orden, total, items, estado, datos_cliente } = req.body;
@@ -39,8 +44,25 @@ export default async function handler(req, res) {
 
       // 2. Descontar stock (Iterar items)
       for (const item of items) {
-          // Asumiendo que item.id corresponde al ID en la DB
+          // 2.1. Actualizar inventario_general si existe coincidencia por barcode
+          await pool.query(`
+            UPDATE inventario_general 
+            SET stock = stock - $1 
+            WHERE barcode = (SELECT barcode FROM productos WHERE id = $2)
+          `, [item.cantidad, item.id]);
+
+          // 2.2. Actualizar productos (siempre, como respaldo o si no tiene barcode)
           await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [item.cantidad, item.id]);
+
+          // 2.3. Ocultar automáticamente si el stock llega a 0
+          await pool.query(`
+            UPDATE productos 
+            SET mostrar = false 
+            WHERE id = $1 AND (
+                stock <= 0 OR 
+                (barcode IS NOT NULL AND (SELECT stock FROM inventario_general WHERE barcode = productos.barcode) <= 0)
+            )
+          `, [item.id]);
       }
 
       res.json({ success: true });

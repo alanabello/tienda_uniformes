@@ -10,7 +10,13 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       // Obtener todos los productos ordenados por ID
-      const { rows } = await pool.query('SELECT * FROM productos ORDER BY id ASC');
+      // Sincronizando stock con inventario_general si existe coincidencia de barcode
+      const { rows } = await pool.query(`
+        SELECT p.*, COALESCE(i.stock, p.stock) as stock
+        FROM productos p
+        LEFT JOIN inventario_general i ON p.barcode = i.barcode
+        ORDER BY p.id ASC
+      `);
       res.json(rows);
     } else if (req.method === 'POST') {
       // Crear producto

@@ -60,3 +60,13 @@ window.iniciarSesion = iniciarSesion;
 window.verificarAutenticacion = verificarAutenticacion;
 window.cerrarSesion = cerrarSesion;
 window.getAuthHeader = getAuthHeader; // Exponer para que otros scripts la usen
+
+// Eliminar sugerencias de autocompletado en el login
+document.addEventListener('DOMContentLoaded', () => {
+    const userInput = document.getElementById('adminUser');
+    const passInput = document.getElementById('adminPass');
+    
+    // Se usa 'new-password' en el campo de contraseña para evitar sugerencias agresivas del navegador
+    if (userInput) userInput.setAttribute('autocomplete', 'off');
+    if (passInput) passInput.setAttribute('autocomplete', 'new-password');
+});

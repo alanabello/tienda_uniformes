@@ -3,32 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago Exitoso - StylePro</title>
+    <title>¡Pago Exitoso! - StylePro Uniformes</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        .success-box { text-align: center; padding: 50px 20px; max-width: 500px; margin: 50px auto; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .icon { font-size: 4rem; margin-bottom: 20px; }
-        h1 { color: var(--primary); margin-bottom: 10px; }
+        .success-container {
+            max-width: 600px;
+            margin: 60px auto;
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            animation: fadeUp 0.6s ease;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #25D366; /* Verde éxito */
+            margin-bottom: 20px;
+            animation: popIn 0.5s ease;
+            display: inline-block;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .order-details {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .detail-row strong {
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <div class="success-box">
-        <div class="icon">✅</div>
-        <h1>¡Pago Exitoso!</h1>
-        <p>Tu pedido ha sido confirmado.</p>
-        <p id="detalles" style="margin-top: 20px; font-weight: bold; color: #555;"></p>
-        <a href="index.html" class="btn-primary" style="margin-top: 30px;">Volver al Inicio</a>
+
+    <!-- Navbar Simplificado -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">StylePro<span>Uniformes</span></a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">🎉</div>
+            <h1 style="color: #333; margin-bottom: 10px;">¡Pago Exitoso!</h1>
+            <p style="color: #666; margin-bottom: 30px;">Tu pedido ha sido confirmado y ya estamos preparándolo.</p>
+
+            <div class="order-details">
+                <div class="detail-row">
+                    <span>N° de Orden:</span>
+                    <strong id="order-id">Cargando...</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Monto Pagado:</span>
+                    <strong id="order-amount">...</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Estado:</span>
+                    <strong style="color: #25D366;">Aprobado ✅</strong>
+                </div>
+            </div>
+
+            <a href="index.html" class="btn-primary" style="text-decoration: none; padding: 15px 30px; border-radius: 50px;">Volver a la Tienda</a>
+        </div>
     </div>
+
     <script>
-        // Mostrar detalles de la URL
-        const params = new URLSearchParams(window.location.search);
-        const orden = params.get('orden');
-        const monto = params.get('monto');
-        if(orden && monto) {
-            document.getElementById('detalles').innerText = `Orden #${orden} | Monto: $${parseInt(monto).toLocaleString('es-CL')}`;
-            // Limpiar carrito
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Obtener datos de la URL (enviados por el backend)
+            const params = new URLSearchParams(window.location.search);
+            const orden = params.get('orden');
+            const monto = params.get('monto');
+
+            // 2. Mostrar en pantalla
+            if (orden) document.getElementById('order-id').innerText = orden;
+            if (monto) document.getElementById('order-amount').innerText = '$' + parseInt(monto).toLocaleString('es-CL');
+
+            // 3. LIMPIAR CARRITO AUTOMÁTICAMENTE
             localStorage.removeItem('carrito');
-        }
+            localStorage.removeItem('datosCliente');
+            
+            console.log("✅ Carrito limpiado tras compra exitosa.");
+        });
     </script>
 </body>
 </html>

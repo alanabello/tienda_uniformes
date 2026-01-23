@@ -89,6 +89,12 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'ID y stock son requeridos' });
         }
         await pool.query('UPDATE inventario_general SET stock = $1 WHERE id = $2', [stock, id]);
+        
+        // Ocultar producto en tienda si stock llega a 0
+        if (stock <= 0) {
+            await pool.query('UPDATE productos SET mostrar = false WHERE barcode = (SELECT barcode FROM inventario_general WHERE id = $1)', [id]);
+        }
+
         res.json({ success: true, id, stock });
     } else if (req.method === 'PATCH') {
         const { barcode, cantidad } = req.body;
@@ -100,6 +106,10 @@ export default async function handler(req, res) {
             [cantidad, barcode]
         );
         if (rows.length > 0) {
+            // Ocultar producto en tienda si stock llega a 0
+            if (rows[0].stock <= 0) {
+                await pool.query('UPDATE productos SET mostrar = false WHERE barcode = $1', [barcode]);
+            }
             res.json({ success: true, insumo: rows[0] });
         } else {
             res.status(404).json({ success: false, error: 'Insumo con ese barcode no encontrado para actualizar.' });
