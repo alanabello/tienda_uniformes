@@ -494,23 +494,14 @@ async function iniciarEscaneoBarcode() {
         scannedBarcodeSpan.innerText = 'Error: Librería ZXing no cargada.';
         return;
     }
-    if (!codeReader) {
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-            ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.ITF
-        ]);
-        codeReader = new ZXing.BrowserMultiFormatReader(hints);
-    }
+    if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
     try {
-        // CONFIGURACIÓN CORREGIDA: Rango flexible para mayor compatibilidad Android
         const constraints = { 
             video: { 
                 facingMode: "environment",
-                focusMode: "continuous", // Intenta forzar el autoenfoque
-                width: { min: 640, ideal: 1920, max: 3840 }, 
-                height: { min: 480, ideal: 1080, max: 2160 } 
+                focusMode: "continuous",
+                width: { min: 640, ideal: 1280, max: 1920 }, 
+                height: { min: 480, ideal: 720, max: 1080 } 
             } 
         };
         await codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
@@ -616,22 +607,49 @@ async function guardarNuevoInsumo(e) {
     btn.innerText = "Guardando..."; btn.disabled = true;
 
     if (insumoExistenteEncontrado) {
-        const cantidad = parseInt(document.getElementById('insumoStock').value);
-        if (isNaN(cantidad) || cantidad <= 0) { alert("Por favor, ingresa una cantidad válida."); btn.innerText = textoOriginal; btn.disabled = false; return; }
-        try { // PATCH
+        // Calcular nuevo stock total y tallas actualizadas
+        const cantidadAAgregar = parseInt(document.getElementById('insumoStock').value);
+        if (isNaN(cantidadAAgregar) || cantidadAAgregar <= 0) { alert("Por favor, ingresa una cantidad válida."); btn.innerText = textoOriginal; btn.disabled = false; return; }
+        
+        // Procesar tallas: Mezclar existentes con las nuevas agregadas
+        let tallasActualizadas = [];
+        let tallasMap = {};
+
+        // 1. Cargar tallas existentes
+        if (insumoExistenteEncontrado.tallas && Array.isArray(insumoExistenteEncontrado.tallas)) {
+            insumoExistenteEncontrado.tallas.forEach(t => {
+                const [talla, qty] = t.split(':').map(s => s.trim());
+                if (talla) tallasMap[talla] = parseInt(qty) || 0;
+            });
+        }
+
+        // 2. Sumar lo que se está agregando ahora
+        const inputsTallas = document.querySelectorAll('.input-talla-stock');
+        inputsTallas.forEach(input => {
+            const val = parseInt(input.value);
+            if (!isNaN(val) && val > 0) {
+                const talla = input.dataset.talla;
+                tallasMap[talla] = (tallasMap[talla] || 0) + val;
+            }
+        });
+
+        // 3. Reconstruir array de strings
+        tallasActualizadas = Object.entries(tallasMap).map(([k, v]) => `${k}: ${v}`);
+        const nuevoStockTotal = (insumoExistenteEncontrado.stock || 0) + cantidadAAgregar;
+
+        try { // PUT (Actualización completa)
             const url = window.getApiUrl ? window.getApiUrl('/api/inventario_general') : '/api/inventario_general';
             const res = await fetch(url, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     ...getAuthHeader() // Añadir cabecera de autorización
-                }, body: JSON.stringify({ barcode: insumoExistenteEncontrado.barcode, cantidad: cantidad }) });
+                }, body: JSON.stringify({ id: insumoExistenteEncontrado.id, stock: nuevoStockTotal, tallas: tallasActualizadas, categoria: insumoExistenteEncontrado.categoria }) });
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
                 throw new Error(errData.error || 'Error del servidor.');
             }
-            const result = await res.json();
-            alert(`✅ Stock actualizado. Nuevo stock: ${result.insumo.stock}`);
+            alert(`✅ Stock y tallas actualizados. Nuevo total: ${nuevoStockTotal}`);
             cerrarModalAgregarInsumo();
             cargarInventarioGeneral();
         } catch (error) { manejarErrorApi(error); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
@@ -753,8 +771,8 @@ async function buscarInsumoPorBarcode(barcode) {
             document.getElementById('insumoPrecio').value = insumo.precio;
             document.getElementById('insumoCategoria').value = insumo.categoria;
             document.getElementById('insumoDescripcion').value = insumo.descripcion;
-            document.querySelectorAll('.input-talla-stock').forEach(i => i.disabled = true); // Deshabilitar edición de tallas al añadir stock
-            document.getElementById('insumoStockLabel').innerText = 'Cantidad a AÑADIR al Stock';
+            document.querySelectorAll('.input-talla-stock').forEach(i => { i.value = ''; i.disabled = false; }); // Permitir agregar por talla
+            document.getElementById('insumoStockLabel').innerText = 'Cantidad a AÑADIR (Total o por Talla)';
             document.getElementById('insumoStock').value = '1';
             document.getElementById('insumoNombre').readOnly = true;
             document.getElementById('insumoPrecio').readOnly = true;
@@ -798,15 +816,7 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
         alert('Error: La librería del escáner no se ha cargado.');
         return;
     }
-    if (!genericCodeReader) {
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-            ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.ITF
-        ]);
-        genericCodeReader = new ZXing.BrowserMultiFormatReader(hints);
-    }
+    if (!genericCodeReader) genericCodeReader = new ZXing.BrowserMultiFormatReader();
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
     
@@ -816,8 +826,8 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
             video: { 
                 facingMode: "environment", 
                 focusMode: "continuous",
-                width: { min: 640, ideal: 1920, max: 3840 }, 
-                height: { min: 480, ideal: 1080, max: 2160 } 
+                width: { min: 640, ideal: 1280, max: 1920 }, 
+                height: { min: 480, ideal: 720, max: 1080 } 
             } 
         };
         genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {

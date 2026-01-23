@@ -84,11 +84,16 @@ export default async function handler(req, res) {
       );
       res.status(201).json(rows[0]);
     } else if (req.method === 'PUT') {
-        const { id, stock } = req.body;
+        const { id, stock, tallas, categoria } = req.body;
         if (id === undefined || stock === undefined) {
             return res.status(400).json({ error: 'ID y stock son requeridos' });
         }
-        await pool.query('UPDATE inventario_general SET stock = $1 WHERE id = $2', [stock, id]);
+        
+        if (tallas !== undefined || categoria !== undefined) {
+            await pool.query('UPDATE inventario_general SET stock = $1, tallas = COALESCE($3, tallas), categoria = COALESCE($4, categoria) WHERE id = $2', [stock, id, tallas, categoria]);
+        } else {
+            await pool.query('UPDATE inventario_general SET stock = $1 WHERE id = $2', [stock, id]);
+        }
         
         // Ocultar producto en tienda si stock llega a 0
         if (stock <= 0) {
