@@ -132,32 +132,31 @@ function renderizarPaginaCarrito() {
     // --- INYECTAR FORMULARIO DE ENVÍO ---
     const formDiv = document.createElement('div');
     formDiv.className = 'shipping-form';
-    formDiv.style.cssText = "background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);";
     formDiv.innerHTML = `
-        <h3 style="margin-bottom: 15px; color: #333;">📍 Datos de Envío</h3>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Nombre Completo</label>
-            <input type="text" id="cliente-nombre" placeholder="Ej: Juan Pérez" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <h3>📍 Datos de Envío</h3>
+        <div class="form-group-envio">
+            <label>Nombre Completo</label>
+            <input type="text" id="cliente-nombre" class="input-envio" placeholder="Ej: Juan Pérez">
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Teléfono</label>
-            <input type="tel" id="cliente-telefono" placeholder="Ej: 9 1234 5678" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <div class="form-group-envio">
+            <label>Teléfono</label>
+            <input type="tel" id="cliente-telefono" class="input-envio" placeholder="Ej: 9 1234 5678">
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Dirección (Calle y Número)</label>
-            <input type="text" id="cliente-direccion" placeholder="Ej: Av. Siempre Viva 742" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <div class="form-group-envio">
+            <label>Dirección (Calle y Número)</label>
+            <input type="text" id="cliente-direccion" class="input-envio" placeholder="Ej: Av. Siempre Viva 742">
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Dpto / Casa / Oficina (Opcional)</label>
-            <input type="text" id="cliente-dpto" placeholder="Ej: Dpto 304, Torre B" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <div class="form-group-envio">
+            <label>Dpto / Casa / Oficina (Opcional)</label>
+            <input type="text" id="cliente-dpto" class="input-envio" placeholder="Ej: Dpto 304, Torre B">
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Comuna</label>
-            <input type="text" id="cliente-comuna" placeholder="Ej: Santiago" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <div class="form-group-envio">
+            <label>Comuna</label>
+            <input type="text" id="cliente-comuna" class="input-envio" placeholder="Ej: Santiago">
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display:block; font-weight:600; margin-bottom:5px;">Referencia (Opcional)</label>
-            <input type="text" id="cliente-referencia" placeholder="Ej: Portón negro, dejar en conserjería" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        <div class="form-group-envio">
+            <label>Referencia (Opcional)</label>
+            <input type="text" id="cliente-referencia" class="input-envio" placeholder="Ej: Portón negro, dejar en conserjería">
         </div>
     `;
     container.appendChild(formDiv);

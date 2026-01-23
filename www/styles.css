@@ -673,6 +673,52 @@ body {
 }
 .disclaimer { font-size: 0.75rem; color: #777; text-align: center; margin-top: 10px; }
 
+/* Estilos Formulario Envío Carrito (Mejorado para Móvil) */
+.shipping-form {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.shipping-form h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.form-group-envio {
+    margin-bottom: 15px;
+}
+
+.form-group-envio label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.input-envio {
+    width: 100%;
+    padding: 14px; /* Más espacio para tocar en móvil */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px; /* Evita zoom automático en iOS */
+    background: #f9f9f9;
+    transition: 0.3s;
+}
+
+.input-envio:focus {
+    background: #fff;
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,128,128,0.1);
+}
+
 /* Botón Flotante */
 .btn-instagram {
     position: fixed;
@@ -1016,8 +1062,8 @@ body {
         margin-right: 0 !important;
     }
     .shipping-form {
-        padding: 15px !important;
-        margin-top: 15px !important;
+        padding: 20px !important;
+        margin-top: 20px !important;
     }
     .payment-card {
         padding: 12px;

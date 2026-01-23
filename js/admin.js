@@ -854,15 +854,36 @@ function cerrarModalTallas() {
 async function guardarTallasEditadas(e) {
     e.preventDefault();
     const id = parseInt(document.getElementById('editTallaId').value);
-    const checkboxes = document.querySelectorAll('#editTallasContainer input:checked');
-    const nuevasTallas = Array.from(checkboxes).map(cb => cb.value);
+    const inputs = document.querySelectorAll('.input-edit-talla');
+    
+    let stockTallas = {};
+    let nuevasTallas = [];
+    let totalStock = 0;
+
+    inputs.forEach(input => {
+        const talla = input.dataset.talla;
+        const val = parseInt(input.value) || 0;
+        
+        stockTallas[talla] = val;
+        totalStock += val;
+        if (val > 0) {
+            nuevasTallas.push(talla);
+        }
+    });
 
     try {
-        await fetch('/api/productos', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ id: id, tallas: nuevasTallas }) });
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        await fetch(url, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, 
+            body: JSON.stringify({ id: id, tallas: nuevasTallas, stock_tallas: stockTallas, stock: totalStock }) 
+        });
+
         const p = productos.find(p => p.id === id);
-        if(p) p.tallas = nuevasTallas; // Actualizar localmente
-        window.mostrarNotificacion("✅ Tallas actualizadas");
+        if(p) { p.tallas = nuevasTallas; p.stock_tallas = stockTallas; p.stock = totalStock; }
+        window.mostrarNotificacion("✅ Stock por talla actualizado");
         cerrarModalTallas();
+        renderizarTablaInventario(); // Recargar la tabla para ver el stock total actualizado
     } catch (error) { console.error(error); window.mostrarNotificacion("❌ Error al actualizar"); }
 }
 

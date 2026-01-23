@@ -93,6 +93,9 @@ export default async function handler(req, res) {
         // Ocultar producto en tienda si stock llega a 0
         if (stock <= 0) {
             await pool.query('UPDATE productos SET mostrar = false WHERE barcode = (SELECT barcode FROM inventario_general WHERE id = $1)', [id]);
+        } else {
+            // Auto-mostrar si hay stock
+            await pool.query('UPDATE productos SET mostrar = true WHERE barcode = (SELECT barcode FROM inventario_general WHERE id = $1)', [id]);
         }
 
         res.json({ success: true, id, stock });
@@ -109,6 +112,9 @@ export default async function handler(req, res) {
             // Ocultar producto en tienda si stock llega a 0
             if (rows[0].stock <= 0) {
                 await pool.query('UPDATE productos SET mostrar = false WHERE barcode = $1', [barcode]);
+            } else {
+                // Auto-mostrar si hay stock
+                await pool.query('UPDATE productos SET mostrar = true WHERE barcode = $1', [barcode]);
             }
             res.json({ success: true, insumo: rows[0] });
         } else {

@@ -35,6 +35,10 @@ export default async function handler(req, res) {
       
       if (stock !== undefined) {
         await pool.query('UPDATE productos SET stock = $1 WHERE id = $2', [stock, id]);
+        // Auto-mostrar si hay stock
+        if (stock > 0) {
+            await pool.query('UPDATE productos SET mostrar = true WHERE id = $1', [id]);
+        }
       }
       
       if (mostrar !== undefined) {
@@ -49,10 +53,14 @@ export default async function handler(req, res) {
     } else if (req.method === 'PATCH') { // Nuevo método para actualizar stock por barcode
       const { barcode, cantidad } = req.body; // cantidad puede ser +1, -1, etc.
       if (barcode && cantidad !== undefined) {
-        await pool.query(
+        const { rows } = await pool.query(
           'UPDATE productos SET stock = stock + $1 WHERE barcode = $2 RETURNING id, nombre, stock',
           [cantidad, barcode]
         );
+        // Auto-mostrar si hay stock
+        if (rows.length > 0 && rows[0].stock > 0) {
+            await pool.query('UPDATE productos SET mostrar = true WHERE barcode = $1', [barcode]);
+        }
       }
       
       res.json({ success: true });
