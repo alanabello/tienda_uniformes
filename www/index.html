@@ -2,24 +2,173 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uniformes Clínicos</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <meta name="viewport" content="width=1200">
+    <title>StyleProUniformes</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Iconos y Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>Uniformes Clínicos</h1>
-    </header>
+    
 
-    <main>
-        <h2>Nuestros Productos</h2>
-        <p>Próximamente aquí verás los mejores uniformes clínicos.</p>
+    <!-- Barra de Anuncios -->
+    <div class="announcement-bar">
+        🚚 Envío a todo Santiago por solo $4000 | Despachos desde Buin
+    </div>
+
+    <!-- Navegación -->
+    
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="index.html" class="logo">StyleProUniformes</a>
+        <div class="nav-right" style="display: flex; align-items: center; gap: 15px;">
+            
+            <a href="index.html" style="text-decoration: none; font-size: 1.5rem;" title="Ir al Inicio">🏠</a>
+            <a href="login.html" style="text-decoration: none; font-size: 1.2rem;" title="Acceso Admin">🔐</a>
+            
+            <a href="carrito.html" class="cart-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span id="cart-count">0</span>
+            </a>
+        </div>
+    </div>
+</nav>
+<div class="ticker-wrapper">
+    <div class="ticker-content">
+        <span>TALLAS DISPONIBLES: XXS- XS — S — M — L — XL — XXL</span>
+        <span>TALLAS DISPONIBLES: XXS- XS — S — M — L — XL — XXL</span>
+        <span>TALLAS DISPONIBLES: XXS- XS — S — M — L — XL — XXL</span>
+        <span>TALLAS DISPONIBLES: XXS- XS — S — M — L — XL — XXL</span>
+    </div>
+</div> 
+<section class="hero-modern">
+    <div class="hero-content">
+        <span class="hero-badge">Colección 2026</span>
+        <h1>Tops Clínicos con Diseños <span class="highlight">Exclusivos</span></h1>
+        <p>Experimenta la comodidad del tejido elasticado de alta calidad. Estilo y funcionalidad para profesionales de la salud.</p>
+        <div class="hero-price">Desde $19.990</div>
+        <div class="hero-actions">
+            <a href="#product-grid" class="btn-primary" onclick="filtrarProductos('Mujer')">Ver Catálogo</a>
+            
+            <a href="#" onclick="abrirGuiaTallas(); return false;" class="btn-secondary">Guía de Tallas</a>
+        </div>
+    </div>
+    <div class="hero-image-container">
+        <div class="carousel-track" id="heroTrack">
+            <img src="imagenes/conjuntoazulmarino.jpeg" class="hero-img-cover hero-slide" alt="Slide 1">
+            <img src="imagenes/catalogofuccia.jpeg" class="hero-img-cover hero-slide" alt="Slide 2">
+            <img src="imagenes/catalogoroda.jpeg" class="hero-img-cover hero-slide" alt="Slide 3">
+            <img src="imagenes/cancertop2.png" class="hero-img-cover hero-slide" alt="Slide 4">
+        </div>
+        
+        <!-- Controles invisibles y burbujas -->
+        <div class="carousel-arrow prev" onclick="moverCarrusel(-1)"></div>
+        <div class="carousel-arrow next" onclick="moverCarrusel(1)"></div>
+        <div class="carousel-bubbles" id="heroBubbles"></div>
+        
+        <div class="hero-image-blob"></div>
+    </div>
+</section>
+
+<!-- Nueva Sección: Demostración de Calidad -->
+<section class="container" style="margin: 50px auto; text-align: center;">
+    <h2 style="color: var(--primary); margin-bottom: 15px; font-size: 1.8rem;">Tecnología Antifluido 💧</h2>
+    <p style="color: #666; margin-bottom: 25px;">Comprueba la resistencia y calidad premium de nuestras telas.</p>
+    
+    <div style="max-width: 400px; height: 500px; margin: 0 auto; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.15);">
+        <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover; object-position: bottom;" ontimeupdate="if(this.currentTime < 4) this.currentTime = 4; if(this.currentTime >= 9) this.currentTime = 4;">
+            <source src="videos/calidad-tela.mp4" type="video/mp4">
+        </video>
+    </div>
+</section>
+
+    <!-- Filtros y Catálogo -->
+    <main class="container">
+    <div class="filters">
+        <button class="btn-filter active" onclick="filtrarProductos('todos')">
+            Todos
+        </button>
+
+        <button class="btn-filter" onclick="filtrarProductos('Mujer')">
+            Mujer
+        </button>
+
+        <button class="btn-filter" onclick="filtrarProductos('Hombre')">
+            Hombre
+        </button>
+        <!-- 👉pantalones -->
+         <button class="btn-filter" onclick="filtrarProductos('Pantalones')">
+            Pantalones Mujer
+        </button>
+
+        <!-- 👉 NUEVA CATEGORÍA -->
+        <button class="btn-filter" onclick="filtrarProductos('Top C/N Diseños')">
+            Top C/N Diseños
+        </button>
+    </div>
+
+    <div id="product-grid" class="product-grid">
+        <!-- Aquí se cargarán los productos automáticamente -->
+    </div>
     </main>
 
-    <footer>
-        <p>&copy; 2023 Tu Tienda de Uniformes</p>
+    <!-- Botón Flotante Instagram -->
+    <a href="https://www.instagram.com/styleprouniformes?igsh=OGlxam9lMTl2OGtv" class="btn-instagram" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+    </a>
+
+    <!-- Botón Flotante WhatsApp -->
+    <a href="https://wa.me/56929395568" class="btn-whatssapp" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+    </a>
+
+    <!-- Modal Guía de Tallas -->
+    <div id="modal-tallas" class="modal" onclick="cerrarGuiaTallas()">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" src="imagenes/guiadetallas.png" alt="Guía de Tallas" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Modal Promociones (EDITAR AQUÍ LAS OFERTAS) -->
+    <div id="modal-promo" class="modal" onclick="cerrarPromo()">
+        <div class="modal-content promo-box" onclick="event.stopPropagation()">
+            <!-- La X para cerrar -->
+            <span class="close-modal-promo" onclick="cerrarPromo()">&times;</span>
+            
+            <div class="promo-icon">🎁</div>
+            
+            <div class="promo-header" id="promo-display-titulo">¡OFERTA FLASH!</div>
+            
+            <div class="promo-body">
+                <p id="promo-display-subtitulo">Solo por esta semana</p>
+                <div class="promo-highlight">
+                    <h2><span id="promo-display-contenido">Por la compra de un conjunto</span><br>
+                    <span class="promo-tag" id="promo-display-tag">ENVÍO GRATIS</span> 🚚💨</h2>
+                </div>
+            </div>
+
+            <button class="btn-promo" onclick="cerrarPromo()">¡LO QUIERO!</button>
+            <p class="promo-footer">*Válido hasta agotar stock</p>
+        </div>
+    </div>
+
+
+    <!-- Footer con acceso Admin -->
+    <footer style="text-align: center; padding: 30px 20px; color: #aaa; font-size: 0.8rem; margin-top: 40px; border-top: 1px solid #eee;">
+        <p>&copy; 2024 StyleProUniformes</p>
+        <a href="login.html" style="color: #ccc; text-decoration: none; margin-top: 10px; display: inline-block;">Acceso Admin 🔐</a>
     </footer>
 
-    <script src="../js/script.js"></script>
+    <!-- Scripts Refactorizados (Orden Importante) -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
