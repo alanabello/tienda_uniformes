@@ -79,6 +79,16 @@ export default async function handler(req, res) {
             // Asegurar que la tabla existe (por si es la primera venta)
             await pool.query(`CREATE TABLE IF NOT EXISTS ventas (orden TEXT PRIMARY KEY, total INTEGER, items JSONB, estado TEXT, fecha TIMESTAMP DEFAULT NOW(), datos_cliente JSONB)`);
             
+            // --- CORRECCIÓN ERROR ON CONFLICT ---
+            // Si la tabla ya existía sin PRIMARY KEY, esto agrega la restricción necesaria
+            try {
+                await pool.query("ALTER TABLE ventas ADD PRIMARY KEY (orden)");
+            } catch (e) {
+                // Si falla (porque ya existe o hay duplicados), aseguramos un índice único
+                // Esto soluciona el error "there is no unique or exclusion constraint matching the ON CONFLICT specification"
+                try { await pool.query("CREATE UNIQUE INDEX IF NOT EXISTS ventas_orden_idx ON ventas (orden)"); } catch (e2) {}
+            }
+
             // Insertar o actualizar la orden pendiente
             // Usamos ON CONFLICT por si el usuario reintenta pagar la misma orden
             await pool.query(`
