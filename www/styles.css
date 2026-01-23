@@ -1062,8 +1062,20 @@ body {
         margin-right: 0 !important;
     }
     .shipping-form {
-        padding: 20px !important;
-        margin-top: 20px !important;
+        padding: 25px 15px !important;
+        margin-top: 25px !important;
+    }
+    .shipping-form h3 {
+        font-size: 1.25rem;
+        margin-bottom: 25px;
+    }
+    .form-group-envio {
+        margin-bottom: 20px;
+    }
+    .input-envio {
+        padding: 16px !important;
+        font-size: 1rem !important;
+        border-radius: 12px;
     }
     .payment-card {
         padding: 12px;
