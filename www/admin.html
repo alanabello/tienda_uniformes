@@ -219,14 +219,35 @@
                 </div>
                 <div class="form-group">
                     <label>Tallas Disponibles</label>
-                    <div class="tallas-grid">
-                        <label class="talla-option"><input type="checkbox" value="XXS"><span class="talla-box">XXS</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XS"><span class="talla-box">XS</span></label>
-                        <label class="talla-option"><input type="checkbox" value="S"><span class="talla-box">S</span></label>
-                        <label class="talla-option"><input type="checkbox" value="M" checked><span class="talla-box">M</span></label>
-                        <label class="talla-option"><input type="checkbox" value="L"><span class="talla-box">L</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XL"><span class="talla-box">XL</span></label>
-                        <label class="talla-option"><input type="checkbox" value="XXL"><span class="talla-box">XXL</span></label>
+                    <div class="tallas-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">XXS</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="XXS" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">XS</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="XS" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">S</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="S" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">M</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="M" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">L</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="L" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">XL</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="XL" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.75rem;">XXL</label>
+                            <input type="number" class="input-new-talla-stock" data-talla="XXL" min="0" placeholder="0" style="width: 100%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
                     </div>
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
@@ -360,7 +381,7 @@
         <div class="modal-content login-box" style="text-align: left; max-width: 400px; width: 100%; position: relative; margin: auto;">
             <span onclick="cerrarModalTallas()" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
             <h3 style="text-align: center; margin-bottom: 20px;">Gestionar Tallas Disponibles</h3>
-            <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 15px;">Desmarca las tallas que se han agotado.</p>
+            <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 15px;">Ingresa el stock para cada talla.</p>
             <form onsubmit="guardarTallasEditadas(event)">
                 <input type="hidden" id="editTallaId">
                 <div class="tallas-grid" id="editTallasContainer">

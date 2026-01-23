@@ -9,9 +9,25 @@ function agregar(id) {
     const prod = productos.find(p => p.id === id);
     const talla = document.getElementById(`talla-${id}`).value;
 
+    // Validar stock global
     if ((prod.stock !== undefined && prod.stock <= 0) || prod.mostrar === false) {
         mostrarNotificacion("❌ Producto agotado o no disponible");
         return;
+    }
+
+    // Validar stock por talla
+    let stockDisponible = null;
+    if (prod.stock_tallas && prod.stock_tallas[talla] !== undefined) {
+        stockDisponible = prod.stock_tallas[talla];
+    }
+    
+    if (stockDisponible !== null) {
+        const enCarrito = carrito.find(i => i.id === id && i.talla === talla);
+        const cantidadActual = enCarrito ? enCarrito.cantidad : 0;
+        if (cantidadActual + 1 > stockDisponible) {
+            mostrarNotificacion(`⚠️ Solo quedan ${stockDisponible} unidades en talla ${talla}`);
+            return;
+        }
     }
     
     const colorSelect = document.getElementById(`color-${id}`); 

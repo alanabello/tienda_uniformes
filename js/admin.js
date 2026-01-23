@@ -176,14 +176,26 @@ async function guardarNuevoProducto(e) {
     e.preventDefault();
     const nombre = document.getElementById('newNombre').value;
     const precio = parseInt(document.getElementById('newPrecio').value);
-    const stock = parseInt(document.getElementById('newStock').value);
+    // El stock global se calculará sumando las tallas
     const categoria = document.getElementById('newCategoria').value;
     const descripcion = document.getElementById('newDescripcion').value;
     const barcode = document.getElementById('newBarcode').value.trim();
     if (barcode === "") { alert("El código de barras no puede estar vacío."); return; }
     
-    const checkboxes = document.querySelectorAll('.talla-option input:checked');
-    const tallas = Array.from(checkboxes).map(cb => cb.value);
+    // Recopilar stock por talla
+    const inputsTalla = document.querySelectorAll('.input-new-talla-stock');
+    let stockTallas = {};
+    let tallas = [];
+    let totalStock = 0;
+    inputsTalla.forEach(input => {
+        const val = parseInt(input.value) || 0;
+        if (val > 0) {
+            stockTallas[input.dataset.talla] = val;
+            tallas.push(input.dataset.talla);
+            totalStock += val;
+        }
+    });
+
     const mostrarColores = document.getElementById('newMostrarColores').checked;
     const fileInput = document.getElementById('newFotos');
     let imagenesProcesadas = [];
@@ -198,7 +210,7 @@ async function guardarNuevoProducto(e) {
         } else { alert("Por favor selecciona al menos una foto."); btn.innerText = textoOriginal; btn.disabled = false; return; }
     } catch (err) { console.error(err); alert("Error al procesar las imágenes."); btn.innerText = textoOriginal; btn.disabled = false; return; }
 
-    const nuevoProd = { nombre, precio, stock, categorias: [categoria], imagenes: imagenesProcesadas, descripcion, mostrar: true, tallas: tallas.length > 0 ? tallas : ["S", "M", "L"], mostrarColores: mostrarColores, barcode: barcode };
+    const nuevoProd = { nombre, precio, stock: totalStock, categorias: [categoria], imagenes: imagenesProcesadas, descripcion, mostrar: true, tallas: tallas, stock_tallas: stockTallas, mostrarColores: mostrarColores, barcode: barcode };
     btn.innerText = "Guardando...";
 
     try {
@@ -813,17 +825,21 @@ function abrirModalTallas(id) {
     const container = document.getElementById('editTallasContainer');
     container.innerHTML = '';
 
+    // Configurar grid para inputs
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    container.style.gap = '10px';
+
     const todasLasTallas = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-    // Si el producto no tiene tallas definidas (null), asumimos que todas están disponibles por defecto
-    const tallasProducto = producto.tallas || todasLasTallas;
+    const stockTallas = producto.stock_tallas || {};
 
     todasLasTallas.forEach(talla => {
-        const isChecked = tallasProducto.includes(talla) ? 'checked' : '';
+        const stockVal = stockTallas[talla] !== undefined ? stockTallas[talla] : 0;
         const html = `
-            <label class="talla-option">
-                <input type="checkbox" value="${talla}" ${isChecked}>
-                <span class="talla-box">${talla}</span>
-            </label>
+            <div style="text-align: center;">
+                <label style="font-size: 0.8rem; font-weight: bold;">${talla}</label>
+                <input type="number" class="input-edit-talla" data-talla="${talla}" value="${stockVal}" min="0" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
         `;
         container.innerHTML += html;
     });

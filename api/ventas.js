@@ -52,7 +52,13 @@ export default async function handler(req, res) {
           `, [item.cantidad, item.id]);
 
           // 2.2. Actualizar productos (siempre, como respaldo o si no tiene barcode)
-          await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [item.cantidad, item.id]);
+          // Descontar stock total Y stock por talla si existe
+          await pool.query(`
+            UPDATE productos 
+            SET stock = stock - $1,
+                stock_tallas = CASE WHEN stock_tallas ? $3 THEN jsonb_set(stock_tallas, ARRAY[$3], (COALESCE((stock_tallas->>$3)::int, 0) - $1)::text::jsonb) ELSE stock_tallas END
+            WHERE id = $2
+          `, [item.cantidad, item.id, item.talla]);
 
           // 2.3. Ocultar automáticamente si el stock llega a 0
           await pool.query(`

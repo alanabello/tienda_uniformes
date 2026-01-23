@@ -92,7 +92,7 @@ function renderizarProductos(filtro = 'todos') {
         const tallas = p.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
         const mostrarColores = p.mostrar_colores !== undefined ? p.mostrar_colores : true;
 
-        // Procesar stock por talla si viene del inventario general
+        // Procesar stock por talla (Prioridad: Inventario General > Stock Tallas Producto)
         let stockPorTalla = null;
         if (p.tallas_inventario && Array.isArray(p.tallas_inventario)) {
             stockPorTalla = {};
@@ -100,6 +100,8 @@ function renderizarProductos(filtro = 'todos') {
                 const [t, q] = str.split(':');
                 if (t && q) stockPorTalla[t.trim()] = parseInt(q.trim());
             });
+        } else if (p.stock_tallas) {
+            stockPorTalla = p.stock_tallas;
         }
 
         let btnTexto = "Añadir al Carrito";
@@ -188,7 +190,7 @@ async function cargarDetalleProducto() {
         const tallas = producto.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
         const mostrarColores = producto.mostrar_colores !== undefined ? producto.mostrar_colores : true;
 
-        // Procesar stock por talla (Misma lógica que en cards)
+        // Procesar stock por talla
         let stockPorTalla = null;
         if (producto.tallas_inventario && Array.isArray(producto.tallas_inventario)) {
             stockPorTalla = {};
@@ -196,6 +198,8 @@ async function cargarDetalleProducto() {
                 const [t, q] = str.split(':');
                 if (t && q) stockPorTalla[t.trim()] = parseInt(q.trim());
             });
+        } else if (producto.stock_tallas) {
+            stockPorTalla = producto.stock_tallas;
         }
 
         document.getElementById("detalle-producto").innerHTML = `

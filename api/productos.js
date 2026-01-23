@@ -8,6 +8,9 @@ export default async function handler(req, res) {
 
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+    // Asegurar columna stock_tallas (Migración automática)
+    await pool.query("ALTER TABLE productos ADD COLUMN IF NOT EXISTS stock_tallas JSONB");
+
     if (req.method === 'GET') {
       // Obtener todos los productos ordenados por ID
       // Sincronizando stock con inventario_general si existe coincidencia de barcode
@@ -20,15 +23,15 @@ export default async function handler(req, res) {
       res.json(rows);
     } else if (req.method === 'POST') {
       // Crear producto
-      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores, barcode } = req.body;
+      const { nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, stock_tallas, mostrarColores, barcode } = req.body;
       await pool.query(
-        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrar_colores, barcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
-        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, mostrarColores, barcode]
+        'INSERT INTO productos (nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, stock_tallas, mostrar_colores, barcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+        [nombre, precio, stock, categorias, imagenes, descripcion, mostrar, tallas, stock_tallas || {}, mostrarColores, barcode]
       );
       res.json({ success: true });
     } else if (req.method === 'PUT') {
       // Actualizar producto (Stock o Visibilidad)
-      const { id, stock, mostrar, tallas } = req.body;
+      const { id, stock, mostrar, tallas, stock_tallas } = req.body;
       
       if (stock !== undefined) {
         await pool.query('UPDATE productos SET stock = $1 WHERE id = $2', [stock, id]);
@@ -38,8 +41,8 @@ export default async function handler(req, res) {
         await pool.query('UPDATE productos SET mostrar = $1 WHERE id = $2', [mostrar, id]);
       }
 
-      if (tallas !== undefined) {
-        await pool.query('UPDATE productos SET tallas = $1 WHERE id = $2', [tallas, id]);
+      if (tallas !== undefined || stock_tallas !== undefined) {
+        await pool.query('UPDATE productos SET tallas = $1, stock_tallas = $2 WHERE id = $3', [tallas, stock_tallas, id]);
       }
       
       res.json({ success: true });
