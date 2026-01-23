@@ -92,6 +92,7 @@ function actualizarContador() {
 
 function renderizarPaginaCarrito() {
     const container = document.getElementById('cart-items');
+    const shippingContainer = document.getElementById('shipping-form-container');
     if (!container) return;
 
     // Guardar valores del formulario si ya existen (para no perderlos al eliminar items)
@@ -106,11 +107,14 @@ function renderizarPaginaCarrito() {
 
     if (carrito.length === 0) {
         container.innerHTML = "<p>Tu carrito está vacío.</p>";
+        if (shippingContainer) shippingContainer.innerHTML = '';
         actualizarTotales();
         return;
     }
 
     container.innerHTML = '';
+    if (shippingContainer) shippingContainer.innerHTML = '';
+
     carrito.forEach((item, index) => {
         const img = item.imagen || (item.imagenes && item.imagenes[0]) || 'https://via.placeholder.com/60';
         const div = document.createElement('div');
@@ -159,7 +163,12 @@ function renderizarPaginaCarrito() {
             <input type="text" id="cliente-referencia" class="input-envio" placeholder="Ej: Portón negro, dejar en conserjería">
         </div>
     `;
-    container.appendChild(formDiv);
+    
+    if (shippingContainer) {
+        shippingContainer.appendChild(formDiv);
+    } else {
+        container.appendChild(formDiv);
+    }
 
     // Restaurar valores
     if (savedValues.nombre) document.getElementById('cliente-nombre').value = savedValues.nombre;

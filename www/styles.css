@@ -719,6 +719,15 @@ body {
     box-shadow: 0 0 0 3px rgba(0,128,128,0.1);
 }
 
+/* Ajuste para cuando el formulario está dentro del resumen */
+.cart-summary-box .shipping-form {
+    box-shadow: none;
+    padding: 10px 0;
+    margin-top: 10px;
+    background: transparent;
+    border-top: 1px solid #eee;
+}
+
 /* Botón Flotante */
 .btn-instagram {
     position: fixed;
