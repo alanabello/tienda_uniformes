@@ -12,7 +12,7 @@ export default async function handler(req, res) {
       // Obtener todos los productos ordenados por ID
       // Sincronizando stock con inventario_general si existe coincidencia de barcode
       const { rows } = await pool.query(`
-        SELECT p.*, COALESCE(i.stock, p.stock) as stock
+        SELECT p.*, COALESCE(i.stock, p.stock) as stock, i.tallas as tallas_inventario
         FROM productos p
         LEFT JOIN inventario_general i ON p.barcode = i.barcode
         ORDER BY p.id ASC

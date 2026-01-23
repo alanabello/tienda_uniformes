@@ -92,6 +92,16 @@ function renderizarProductos(filtro = 'todos') {
         const tallas = p.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
         const mostrarColores = p.mostrar_colores !== undefined ? p.mostrar_colores : true;
 
+        // Procesar stock por talla si viene del inventario general
+        let stockPorTalla = null;
+        if (p.tallas_inventario && Array.isArray(p.tallas_inventario)) {
+            stockPorTalla = {};
+            p.tallas_inventario.forEach(str => {
+                const [t, q] = str.split(':');
+                if (t && q) stockPorTalla[t.trim()] = parseInt(q.trim());
+            });
+        }
+
         let btnTexto = "Añadir al Carrito";
         let btnDisabled = "";
 
@@ -110,7 +120,21 @@ function renderizarProductos(filtro = 'todos') {
                 <p class="price">$${p.precio.toLocaleString('es-CL')}</p>
                 <div class="selectors" onclick="event.stopPropagation()">
                     <select id="talla-${p.id}">
-                        ${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}
+                        ${tallas.map(t => {
+                            let disabled = "";
+                            let style = "";
+                            let label = t;
+                            if (stockPorTalla) {
+                                const qty = stockPorTalla[t];
+                                // Si la talla no está en el inventario o tiene stock 0, se deshabilita
+                                if (qty === undefined || qty <= 0) {
+                                    disabled = "disabled";
+                                    style = "color: #ccc; background-color: #f9f9f9;";
+                                    label = `${t} (Agotado)`;
+                                }
+                            }
+                            return `<option value="${t}" ${disabled} style="${style}">${label}</option>`;
+                        }).join('')}
                     </select>
                 </div>
                 <button class="btn-add" ${btnDisabled} onclick="event.stopPropagation(); agregar(${p.id})">
@@ -164,6 +188,16 @@ async function cargarDetalleProducto() {
         const tallas = producto.tallas || ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
         const mostrarColores = producto.mostrar_colores !== undefined ? producto.mostrar_colores : true;
 
+        // Procesar stock por talla (Misma lógica que en cards)
+        let stockPorTalla = null;
+        if (producto.tallas_inventario && Array.isArray(producto.tallas_inventario)) {
+            stockPorTalla = {};
+            producto.tallas_inventario.forEach(str => {
+                const [t, q] = str.split(':');
+                if (t && q) stockPorTalla[t.trim()] = parseInt(q.trim());
+            });
+        }
+
         document.getElementById("detalle-producto").innerHTML = `
         <div class="detalle-page">
             <div class="detalle-card">
@@ -184,7 +218,22 @@ async function cargarDetalleProducto() {
                     </ul>
                     <p class="detalle-desc">${producto.descripcion}</p>
                     <div class="detalle-selectores">
-                        <select id="detalle-talla">${tallas.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+                        <select id="detalle-talla">
+                            ${tallas.map(t => {
+                                let disabled = "";
+                                let style = "";
+                                let label = t;
+                                if (stockPorTalla) {
+                                    const qty = stockPorTalla[t];
+                                    if (qty === undefined || qty <= 0) {
+                                        disabled = "disabled";
+                                        style = "color: #ccc; background-color: #f9f9f9;";
+                                        label = `${t} (Agotado)`;
+                                    }
+                                }
+                                return `<option value="${t}" ${disabled} style="${style}">${label}</option>`;
+                            }).join('')}
+                        </select>
                     </div>
                     <button class="btn-add" ${btnAttr}>${btnTexto}</button>
                     <p class="envio-info">🚚 Despacho en <strong>3 días hábiles</strong></p>

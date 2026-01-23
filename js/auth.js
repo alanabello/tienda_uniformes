@@ -67,6 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const passInput = document.getElementById('adminPass');
     
     // Se usa 'new-password' en el campo de contraseña para evitar sugerencias agresivas del navegador
-    if (userInput) userInput.setAttribute('autocomplete', 'off');
+    if (userInput) {
+        userInput.setAttribute('autocomplete', 'off');
+        userInput.removeAttribute('placeholder');
+    }
     if (passInput) passInput.setAttribute('autocomplete', 'new-password');
 });
