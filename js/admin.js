@@ -494,15 +494,23 @@ async function iniciarEscaneoBarcode() {
         scannedBarcodeSpan.innerText = 'Error: Librería ZXing no cargada.';
         return;
     }
-    if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
+    if (!codeReader) {
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.ITF
+        ]);
+        codeReader = new ZXing.BrowserMultiFormatReader(hints);
+    }
     try {
         // CONFIGURACIÓN CORREGIDA: Rango flexible para mayor compatibilidad Android
         const constraints = { 
             video: { 
                 facingMode: "environment",
                 focusMode: "continuous", // Intenta forzar el autoenfoque
-                width: { min: 640, ideal: 1280, max: 1920 }, 
-                height: { min: 480, ideal: 720, max: 1080 } 
+                width: { min: 640, ideal: 1920, max: 3840 }, 
+                height: { min: 480, ideal: 1080, max: 2160 } 
             } 
         };
         await codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
@@ -790,7 +798,15 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
         alert('Error: La librería del escáner no se ha cargado.');
         return;
     }
-    if (!genericCodeReader) genericCodeReader = new ZXing.BrowserMultiFormatReader();
+    if (!genericCodeReader) {
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.ITF
+        ]);
+        genericCodeReader = new ZXing.BrowserMultiFormatReader(hints);
+    }
     window.abrirModal('modal-generic-scanner');
     statusElement.innerText = 'Iniciando cámara...';
     
@@ -800,8 +816,8 @@ function iniciarEscaneoParaInput(targetInputId, triggerSearch = false) {
             video: { 
                 facingMode: "environment", 
                 focusMode: "continuous",
-                width: { min: 640, ideal: 1280, max: 1920 }, 
-                height: { min: 480, ideal: 720, max: 1080 } 
+                width: { min: 640, ideal: 1920, max: 3840 }, 
+                height: { min: 480, ideal: 1080, max: 2160 } 
             } 
         };
         genericCodeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
