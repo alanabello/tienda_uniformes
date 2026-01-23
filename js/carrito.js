@@ -83,6 +83,7 @@ function renderizarPaginaCarrito() {
         nombre: document.getElementById('cliente-nombre')?.value || '',
         telefono: document.getElementById('cliente-telefono')?.value || '',
         direccion: document.getElementById('cliente-direccion')?.value || '',
+        dpto: document.getElementById('cliente-dpto')?.value || '',
         comuna: document.getElementById('cliente-comuna')?.value || '',
         referencia: document.getElementById('cliente-referencia')?.value || ''
     };
@@ -120,23 +121,27 @@ function renderizarPaginaCarrito() {
         <h3 style="margin-bottom: 15px; color: #333;">📍 Datos de Envío</h3>
         <div style="margin-bottom: 10px;">
             <label style="display:block; font-weight:600; margin-bottom:5px;">Nombre Completo</label>
-            <input type="text" id="cliente-nombre" placeholder="Ej: Juan Pérez" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="cliente-nombre" placeholder="Ej: Juan Pérez" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
         </div>
         <div style="margin-bottom: 10px;">
             <label style="display:block; font-weight:600; margin-bottom:5px;">Teléfono</label>
-            <input type="tel" id="cliente-telefono" placeholder="Ej: 9 1234 5678" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <input type="tel" id="cliente-telefono" placeholder="Ej: 9 1234 5678" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
         </div>
         <div style="margin-bottom: 10px;">
             <label style="display:block; font-weight:600; margin-bottom:5px;">Dirección (Calle y Número)</label>
-            <input type="text" id="cliente-direccion" placeholder="Ej: Av. Siempre Viva 742" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="cliente-direccion" placeholder="Ej: Av. Siempre Viva 742" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">Dpto / Casa / Oficina (Opcional)</label>
+            <input type="text" id="cliente-dpto" placeholder="Ej: Dpto 304, Torre B" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
         </div>
         <div style="margin-bottom: 10px;">
             <label style="display:block; font-weight:600; margin-bottom:5px;">Comuna</label>
-            <input type="text" id="cliente-comuna" placeholder="Ej: Santiago" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="cliente-comuna" placeholder="Ej: Santiago" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
         </div>
         <div style="margin-bottom: 10px;">
             <label style="display:block; font-weight:600; margin-bottom:5px;">Referencia (Opcional)</label>
-            <input type="text" id="cliente-referencia" placeholder="Ej: Portón negro, dejar en conserjería" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="cliente-referencia" placeholder="Ej: Portón negro, dejar en conserjería" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px;">
         </div>
     `;
     container.appendChild(formDiv);
@@ -145,6 +150,7 @@ function renderizarPaginaCarrito() {
     if (savedValues.nombre) document.getElementById('cliente-nombre').value = savedValues.nombre;
     if (savedValues.telefono) document.getElementById('cliente-telefono').value = savedValues.telefono;
     if (savedValues.direccion) document.getElementById('cliente-direccion').value = savedValues.direccion;
+    if (savedValues.dpto) document.getElementById('cliente-dpto').value = savedValues.dpto;
     if (savedValues.comuna) document.getElementById('cliente-comuna').value = savedValues.comuna;
     if (savedValues.referencia) document.getElementById('cliente-referencia').value = savedValues.referencia;
 
@@ -234,6 +240,7 @@ async function pagarConWebpay() {
     const nombre = document.getElementById('cliente-nombre')?.value.trim();
     const telefono = document.getElementById('cliente-telefono')?.value.trim();
     const direccion = document.getElementById('cliente-direccion')?.value.trim();
+    const dpto = document.getElementById('cliente-dpto')?.value.trim() || '';
     const comuna = document.getElementById('cliente-comuna')?.value.trim();
     const referencia = document.getElementById('cliente-referencia')?.value.trim() || '';
 
@@ -241,7 +248,10 @@ async function pagarConWebpay() {
         alert("⚠️ Por favor completa los Datos de Envío (Nombre, Teléfono, Dirección y Comuna) antes de pagar.");
         return;
     }
-    const datosCliente = { nombre, telefono, direccion, comuna, referencia };
+    const datosCliente = { nombre, telefono, direccion, dpto, comuna, referencia };
+
+    // Guardar datos del cliente temporalmente para recuperarlos al volver de Webpay
+    localStorage.setItem('datosCliente', JSON.stringify(datosCliente));
 
     mostrarNotificacion("🔄 Conectando con Webpay...");
 
@@ -299,14 +309,18 @@ async function registrarVentaExitosa() {
     try {
         const total = carritoGuardado.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
         const orden = "ORD-" + Date.now();
+        
+        // Recuperar datos del cliente guardados antes de ir a Webpay
+        const datosCliente = JSON.parse(localStorage.getItem('datosCliente') || '{}');
 
         await fetch('/api/ventas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orden, total, items: carritoGuardado, estado: "PAGADO" })
+            body: JSON.stringify({ orden, total, items: carritoGuardado, estado: "PAGADO", datos_cliente: datosCliente })
         });
 
         localStorage.removeItem('carrito');
+        localStorage.removeItem('datosCliente');
         console.log("✅ Venta registrada y stock actualizado");
     } catch (error) {
         console.error("Error registrando venta:", error);

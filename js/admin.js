@@ -264,27 +264,33 @@ async function cargarVentasAdmin() {
         
         // Formatear datos del cliente para mostrar
         const cliente = venta.datos_cliente || {};
+        const direccionCompleta = cliente.dpto ? `${cliente.direccion} (${cliente.dpto})` : cliente.direccion;
         const infoCliente = cliente.nombre 
-            ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📞 ${cliente.telefono}<br>📍 ${cliente.direccion}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
+            ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📞 ${cliente.telefono}<br>📍 ${direccionCompleta}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
             : 'Cliente Web (Sin datos)';
 
-        // Estado (Badge de color)
+        // Estado (Selector dinámico)
         const estado = venta.estado || 'PENDIENTE';
-        let badgeColor = '#fef3c7'; // Amarillo (Pendiente)
-        let badgeText = '#92400e';
-        if (estado === 'PAGADO') {
-            badgeColor = '#d1fae5'; // Verde
-            badgeText = '#065f46';
-        } else if (estado === 'RECHAZADO' || estado === 'ANULADO') {
-            badgeColor = '#fee2e2'; // Rojo
-            badgeText = '#991b1b';
-        }
-        const badge = `<span style="background:${badgeColor}; color:${badgeText}; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-top: 5px;">${estado}</span>`;
+        const opciones = ['PENDIENTE', 'PAGADO', 'ENTREGADO', 'ANULADO'];
+        
+        let selectHtml = `<select onchange="cambiarEstadoVenta('${venta.orden}', this.value)" style="padding: 4px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.75rem; font-weight: bold; background: white; margin-top: 5px; cursor: pointer;">`;
+        
+        opciones.forEach(op => {
+            let color = '#333';
+            if(op === 'PENDIENTE') color = '#d97706'; // Amarillo oscuro
+            if(op === 'PAGADO') color = '#059669'; // Verde
+            if(op === 'ENTREGADO') color = '#2563eb'; // Azul
+            if(op === 'ANULADO') color = '#dc2626'; // Rojo
+            
+            selectHtml += `<option value="${op}" ${op === estado ? 'selected' : ''} style="color:${color}">${op}</option>`;
+        });
+        selectHtml += `</select>`;
 
         // Botón WhatsApp (Enviar comprobante al admin)
         const adminPhone = "56929395568";
         const itemsList = items.map(i => `- ${i.nombre} (x${i.cantidad}) ${i.talla ? '['+i.talla+']' : ''}`).join('%0A');
-        const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${cliente.direccion || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
+        const dirMsg = cliente.dpto ? `${cliente.direccion} (${cliente.dpto})` : cliente.direccion;
+        const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${dirMsg || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
         
         const btnWhatsapp = `
             <a href="https://wa.me/${adminPhone}?text=${mensaje}" target="_blank" 
@@ -305,7 +311,7 @@ async function cargarVentasAdmin() {
                 <td style="vertical-align:top;">${fecha}</td>
                 <td style="vertical-align:top;">
                     <div style="font-weight:600; color:#333;">${venta.orden}</div>
-                    ${badge}
+                    ${selectHtml}
                 </td>
                 <td style="vertical-align:top;">
                     ${infoCliente}<br>
@@ -316,6 +322,32 @@ async function cargarVentasAdmin() {
             </tr>`;
         container.innerHTML += row;
     });
+}
+
+async function cambiarEstadoVenta(orden, nuevoEstado) {
+    const btn = document.activeElement; // El select que disparó el evento
+    
+    try {
+        // Feedback visual inmediato (cambiar color texto según selección)
+        if(nuevoEstado === 'PENDIENTE') btn.style.color = '#d97706';
+        if(nuevoEstado === 'PAGADO') btn.style.color = '#059669';
+        if(nuevoEstado === 'ENTREGADO') btn.style.color = '#2563eb';
+        if(nuevoEstado === 'ANULADO') btn.style.color = '#dc2626';
+
+        const url = window.getApiUrl ? window.getApiUrl('/api/ventas') : '/api/ventas';
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+            body: JSON.stringify({ orden, estado: nuevoEstado })
+        });
+
+        if (!res.ok) throw new Error("Error al actualizar");
+        mostrarNotificacion(`✅ Estado cambiado a ${nuevoEstado}`);
+    } catch (error) {
+        console.error(error);
+        alert("Error al actualizar estado");
+        cargarVentasAdmin(); // Revertir cambios visuales recargando
+    }
 }
 
 // --- Promo ---
@@ -848,3 +880,4 @@ window.detenerEscaneoGenerico = detenerEscaneoGenerico;
 window.abrirModalTallas = abrirModalTallas;
 window.cerrarModalTallas = cerrarModalTallas;
 window.guardarTallasEditadas = guardarTallasEditadas;
+window.cambiarEstadoVenta = cambiarEstadoVenta;

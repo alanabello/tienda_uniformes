@@ -1004,6 +1004,24 @@ body {
     .envio-info {
         display: none; /* Ocultar info de envío en miniatura */
     }
+
+    /* AJUSTES CARRITO MOVIL */
+    .cart-item {
+        padding: 12px;
+        gap: 10px;
+    }
+    .cart-item img {
+        width: 50px !important;
+        height: 50px !important;
+        margin-right: 0 !important;
+    }
+    .shipping-form {
+        padding: 15px !important;
+        margin-top: 15px !important;
+    }
+    .payment-card {
+        padding: 12px;
+    }
 }
 
 /* =========================================
