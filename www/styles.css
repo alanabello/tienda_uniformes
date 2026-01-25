@@ -1229,7 +1229,16 @@ body {
 .login-footer a:hover {
     color: var(--primary);
 }
-}
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    margin-bottom: 30px;
+
 
 /* --- ADMIN GLOBAL ACTIONS (DROPDOWN) --- */
 .admin-global-actions {
@@ -1461,4 +1470,5 @@ body {
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
+}
 }
