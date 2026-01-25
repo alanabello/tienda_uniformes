@@ -278,7 +278,7 @@ async function cargarVentasAdmin() {
         const cliente = venta.datos_cliente || {};
         const direccionCompleta = cliente.dpto ? `${cliente.direccion} (${cliente.dpto})` : cliente.direccion;
         const infoCliente = cliente.nombre 
-            ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📞 ${cliente.telefono}<br>📍 ${direccionCompleta}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
+            ? `<strong>${cliente.nombre}</strong><br><span style="font-size:0.85rem">📧 ${cliente.email || 'Sin email'}<br>📞 ${cliente.telefono}<br>📍 ${direccionCompleta}, ${cliente.comuna}<br>📝 ${cliente.referencia || ''}</span>` 
             : 'Cliente Web (Sin datos)';
 
         // Estado (Selector dinámico)
@@ -302,7 +302,7 @@ async function cargarVentasAdmin() {
         const adminPhone = "56929395568";
         const itemsList = items.map(i => `- ${i.nombre} (x${i.cantidad}) ${i.talla ? '['+i.talla+']' : ''}`).join('%0A');
         const dirMsg = cliente.dpto ? `${cliente.direccion} (${cliente.dpto})` : cliente.direccion;
-        const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${dirMsg || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
+        const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📧 *Email:* ${cliente.email || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${dirMsg || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
         
         const btnWhatsapp = `
             <a href="https://wa.me/${adminPhone}?text=${mensaje}" target="_blank" 

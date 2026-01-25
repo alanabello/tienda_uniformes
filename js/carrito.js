@@ -98,6 +98,7 @@ function renderizarPaginaCarrito() {
     // Guardar valores del formulario si ya existen (para no perderlos al eliminar items)
     const savedValues = {
         nombre: document.getElementById('cliente-nombre')?.value || '',
+        email: document.getElementById('cliente-email')?.value || '',
         telefono: document.getElementById('cliente-telefono')?.value || '',
         direccion: document.getElementById('cliente-direccion')?.value || '',
         dpto: document.getElementById('cliente-dpto')?.value || '',
@@ -143,6 +144,10 @@ function renderizarPaginaCarrito() {
             <input type="text" id="cliente-nombre" class="input-envio" placeholder="Ej: Juan Pérez">
         </div>
         <div class="form-group-envio">
+            <label>Correo Electrónico</label>
+            <input type="email" id="cliente-email" class="input-envio" placeholder="Ej: juan@example.com">
+        </div>
+        <div class="form-group-envio">
             <label>Teléfono</label>
             <input type="tel" id="cliente-telefono" class="input-envio" placeholder="Ej: 9 1234 5678">
         </div>
@@ -172,6 +177,7 @@ function renderizarPaginaCarrito() {
 
     // Restaurar valores
     if (savedValues.nombre) document.getElementById('cliente-nombre').value = savedValues.nombre;
+    if (savedValues.email) document.getElementById('cliente-email').value = savedValues.email;
     if (savedValues.telefono) document.getElementById('cliente-telefono').value = savedValues.telefono;
     if (savedValues.direccion) document.getElementById('cliente-direccion').value = savedValues.direccion;
     if (savedValues.dpto) document.getElementById('cliente-dpto').value = savedValues.dpto;
@@ -262,17 +268,18 @@ async function pagarConWebpay() {
 
     // --- VALIDACIÓN DE DATOS DE ENVÍO ---
     const nombre = document.getElementById('cliente-nombre')?.value.trim();
+    const email = document.getElementById('cliente-email')?.value.trim();
     const telefono = document.getElementById('cliente-telefono')?.value.trim();
     const direccion = document.getElementById('cliente-direccion')?.value.trim();
     const dpto = document.getElementById('cliente-dpto')?.value.trim() || '';
     const comuna = document.getElementById('cliente-comuna')?.value.trim();
     const referencia = document.getElementById('cliente-referencia')?.value.trim() || '';
 
-    if (!nombre || !telefono || !direccion || !comuna) {
-        alert("⚠️ Por favor completa los Datos de Envío (Nombre, Teléfono, Dirección y Comuna) antes de pagar.");
+    if (!nombre || !email || !telefono || !direccion || !comuna) {
+        alert("⚠️ Por favor completa los Datos de Envío (Nombre, Email, Teléfono, Dirección y Comuna) antes de pagar.");
         return;
     }
-    const datosCliente = { nombre, telefono, direccion, dpto, comuna, referencia };
+    const datosCliente = { nombre, email, telefono, direccion, dpto, comuna, referencia };
 
     // Guardar datos del cliente temporalmente para recuperarlos al volver de Webpay
     localStorage.setItem('datosCliente', JSON.stringify(datosCliente));
