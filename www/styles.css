@@ -1415,3 +1415,50 @@ body {
     border-color: var(--primary);
     box-shadow: 0 4px 10px rgba(0,128,128,0.3);
 }
+
+/* --- DASHBOARD AVANZADO --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kpi-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 5px solid var(--primary);
+    transition: transform 0.2s;
+}
+
+.kpi-card:hover { transform: translateY(-5px); }
+.kpi-card h4 { margin: 0; font-size: 0.9rem; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-card .value { font-size: 1.8rem; font-weight: 800; color: #333; margin-top: 5px; }
+.kpi-card.blue { border-left-color: #3498db; }
+.kpi-card.green { border-left-color: #2ecc71; }
+.kpi-card.orange { border-left-color: #f39c12; }
+.kpi-card.red { border-left-color: #e74c3c; }
+
+.chart-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    height: 300px;
+    position: relative;
+}
+
+.search-input-admin {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}

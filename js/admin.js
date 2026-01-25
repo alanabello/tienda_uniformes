@@ -6,6 +6,7 @@
 // --- Inventario Tienda ---
 let ordenColumna = '';
 let ordenDireccion = 'asc';
+let generalChart = null;
 
 function manejarErrorApi(error) {
     console.error(error);
@@ -570,19 +571,104 @@ async function cargarInventarioGeneral() {
     } catch (error) { console.error(error); tbody.innerHTML = `<tr><td colspan="7" style="color:red;">${error.message}</td></tr>`; }
 }
 
-function renderizarTablaInsumos() {
+function renderizarTablaInsumos(filtro = '') {
     const tbody = document.getElementById('inventario-general-body');
     tbody.innerHTML = '';
-    if (insumos.length === 0) { tbody.innerHTML = '<tr><td colspan="7">No hay insumos en el inventario.</td></tr>'; return; }
-    insumos.forEach(insumo => {
+    
+    let datos = insumos;
+    if (filtro) {
+        const f = filtro.toLowerCase();
+        datos = insumos.filter(i => 
+            (i.nombre || '').toLowerCase().includes(f) ||
+            (i.barcode || '').toLowerCase().includes(f) ||
+            (i.categoria || '').toLowerCase().includes(f)
+        );
+    }
+
+    if (datos.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No se encontraron insumos.</td></tr>'; }
+    
+    datos.forEach(insumo => {
         const row = `<tr data-insumo-id="${insumo.id}"><td><strong>${insumo.nombre}</strong></td><td>${insumo.barcode || 'N/A'}</td><td>${insumo.categoria || 'N/A'}</td><td><input type="number" value="${insumo.stock}" min="0" onchange="actualizarStockInsumo(${insumo.id}, this.value)" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;"></td><td>$${(insumo.precio || 0).toLocaleString('es-CL')}</td><td>${(insumo.tallas || []).join(', ') || 'N/A'}</td><td>${insumo.descripcion || 'Sin descripción'}</td><td><button onclick="eliminarInsumo(${insumo.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem;">🗑️</button></td></tr>`;
         tbody.innerHTML += row;
     });
-    const summaryContainer = document.getElementById('inventario-general-summary');
-    if (summaryContainer) {
-        const totalStock = insumos.reduce((acc, item) => acc + (item.stock || 0), 0);
-        const valorTotal = insumos.reduce((acc, item) => acc + ((item.stock || 0) * (item.precio || 0)), 0);
-        summaryContainer.innerHTML = `<div><h4 style="margin:0; color: #666; font-size: 0.9rem;">Total de Insumos (Stock)</h4><p style="margin:0; font-size: 1.5rem; font-weight: 700;">${totalStock.toLocaleString('es-CL')}</p></div><div><h4 style="margin:0; color: #666; font-size: 0.9rem;">Valor Total del Inventario</h4><p style="margin:0; font-size: 1.5rem; font-weight: 700;">$${valorTotal.toLocaleString('es-CL')}</p></div>`;
+
+    actualizarDashboardGeneral(insumos);
+}
+
+function actualizarDashboardGeneral(data) {
+    const dashboard = document.getElementById('inventario-general-dashboard');
+    const chartSection = document.getElementById('chart-section-general');
+    if (!dashboard) return;
+
+    const totalItems = data.length;
+    const totalStock = data.reduce((acc, item) => acc + (item.stock || 0), 0);
+    const valorTotal = data.reduce((acc, item) => acc + ((item.stock || 0) * (item.precio || 0)), 0);
+    const lowStock = data.filter(item => (item.stock || 0) < 10).length;
+
+    dashboard.innerHTML = `
+        <div class="kpi-card blue">
+            <h4>Total Insumos</h4>
+            <div class="value">${totalItems}</div>
+        </div>
+        <div class="kpi-card green">
+            <h4>Stock Total (Unidades)</h4>
+            <div class="value">${totalStock.toLocaleString('es-CL')}</div>
+        </div>
+        <div class="kpi-card orange">
+            <h4>Valor Inventario</h4>
+            <div class="value">$${valorTotal.toLocaleString('es-CL')}</div>
+        </div>
+        <div class="kpi-card red">
+            <h4>Alertas Stock Bajo (<10)</h4>
+            <div class="value">${lowStock}</div>
+        </div>
+    `;
+
+    if (chartSection) chartSection.style.display = 'block';
+    renderizarGraficoCategorias(data);
+}
+
+function renderizarGraficoCategorias(data) {
+    const ctx = document.getElementById('generalInventoryChart');
+    if (!ctx) return;
+
+    const categorias = {};
+    data.forEach(item => {
+        const cat = item.categoria || 'Sin Categoría';
+        categorias[cat] = (categorias[cat] || 0) + (item.stock || 0);
+    });
+
+    const labels = Object.keys(categorias);
+    const values = Object.values(categorias);
+
+    if (generalChart) generalChart.destroy();
+
+    generalChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Stock por Categoría',
+                data: values,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function filtrarInventarioGeneral(termino) {
+    renderizarTablaInsumos(termino);
+}
+
+// Función auxiliar para sumar stock de tallas
+function calcularStockTotalInsumo() {
     }
 }
 
@@ -955,3 +1041,4 @@ window.abrirModalTallas = abrirModalTallas;
 window.cerrarModalTallas = cerrarModalTallas;
 window.guardarTallasEditadas = guardarTallasEditadas;
 window.cambiarEstadoVenta = cambiarEstadoVenta;
+window.filtrarInventarioGeneral = filtrarInventarioGeneral;
