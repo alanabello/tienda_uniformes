@@ -669,11 +669,6 @@ function filtrarInventarioGeneral(termino) {
 
 // Función auxiliar para sumar stock de tallas
 function calcularStockTotalInsumo() {
-    }
-}
-
-// Función auxiliar para sumar stock de tallas
-function calcularStockTotalInsumo() {
     const inputs = document.querySelectorAll('.input-talla-stock');
     let total = 0;
     let hayValores = false;
