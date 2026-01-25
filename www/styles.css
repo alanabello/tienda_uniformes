@@ -1452,6 +1452,14 @@ body {
 .kpi-card.green { border-left-color: #2ecc71; }
 .kpi-card.orange { border-left-color: #f39c12; }
 .kpi-card.red { border-left-color: #e74c3c; }
+.kpi-card.purple { border-left-color: #9b59b6; }
+
+.dashboard-section-title {
+    color: #555;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    font-weight: 600;
+}
 
 .chart-section {
     background: white;

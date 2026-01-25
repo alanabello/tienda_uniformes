@@ -596,31 +596,43 @@ function renderizarTablaInsumos(filtro = '') {
 }
 
 function actualizarDashboardGeneral(data) {
-    const dashboard = document.getElementById('inventario-general-dashboard');
+    const dashboardOp = document.getElementById('dashboard-operativo');
+    const dashboardFin = document.getElementById('dashboard-financiero');
     const chartSection = document.getElementById('chart-section-general');
-    if (!dashboard) return;
+    
+    if (!dashboardOp || !dashboardFin) return;
 
     const totalItems = data.length;
     const totalStock = data.reduce((acc, item) => acc + (item.stock || 0), 0);
     const valorTotal = data.reduce((acc, item) => acc + ((item.stock || 0) * (item.precio || 0)), 0);
     const lowStock = data.filter(item => (item.stock || 0) < 10).length;
+    const costoPromedio = totalItems > 0 ? Math.round(valorTotal / totalItems) : 0;
 
-    dashboard.innerHTML = `
+    // 1. Métricas Operativas
+    dashboardOp.innerHTML = `
         <div class="kpi-card blue">
-            <h4>Total Insumos</h4>
+            <h4>Items Únicos</h4>
             <div class="value">${totalItems}</div>
         </div>
         <div class="kpi-card green">
             <h4>Stock Total (Unidades)</h4>
             <div class="value">${totalStock.toLocaleString('es-CL')}</div>
         </div>
-        <div class="kpi-card orange">
-            <h4>Valor Inventario</h4>
-            <div class="value">$${valorTotal.toLocaleString('es-CL')}</div>
-        </div>
         <div class="kpi-card red">
             <h4>Alertas Stock Bajo (<10)</h4>
             <div class="value">${lowStock}</div>
+        </div>
+    `;
+
+    // 2. Métricas Financieras
+    dashboardFin.innerHTML = `
+        <div class="kpi-card orange">
+            <h4>Valor Total Inventario</h4>
+            <div class="value">$${valorTotal.toLocaleString('es-CL')}</div>
+        </div>
+        <div class="kpi-card purple">
+            <h4>Costo Promedio Item</h4>
+            <div class="value">$${costoPromedio.toLocaleString('es-CL')}</div>
         </div>
     `;
 
