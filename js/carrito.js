@@ -316,11 +316,6 @@ async function pagarConWebpay() {
 
         const data = await res.json();
 
-        // --- CÓDIGO PARA INTEGRACIÓN TRANSBANK ---
-        console.log("Token Webpay:", data.token);
-        // Esta alerta te permite copiar el token antes de ir a Webpay. Coméntala cuando termines la certificación.
-        alert("Copia este Token para el formulario de Transbank:\n\n" + data.token);
-
         const form = document.createElement("form");
         form.method = "POST";
         form.action = data.url;

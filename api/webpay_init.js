@@ -71,14 +71,25 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- PERSISTENCIA: Guardar venta PENDIENTE ---
-        // Necesario para que webpay_return.js pueda confirmar la venta y descontar stock
+        // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
+        const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';
+
+        // 1. Solicitar Token a Transbank PRIMERO
+        const createResponse = await tx.create(buyOrder, sessionId, amountInt, returnUrl);
+        const token = createResponse.token;
+
+        // 2. Guardar venta PENDIENTE con el TOKEN en la Base de Datos
         if (process.env.DATABASE_URL) {
             const pool = new Pool({ connectionString: process.env.DATABASE_URL });
             
             // Asegurar que la tabla existe (por si es la primera venta)
             await pool.query(`CREATE TABLE IF NOT EXISTS ventas (orden TEXT PRIMARY KEY, total INTEGER, items JSONB, estado TEXT, fecha TIMESTAMP DEFAULT NOW(), datos_cliente JSONB)`);
             
+            // Asegurar que existe la columna token para guardar la referencia
+            try {
+                await pool.query("ALTER TABLE ventas ADD COLUMN IF NOT EXISTS token TEXT");
+            } catch (e) { console.log("Columna token ya existe o error al crear:", e.message); }
+
             // --- CORRECCIÓN ERROR ON CONFLICT ---
             // Si la tabla ya existía sin PRIMARY KEY, esto agrega la restricción necesaria
             try {
@@ -92,17 +103,12 @@ export default async function handler(req, res) {
             // Insertar o actualizar la orden pendiente
             // Usamos ON CONFLICT por si el usuario reintenta pagar la misma orden
             await pool.query(`
-                INSERT INTO ventas (orden, total, items, estado, datos_cliente) 
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO ventas (orden, total, items, estado, datos_cliente, token) 
+                VALUES ($1, $2, $3, $4, $5, $6)
                 ON CONFLICT (orden) DO UPDATE 
-                SET total = $2, items = $3, estado = $4, datos_cliente = $5, fecha = NOW()
-            `, [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE', JSON.stringify(datosCliente || {})]);
+                SET total = $2, items = $3, estado = $4, datos_cliente = $5, fecha = NOW(), token = $6
+            `, [buyOrder, amountInt, JSON.stringify(items || []), 'PENDIENTE', JSON.stringify(datosCliente || {}), token]);
         }
-        
-        // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
-        const returnUrl = 'https://styleprouniformes.vercel.app/api/webpay_return';
-
-        const createResponse = await tx.create(buyOrder, sessionId, amountInt, returnUrl);
         res.status(200).json(createResponse);
     } catch (error) {
         console.error("Error Webpay Init:", error);
