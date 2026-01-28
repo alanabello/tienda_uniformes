@@ -4,7 +4,7 @@ import { Pool } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
     try {
-        // Configuración Transbank
+        // Configuración Transbank (Dinámica: Lee de variables de entorno o usa Integración por defecto)
         const commerceCode = process.env.WEBPAY_COMMERCE_CODE || IntegrationCommerceCodes.WEBPAY_PLUS;
         const apiKey = process.env.WEBPAY_API_KEY || IntegrationApiKeys.WEBPAY;
         const environment = process.env.WEBPAY_ENV === 'production' ? Environment.Production : Environment.Integration;
