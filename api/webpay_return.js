@@ -22,6 +22,7 @@ export default async function handler(req, res) {
         
         const token = query.token_ws || body.token_ws;
         const tbkToken = query.TBK_TOKEN || body.TBK_TOKEN; // Caso anular compra
+        const tbkOrdenCompra = query.TBK_ORDEN_COMPRA || body.TBK_ORDEN_COMPRA; // Capturar orden anulada
 
         // Función segura para redirigir (compatible con Vercel y Node puro)
         const safeRedirect = (url) => {
@@ -32,6 +33,11 @@ export default async function handler(req, res) {
 
         // Si el usuario anuló la compra en el formulario bancario
         if (tbkToken && !token) {
+            // Actualizar estado a ANULADO en la base de datos
+            if (process.env.DATABASE_URL && tbkOrdenCompra) {
+                const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+                await pool.query("UPDATE ventas SET estado = 'ANULADO' WHERE orden = $1", [tbkOrdenCompra]);
+            }
             return safeRedirect('/pago-fallido.html?motivo=anulado');
         }
 

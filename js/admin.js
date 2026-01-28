@@ -272,7 +272,7 @@ async function cargarVentasAdmin() {
     }
 
     ventas.forEach(venta => {
-        const fecha = venta.fecha ? new Date(venta.fecha).toLocaleDateString() : '-';
+        const fecha = venta.fecha ? new Date(venta.fecha).toLocaleString('es-CL') : '-';
         const items = venta.items || [];
         
         // Formatear datos del cliente para mostrar
