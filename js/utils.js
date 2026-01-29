@@ -10,7 +10,7 @@ var ultimoErrorDB = "";
 var zxingScanner = null;
 
 // Variables para escáneres
-var telefonoTienda = ""; // Se carga desde el servidor (seguro)
+var telefonoTienda = ""; // Debe estar vacío para proteger tu privacidad
 var instagramURL = "";   // Se carga desde el servidor (seguro)
 var codeReader = null;
 var selectedDeviceId = null;
@@ -45,7 +45,10 @@ async function cargarConfiguracionGlobal() {
             const data = await res.json();
             configTienda.envioGratis = data.envio_gratis;
             
-            if (data.telefono) telefonoTienda = data.telefono;
+            if (data.telefono) {
+                telefonoTienda = data.telefono;
+                console.log("✅ Contacto cargado correctamente desde Vercel");
+            }
             if (data.instagram) instagramURL = data.instagram;
 
             // Actualizar botones flotantes si existen en el HTML

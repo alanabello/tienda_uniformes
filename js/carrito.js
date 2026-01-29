@@ -231,9 +231,6 @@ function actualizarTotales() {
 function enviarPedido() {
     if (carrito.length === 0) return alert("El carrito está vacío");
 
-    const telefono = window.telefonoTienda;
-    if (!telefono) return alert("Error: No se pudo cargar el contacto de la tienda. Intenta recargar la página.");
-
     const pagoInput = document.querySelector('input[name="payment"]:checked');
     const pago = pagoInput ? pagoInput.value : 'Webpay';
     
@@ -241,6 +238,9 @@ function enviarPedido() {
         pagarConWebpay();
         return;
     }
+
+    const telefono = window.telefonoTienda;
+    if (!telefono) return alert("Error: No se pudo cargar el contacto de la tienda. Intenta recargar la página.");
 
     let mensaje = "Hola Uniformes Clínicos! 👋 Quiero realizar el siguiente pedido:\n\n";
     let subtotal = 0;
