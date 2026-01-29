@@ -194,12 +194,14 @@ function eliminar(index) {
 }
 
 function calcularEnvio(carrito) {
-    return 0; // Desactivado temporalmente para prueba Transbank
-    // if (!carrito || carrito.length === 0) return 4000;
-    // const tienePantalon = carrito.some(item => item.categorias && item.categorias.includes('Pantalones'));
-    // const tieneTop = carrito.some(item => item.categorias && !item.categorias.includes('Pantalones'));
-    // if (tienePantalon && tieneTop) return 0;
-    // return 4000;
+    // Si el modo "Envío Gratis / Pruebas" está activo globalmente
+    if (window.configTienda && window.configTienda.envioGratis) return 0;
+
+    if (!carrito || carrito.length === 0) return 4000;
+    const tienePantalon = carrito.some(item => item.categorias && item.categorias.includes('Pantalones'));
+    const tieneTop = carrito.some(item => item.categorias && !item.categorias.includes('Pantalones'));
+    if (tienePantalon && tieneTop) return 0;
+    return 4000;
 }
 
 function actualizarTotales() {

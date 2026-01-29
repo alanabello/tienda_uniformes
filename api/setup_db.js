@@ -83,6 +83,16 @@ export default async function handler(req, res) {
                 tag TEXT
             );
         `);
+
+        // 6. Tabla de CONFIGURACIÓN GENERAL (Para activar/desactivar envío gratis)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS configuracion (
+                clave TEXT PRIMARY KEY,
+                valor TEXT
+            );
+        `);
+        // Insertar valor por defecto (Desactivado)
+        await pool.query("INSERT INTO configuracion (clave, valor) VALUES ('envio_gratis', 'false') ON CONFLICT DO NOTHING;");
         
         // Insertar promo por defecto
         const countRes = await pool.query('SELECT count(*) FROM config_promo');

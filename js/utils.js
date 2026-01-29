@@ -18,6 +18,7 @@ var targetInputIdForScanner = null;
 // Variables de inventario general
 var insumos = [];
 var insumoExistenteEncontrado = null;
+var configTienda = { envioGratis: false }; // Configuración global
 
 // --- CONFIGURACIÓN DE CONEXIÓN ---
 // IMPORTANTE: Cambia esta URL por la dirección real de tu proyecto en Vercel
@@ -31,6 +32,20 @@ function getApiUrl(endpoint) {
     
     // Si es App, forzar la conexión al servidor en la nube. Si es web, usar relativa.
     return isApp ? `${API_BASE_URL}${endpoint}` : endpoint;
+}
+
+// Cargar configuración global (Envío gratis / Modo pruebas)
+async function cargarConfiguracionGlobal() {
+    try {
+        const url = getApiUrl('/api/config');
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            configTienda.envioGratis = data.envio_gratis;
+            // Si estamos en el carrito, actualizar totales visualmente
+            if (typeof actualizarTotales === 'function') actualizarTotales();
+        }
+    } catch (e) { console.error("Error cargando config:", e); }
 }
 
 // Helper para mostrar notificaciones tipo "Toast"
@@ -81,3 +96,4 @@ const processImage = (file) => {
 window.mostrarNotificacion = mostrarNotificacion;
 window.processImage = processImage;
 window.getApiUrl = getApiUrl;
+window.cargarConfiguracionGlobal = cargarConfiguracionGlobal;

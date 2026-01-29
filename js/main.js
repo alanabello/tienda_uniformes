@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
     // Lógica para todas las páginas
+    if (typeof cargarConfiguracionGlobal === 'function') cargarConfiguracionGlobal();
     if (typeof actualizarContador === 'function') actualizarContador();
 
     // Lógica específica para el sitio público (tienda)

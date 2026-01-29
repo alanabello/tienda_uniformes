@@ -87,6 +87,7 @@ async function cargarInventarioAdmin() {
         }
     }
     renderizarTablaInventario();
+    renderizarBotonEnvio(); // Mostrar botón de configuración
 }
 
 function renderizarTablaInventario() {
@@ -1015,6 +1016,75 @@ async function guardarTallasEditadas(e) {
         cerrarModalTallas();
         renderizarTablaInventario(); // Recargar la tabla para ver el stock total actualizado
     } catch (error) { console.error(error); window.mostrarNotificacion("❌ Error al actualizar"); }
+}
+
+// --- CONFIGURACIÓN ENVÍO (MODO PRUEBAS) ---
+async function renderizarBotonEnvio() {
+    const header = document.querySelector('.admin-header');
+    if (!header || document.getElementById('btn-toggle-envio')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'btn-toggle-envio';
+    btn.className = 'btn-tab'; // Reusar estilo
+    btn.style.background = '#ccc';
+    btn.style.color = '#333';
+    btn.style.marginLeft = 'auto'; // Empujar a la derecha
+    btn.innerText = 'Cargando estado envío...';
+    btn.onclick = toggleEnvioGratis;
+    
+    // Insertar antes del botón de cerrar sesión si existe, o al final
+    const logoutBtn = header.querySelector('.btn-logout');
+    if (logoutBtn) {
+        header.insertBefore(btn, logoutBtn);
+        logoutBtn.style.marginLeft = '10px';
+    } else {
+        header.appendChild(btn);
+    }
+    
+    actualizarTextoBotonEnvio();
+}
+
+async function actualizarTextoBotonEnvio() {
+    await window.cargarConfiguracionGlobal(); // Actualizar estado local
+    const btn = document.getElementById('btn-toggle-envio');
+    if (!btn) return;
+    
+    if (window.configTienda.envioGratis) {
+        btn.innerText = "🟢 Modo Pruebas (Envío $0) ACTIVO";
+        btn.style.background = "#d1fae5";
+        btn.style.color = "#065f46";
+        btn.style.border = "1px solid #059669";
+    } else {
+        btn.innerText = "🔴 Modo Normal (Envío $4.000)";
+        btn.style.background = "#fee2e2";
+        btn.style.color = "#991b1b";
+        btn.style.border = "1px solid #dc2626";
+    }
+}
+
+async function toggleEnvioGratis() {
+    const nuevoEstado = !window.configTienda.envioGratis;
+    const confirmMsg = nuevoEstado 
+        ? "¿Activar MODO PRUEBAS?\n\nEl envío será GRATIS ($0) para todos los clientes." 
+        : "¿Volver a MODO NORMAL?\n\nSe cobrarán $4.000 de envío (salvo promociones).";
+        
+    if (!confirm(confirmMsg)) return;
+
+    try {
+        const url = window.getApiUrl ? window.getApiUrl('/api/config') : '/api/config';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+            body: JSON.stringify({ envio_gratis: nuevoEstado })
+        });
+        
+        if (res.ok) {
+            window.mostrarNotificacion(nuevoEstado ? "✅ Modo Pruebas ACTIVADO" : "✅ Modo Normal ACTIVADO");
+            actualizarTextoBotonEnvio();
+        } else {
+            alert("Error al guardar configuración");
+        }
+    } catch (e) { console.error(e); alert("Error de conexión"); }
 }
 
 // Exponer funciones globales

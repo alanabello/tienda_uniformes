@@ -61,12 +61,20 @@ export default async function handler(req, res) {
                 }
             }
 
-            // let envio = (tienePantalon && tieneTop) ? 0 : 4000;
-            let envio = 0; // Desactivado temporalmente para prueba Transbank
+            // 1. Verificar configuración en Base de Datos
+            const configRes = await pool.query("SELECT valor FROM configuracion WHERE clave = 'envio_gratis'");
+            const modoPruebaActivo = configRes.rows.length > 0 && configRes.rows[0].valor === 'true';
+
+            // 2. Calcular envío real
+            let envio = 4000;
+            if (modoPruebaActivo) {
+                envio = 0; // Modo pruebas activado
+            } else if (tienePantalon && tieneTop) {
+                envio = 0; // Promoción normal (Conjunto completo)
+            }
+
             const totalReal = totalCalculado + envio;
 
-            // FORZAR SIEMPRE EL TOTAL CALCULADO (Para que ignore los 4000 que manda el frontend)
-            // Esto asegura que cobremos solo los $50 aunque el carrito visual muestre $4050
             amountInt = Math.floor(totalReal);
         }
 
