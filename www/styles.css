@@ -977,6 +977,17 @@ body {
    OPTIMIZACIONES PARA MÓVILES (CELULARES)
    ========================================= */
 @media (max-width: 480px) {
+    /* 0. Optimización de Espacio y Hero */
+    .container {
+        padding: 0 8px; /* Ganar espacio lateral */
+    }
+
+    .hero-modern {
+        min-height: auto; /* Eliminar altura forzada excesiva */
+        padding: 25px 15px; /* Reducir relleno vertical */
+        gap: 15px;
+    }
+
     /* 1. Barra de anuncios fluida (evita que tape el menú) */
     .announcement-bar {
         position: relative; /* Deja de ser fija para no tapar nada */
@@ -1016,7 +1027,7 @@ body {
     /* 5. Cards en Miniatura (Estilo Grilla PC) */
     .product-grid {
         grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas */
-        gap: 10px; /* Espacio reducido entre tarjetas */
+        gap: 8px; /* Espacio optimizado */
     }
 
     .product-img {
@@ -1042,17 +1053,17 @@ body {
 
     .selectors {
         flex-direction: column; /* Selectores verticales para ahorrar espacio */
-        gap: 5px;
+        gap: 6px;
     }
 
     .selectors select {
-        font-size: 0.75rem;
-        padding: 4px;
+        font-size: 0.8rem;
+        padding: 8px; /* Más fácil de tocar */
     }
 
     .btn-add {
-        padding: 8px;
-        font-size: 0.8rem;
+        padding: 10px; /* Botón más alto para el dedo */
+        font-size: 0.85rem;
         margin-top: 8px;
     }
 
