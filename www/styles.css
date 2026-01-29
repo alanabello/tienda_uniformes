@@ -1479,4 +1479,75 @@ body {
     border-radius: 8px;
     font-size: 1rem;
 }
+
+/* =========================================
+   BARRA DE NAVEGACIÓN MÓVIL (APP STYLE)
+   ========================================= */
+.mobile-bottom-nav {
+    display: none; /* Oculto en PC */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
+    z-index: 2000;
+    justify-content: space-around;
+    padding: 12px 0;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #999;
+    font-size: 0.7rem;
+    transition: color 0.3s;
+    gap: 4px;
+}
+
+.nav-item.active {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.nav-item .icon {
+    font-size: 1.4rem;
+}
+
+.icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.badge-mobile {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    display: none; /* Se muestra con JS */
+    min-width: 16px;
+    text-align: center;
+    border: 2px solid white;
+}
+
+/* Ajustes específicos para móvil cuando la barra está visible */
+@media (max-width: 768px) {
+    .mobile-bottom-nav { display: flex; }
+    body { padding-bottom: 90px; } /* Espacio extra al final para que no tape contenido */
+    
+    /* Subir botones flotantes para que no choquen con la barra */
+    .btn-whatssapp { bottom: 90px; }
+    .btn-instagram { bottom: 160px; }
+    .flash-container { bottom: 90px; }
+}
 }

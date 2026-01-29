@@ -250,6 +250,8 @@ async function guardarCambios() {
 }
 
 // --- Ventas ---
+let ventasCargadas = []; // Variable global para exportar/imprimir
+
 async function cargarVentasAdmin() {
     const container = document.getElementById('ventas-body');
     if(!container) return;
@@ -260,7 +262,11 @@ async function cargarVentasAdmin() {
     });
     if (!res.ok) { container.innerHTML = `<tr><td colspan="5" style="color:red">Error al cargar ventas: Acceso denegado.</td></tr>`; return; }
     const ventas = await res.json();
+    ventasCargadas = ventas; // Guardar para uso global
     container.innerHTML = '';
+
+    // Renderizar barra de herramientas (Buscar y Exportar)
+    renderizarToolbarVentas(container);
 
     // Actualizar encabezados de la tabla dinámicamente para reflejar las nuevas columnas
     const table = container.closest('table');
@@ -312,6 +318,12 @@ async function cargarVentasAdmin() {
                <span>📲</span> Enviarme Comprobante
             </a>`;
 
+        // Botón Imprimir (Etiqueta de despacho)
+        const btnImprimir = `
+            <button onclick="imprimirOrden('${venta.orden}')" style="cursor:pointer; border:1px solid #ccc; background:#fff; padding:6px 10px; border-radius:6px; margin-left:5px; font-size:0.8rem;" title="Imprimir Etiqueta">
+                🖨️
+            </button>`;
+
         // Lista de productos más ordenada
         const productosHtml = items.map(i => 
             `<div style="border-bottom:1px solid #eee; padding:4px 0; font-size:0.85rem;">
@@ -340,7 +352,7 @@ async function cargarVentasAdmin() {
                 </td>
                 <td style="vertical-align:top;">
                     ${infoCliente}<br>
-                    ${btnWhatsapp}
+                    ${btnWhatsapp} ${btnImprimir}
                 </td>
                 <td style="vertical-align:top; font-weight:bold; color:#2d5a27;">
                     $${(venta.total || 0).toLocaleString('es-CL')}
@@ -350,6 +362,113 @@ async function cargarVentasAdmin() {
             </tr>`;
         container.innerHTML += row;
     });
+}
+
+// --- NUEVAS FUNCIONES DE GESTIÓN ---
+
+function renderizarToolbarVentas(tbodyContainer) {
+    const table = tbodyContainer.closest('table');
+    if (!table || table.previousElementSibling?.classList.contains('ventas-toolbar')) return;
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'ventas-toolbar';
+    toolbar.style.marginBottom = '15px';
+    toolbar.style.display = 'flex';
+    toolbar.style.gap = '10px';
+    toolbar.style.justifyContent = 'space-between';
+    toolbar.style.alignItems = 'center';
+
+    toolbar.innerHTML = `
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="text" id="buscador-ventas" placeholder="🔍 Buscar por cliente u orden..." 
+                   onkeyup="filtrarVentas(this.value)"
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; width: 250px;">
+        </div>
+        <button onclick="exportarVentasCSV()" style="background:#2d5a27; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:600;">
+            📥 Exportar a Excel
+        </button>
+    `;
+
+    table.parentNode.insertBefore(toolbar, table);
+}
+
+function filtrarVentas(termino) {
+    const term = termino.toLowerCase();
+    const filas = document.querySelectorAll('#ventas-body tr');
+    filas.forEach(fila => {
+        const texto = fila.innerText.toLowerCase();
+        fila.style.display = texto.includes(term) ? '' : 'none';
+    });
+}
+
+function exportarVentasCSV() {
+    if (!ventasCargadas || ventasCargadas.length === 0) return alert("No hay ventas para exportar.");
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Orden,Fecha,Estado,Cliente,Email,Telefono,Direccion,Comuna,Total,Items\n";
+
+    ventasCargadas.forEach(v => {
+        const cliente = v.datos_cliente || {};
+        const itemsStr = (v.items || []).map(i => `${i.cantidad}x ${i.nombre} (${i.talla||''})`).join(' | ').replace(/,/g, ''); // Evitar comas en CSV
+        const fecha = v.fecha ? new Date(v.fecha).toLocaleDateString('es-CL') : '';
+        
+        const row = [
+            v.orden,
+            fecha,
+            v.estado,
+            (cliente.nombre || '').replace(/,/g, ''),
+            cliente.email || '',
+            cliente.telefono || '',
+            (cliente.direccion || '').replace(/,/g, ''),
+            cliente.comuna || '',
+            v.total || 0,
+            itemsStr
+        ].join(",");
+        csvContent += row + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `ventas_stylepro_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function imprimirOrden(ordenId) {
+    const venta = ventasCargadas.find(v => v.orden === ordenId);
+    if (!venta) return;
+
+    const cliente = venta.datos_cliente || {};
+    const itemsHtml = (venta.items || []).map(i => 
+        `<li><strong>${i.cantidad}x</strong> ${i.nombre} <br><small>Talla: ${i.talla || 'Única'}</small></li>`
+    ).join('');
+
+    const ventana = window.open('', 'PRINT', 'height=600,width=400');
+    ventana.document.write(`
+        <html>
+        <head><title>Orden ${venta.orden}</title></head>
+        <body style="font-family: sans-serif; padding: 20px;">
+            <h2 style="text-align:center; border-bottom: 2px solid #333; padding-bottom: 10px;">StylePro Uniformes</h2>
+            <p><strong>Orden:</strong> ${venta.orden}</p>
+            <p><strong>Fecha:</strong> ${new Date(venta.fecha).toLocaleString('es-CL')}</p>
+            <div style="background:#f9f9f9; padding:10px; border-radius:5px; margin:10px 0;">
+                <h3>📍 Datos de Envío</h3>
+                <p><strong>${cliente.nombre}</strong></p>
+                <p>${cliente.direccion} ${cliente.dpto ? 'Dpto '+cliente.dpto : ''}</p>
+                <p>${cliente.comuna}</p>
+                <p>📞 ${cliente.telefono}</p>
+            </div>
+            <h3>📦 Productos</h3>
+            <ul>${itemsHtml}</ul>
+            <h3 style="text-align:right; margin-top:20px;">Total: $${(venta.total||0).toLocaleString('es-CL')}</h3>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => { ventana.print(); ventana.close(); }, 500);
 }
 
 async function cambiarEstadoVenta(orden, nuevoEstado) {
