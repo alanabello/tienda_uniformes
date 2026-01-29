@@ -65,11 +65,9 @@ export default async function handler(req, res) {
             let envio = 0; // Desactivado temporalmente para prueba Transbank
             const totalReal = totalCalculado + envio;
 
-            // Si el monto enviado es menor al real, usamos el real para evitar fraudes
-            if (totalReal > amountInt) {
-                console.log(`⚠️ ALERTA DE SEGURIDAD: Cliente envió $${amountInt}, pero el total real es $${totalReal}. Se forzó el precio real.`);
-                amountInt = Math.floor(totalReal);
-            }
+            // FORZAR SIEMPRE EL TOTAL CALCULADO (Para que ignore los 4000 que manda el frontend)
+            // Esto asegura que cobremos solo los $50 aunque el carrito visual muestre $4050
+            amountInt = Math.floor(totalReal);
         }
 
         // URL donde Transbank devolverá al cliente (IMPORTANTE: Usa tu dominio real de Vercel)
