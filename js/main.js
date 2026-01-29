@@ -33,11 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 bubblesContainer.appendChild(bubble);
             });
+            
+            let activeIndex = 0; // Rastrear índice actual para evitar actualizaciones innecesarias
             track.addEventListener('scroll', () => {
                 const index = Math.round(track.scrollLeft / track.clientWidth);
-                const bubbles = bubblesContainer.querySelectorAll('.bubble');
-                bubbles.forEach(b => b.classList.remove('active'));
-                if (bubbles[index]) bubbles[index].classList.add('active');
+                if (index !== activeIndex) {
+                    const bubbles = bubblesContainer.querySelectorAll('.bubble');
+                    if (bubbles[activeIndex]) bubbles[activeIndex].classList.remove('active');
+                    if (bubbles[index]) bubbles[index].classList.add('active');
+                    activeIndex = index;
+                }
             });
         }
 
