@@ -61,6 +61,9 @@ export default async function handler(req, res) {
                 }
             }
 
+            // Asegurar que la tabla configuracion existe antes de consultarla
+            await pool.query(`CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)`);
+
             // 1. Verificar configuración en Base de Datos
             const configRes = await pool.query("SELECT valor FROM configuracion WHERE clave = 'envio_gratis'");
             const modoPruebaActivo = configRes.rows.length > 0 && configRes.rows[0].valor === 'true';

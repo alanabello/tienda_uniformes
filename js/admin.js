@@ -1153,25 +1153,37 @@ async function guardarTallasEditadas(e) {
 
 // --- CONFIGURACIÓN ENVÍO (MODO PRUEBAS) ---
 async function renderizarBotonEnvio() {
-    const header = document.querySelector('.admin-header');
-    if (!header || document.getElementById('btn-toggle-envio')) return;
+    // Intentar encontrar el header, o usar el body como respaldo
+    let header = document.querySelector('.admin-header') || document.querySelector('header');
+    
+    if (document.getElementById('btn-toggle-envio')) return;
 
     const btn = document.createElement('button');
     btn.id = 'btn-toggle-envio';
     btn.className = 'btn-tab'; // Reusar estilo
     btn.style.background = '#ccc';
     btn.style.color = '#333';
-    btn.style.marginLeft = 'auto'; // Empujar a la derecha
     btn.innerText = 'Cargando estado envío...';
     btn.onclick = toggleEnvioGratis;
     
-    // Insertar antes del botón de cerrar sesión si existe, o al final
-    const logoutBtn = header.querySelector('.btn-logout');
-    if (logoutBtn) {
-        header.insertBefore(btn, logoutBtn);
-        logoutBtn.style.marginLeft = '10px';
+    if (header) {
+        btn.style.marginLeft = 'auto'; // Empujar a la derecha
+        const logoutBtn = header.querySelector('.btn-logout');
+        if (logoutBtn) {
+            header.insertBefore(btn, logoutBtn);
+            logoutBtn.style.marginLeft = '10px';
+        } else {
+            header.appendChild(btn);
+        }
     } else {
-        header.appendChild(btn);
+        // Si no hay header, mostrar flotante arriba a la derecha
+        btn.style.position = 'fixed';
+        btn.style.top = '10px';
+        btn.style.right = '10px';
+        btn.style.zIndex = '10000';
+        btn.style.padding = '10px';
+        btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        document.body.appendChild(btn);
     }
     
     actualizarTextoBotonEnvio();
