@@ -1153,8 +1153,15 @@ async function guardarTallasEditadas(e) {
 
 // --- CONFIGURACIÓN ENVÍO (MODO PRUEBAS) ---
 async function renderizarBotonEnvio() {
-    // Intentar encontrar el header, o usar el body como respaldo
-    let header = document.querySelector('.admin-header') || document.querySelector('header');
+    // Intentar encontrar la barra de navegación (donde está el escáner)
+    let container = document.querySelector('.tab-navigation');
+    let esHeader = false;
+
+    // Si no hay barra de navegación, buscar el header
+    if (!container) {
+        container = document.querySelector('.admin-header') || document.querySelector('header');
+        esHeader = true;
+    }
     
     if (document.getElementById('btn-toggle-envio')) return;
 
@@ -1166,14 +1173,19 @@ async function renderizarBotonEnvio() {
     btn.innerText = 'Cargando estado envío...';
     btn.onclick = toggleEnvioGratis;
     
-    if (header) {
-        btn.style.marginLeft = 'auto'; // Empujar a la derecha
-        const logoutBtn = header.querySelector('.btn-logout');
-        if (logoutBtn) {
-            header.insertBefore(btn, logoutBtn);
-            logoutBtn.style.marginLeft = '10px';
+    if (container) {
+        if (esHeader) {
+            btn.style.marginLeft = 'auto'; // Empujar a la derecha solo si está en el header
+            const logoutBtn = container.querySelector('.btn-logout');
+            if (logoutBtn) {
+                container.insertBefore(btn, logoutBtn);
+                logoutBtn.style.marginLeft = '10px';
+            } else {
+                container.appendChild(btn);
+            }
         } else {
-            header.appendChild(btn);
+            // Si está en la barra de navegación, simplemente añadirlo al final
+            container.appendChild(btn);
         }
     } else {
         // Si no hay header, mostrar flotante arriba a la derecha
