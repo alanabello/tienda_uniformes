@@ -1239,9 +1239,10 @@ async function toggleEnvioGratis() {
             window.mostrarNotificacion(nuevoEstado ? "✅ Modo Pruebas ACTIVADO" : "✅ Modo Normal ACTIVADO");
             actualizarTextoBotonEnvio();
         } else {
-            alert("Error al guardar configuración");
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || "Error al guardar configuración");
         }
-    } catch (e) { console.error(e); alert("Error de conexión"); }
+    } catch (e) { manejarErrorApi(e); }
 }
 
 // Exponer funciones globales

@@ -19,6 +19,9 @@ const verifyToken = (req) => {
 
 export default async function handler(req, res) {
     try {
+        // Asegurar que la tabla existe antes de cualquier operación
+        await pool.query(`CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)`);
+
         if (req.method === 'GET') {
             // Obtener configuración (Público para que el carrito sepa si cobrar envío)
             const { rows } = await pool.query("SELECT valor FROM configuracion WHERE clave = 'envio_gratis'");
@@ -35,6 +38,7 @@ export default async function handler(req, res) {
             res.json({ success: true, estado: envio_gratis });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        const status = error.status || 500;
+        res.status(status).json({ error: error.message });
     }
 }
