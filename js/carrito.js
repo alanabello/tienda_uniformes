@@ -242,19 +242,16 @@ function enviarPedido() {
         return;
     }
 
-    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
     let mensaje = "Hola Uniformes Clínicos! 👋 Quiero realizar el siguiente pedido:\n\n";
     let subtotal = 0;
 
     carrito.forEach((item, index) => {
         const totalItem = item.precio * item.cantidad;
         subtotal += totalItem;
-        const img = item.imagen || (item.imagenes && item.imagenes[0]) || '';
-        const imgUrl = img.startsWith('http') ? img : baseUrl + img;
 
         mensaje += `*${index + 1}. ${item.nombre}*\n`;
         mensaje += item.mostrar !== false ? `   📝 Talla: ${item.talla} | Color: ${item.color}\n` : `   📝 Talla: ${item.talla}\n`;
-        mensaje += `   📦 Cantidad: ${item.cantidad}\n   💲 Precio Unit: $${item.precio.toLocaleString('es-CL')}\n   💰 Subtotal: $${totalItem.toLocaleString('es-CL')}\n   🖼️ Foto: ${imgUrl}\n\n`;
+        mensaje += `   📦 Cantidad: ${item.cantidad}\n   💲 Precio Unit: $${item.precio.toLocaleString('es-CL')}\n   💰 Subtotal: $${totalItem.toLocaleString('es-CL')}\n\n`;
     });
 
     const envio = calcularEnvio(carrito);
