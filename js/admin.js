@@ -320,6 +320,17 @@ async function cargarVentasAdmin() {
              </div>`
         ).join('');
 
+        // Calcular desglose de envío (Total Pagado - Suma de Productos)
+        const subtotalItems = items.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+        const costoEnvio = (venta.total || 0) - subtotalItems;
+        let infoEnvio = '';
+        
+        if (costoEnvio > 0) {
+            infoEnvio = `<div style="font-size:0.75rem; color:#666; font-weight:normal;">(Envío: $${costoEnvio.toLocaleString('es-CL')})</div>`;
+        } else {
+            infoEnvio = `<div style="font-size:0.75rem; color:#059669; font-weight:bold;">(Envío Gratis)</div>`;
+        }
+
         const row = `
             <tr>
                 <td style="vertical-align:top;">${fecha}</td>
@@ -331,7 +342,10 @@ async function cargarVentasAdmin() {
                     ${infoCliente}<br>
                     ${btnWhatsapp}
                 </td>
-                <td style="vertical-align:top; font-weight:bold; color:#2d5a27;">$${(venta.total || 0).toLocaleString('es-CL')}</td>
+                <td style="vertical-align:top; font-weight:bold; color:#2d5a27;">
+                    $${(venta.total || 0).toLocaleString('es-CL')}
+                    ${infoEnvio}
+                </td>
                 <td style="vertical-align:top;">${productosHtml}</td>
             </tr>`;
         container.innerHTML += row;
