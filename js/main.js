@@ -4,6 +4,19 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- CORRECCIÓN AUTOMÁTICA DE VISTA MÓVIL ---
+    // Si la página (ej: carrito.html) no tiene el viewport correcto, lo inyectamos/corregimos dinámicamente.
+    let metaViewport = document.querySelector('meta[name="viewport"]');
+    if (!metaViewport) {
+        metaViewport = document.createElement('meta');
+        metaViewport.name = 'viewport';
+        document.head.appendChild(metaViewport);
+    }
+    // Forzar siempre la vista responsiva ideal para celulares
+    if (!metaViewport.content || metaViewport.content.includes('width=1200')) {
+        metaViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    }
+
     const path = window.location.pathname;
 
     // Lógica para todas las páginas
