@@ -1077,6 +1077,18 @@ body {
         display: none; /* Ocultar info de envío en miniatura */
     }
 
+    /* Filtros deslizables tipo App */
+    .filters {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+        justify-content: flex-start;
+        gap: 8px;
+        -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    }
+    .filters::-webkit-scrollbar { display: none; }
+
     /* AJUSTES CARRITO MOVIL */
     .cart-container {
         display: flex;
@@ -1571,5 +1583,4 @@ body {
     .btn-whatssapp { bottom: 90px; }
     .btn-instagram { bottom: 160px; }
     .flash-container { bottom: 90px; }
-}
 }
