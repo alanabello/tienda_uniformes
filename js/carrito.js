@@ -121,15 +121,15 @@ function renderizarPaginaCarrito() {
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-            <img src="${img}" alt="${item.nombre}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
-            <div style="flex: 1;">
+            <img src="${img}" alt="${item.nombre}" class="cart-img">
+            <div class="cart-info">
                 <strong>${item.nombre}</strong>
-                <div style="font-size: 0.85rem; color: #666;">
+                <div class="cart-details">
                     Talla: ${item.talla} ${item.mostrar !== false ? `| Color: ${item.color}` : ''} <br>
                     $${item.precio.toLocaleString('es-CL')} x ${item.cantidad}
                 </div>
             </div>
-            <button onclick="eliminar(${index})" style="color: red; border: none; background: none; cursor: pointer; font-weight: bold;">X</button>
+            <button onclick="eliminar(${index})" class="cart-remove" aria-label="Eliminar">✕</button>
         `;
         container.appendChild(div);
     });
