@@ -61,7 +61,8 @@ export default async function handler(req, res) {
                 }
             }
 
-            let envio = (tienePantalon && tieneTop) ? 0 : 4000;
+            // let envio = (tienePantalon && tieneTop) ? 0 : 4000;
+            let envio = 0; // Desactivado temporalmente para prueba Transbank
             const totalReal = totalCalculado + envio;
 
             // Si el monto enviado es menor al real, usamos el real para evitar fraudes
