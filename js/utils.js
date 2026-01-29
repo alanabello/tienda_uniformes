@@ -10,6 +10,8 @@ var ultimoErrorDB = "";
 var zxingScanner = null;
 
 // Variables para escáneres
+var telefonoTienda = ""; // Se carga desde el servidor (seguro)
+var instagramURL = "";   // Se carga desde el servidor (seguro)
 var codeReader = null;
 var selectedDeviceId = null;
 var genericCodeReader = null;
@@ -42,10 +44,36 @@ async function cargarConfiguracionGlobal() {
         if (res.ok) {
             const data = await res.json();
             configTienda.envioGratis = data.envio_gratis;
+            
+            if (data.telefono) telefonoTienda = data.telefono;
+            if (data.instagram) instagramURL = data.instagram;
+
+            // Actualizar botones flotantes si existen en el HTML
+            actualizarEnlacesContacto();
+
             // Si estamos en el carrito, actualizar totales visualmente
             if (typeof actualizarTotales === 'function') actualizarTotales();
         }
     } catch (e) { console.error("Error cargando config:", e); }
+}
+
+// Función para inyectar los enlaces seguros en el HTML
+function actualizarEnlacesContacto() {
+    // Actualizar WhatsApp Flotante
+    const btnWa = document.querySelector('.btn-whatssapp'); // Clase definida en CSS
+    if (btnWa && telefonoTienda) {
+        // Si es un enlace <a>
+        if (btnWa.tagName === 'A') btnWa.href = `https://wa.me/${telefonoTienda}`;
+        // Si es un div/button, agregamos evento click
+        else btnWa.onclick = () => window.open(`https://wa.me/${telefonoTienda}`, '_blank');
+    }
+
+    // Actualizar Instagram Flotante
+    const btnIg = document.querySelector('.btn-instagram');
+    if (btnIg && instagramURL) {
+        if (btnIg.tagName === 'A') btnIg.href = instagramURL;
+        else btnIg.onclick = () => window.open(instagramURL, '_blank');
+    }
 }
 
 // Helper para mostrar notificaciones tipo "Toast"

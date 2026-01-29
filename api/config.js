@@ -26,7 +26,11 @@ export default async function handler(req, res) {
             // Obtener configuración (Público para que el carrito sepa si cobrar envío)
             const { rows } = await pool.query("SELECT valor FROM configuracion WHERE clave = 'envio_gratis'");
             const activo = rows.length > 0 ? rows[0].valor === 'true' : false;
-            res.json({ envio_gratis: activo });
+            res.json({ 
+                envio_gratis: activo,
+                telefono: process.env.CONTACT_PHONE || "",
+                instagram: process.env.CONTACT_INSTAGRAM || ""
+            });
         } else if (req.method === 'POST') {
             // Guardar configuración (Protegido solo admin)
             await verifyToken(req);

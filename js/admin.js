@@ -307,7 +307,7 @@ async function cargarVentasAdmin() {
         selectHtml += `</select>`;
 
         // Botón WhatsApp (Enviar comprobante al admin)
-        const adminPhone = "56929395568";
+        const adminPhone = window.telefonoTienda;
         const itemsList = items.map(i => `- ${i.nombre} (x${i.cantidad}) ${i.talla ? '['+i.talla+']' : ''}`).join('%0A');
         const dirMsg = cliente.dpto ? `${cliente.direccion} (${cliente.dpto})` : cliente.direccion;
         const mensaje = `🧾 *COMPROBANTE DE VENTA* %0A%0A🆔 *Orden:* ${venta.orden}%0A📅 *Fecha:* ${fecha}%0A📊 *Estado:* ${estado}%0A%0A👤 *Cliente:* ${cliente.nombre || 'N/A'}%0A📧 *Email:* ${cliente.email || 'N/A'}%0A📞 *Tel:* ${cliente.telefono || 'N/A'}%0A📍 *Dir:* ${dirMsg || ''}, ${cliente.comuna || ''}%0A%0A📦 *Productos:*%0A${itemsList}%0A%0A💰 *Total:* $${(venta.total || 0).toLocaleString('es-CL')}`;
