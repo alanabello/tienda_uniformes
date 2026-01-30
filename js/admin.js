@@ -115,6 +115,7 @@ function renderizarTablaInventario() {
                 </td>
                 <td>
                     <a href="detalle.html?id=${p.id}" target="_blank" title="Ver en tienda" style="text-decoration:none; font-size: 1.2rem;">🔗</a>
+                    <button onclick="abrirModalEditar(${p.id})" title="Editar Info" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 5px;">✏️</button>
                     <button onclick="abrirModalTallas(${p.id})" title="Gestionar Tallas" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 5px;">📏</button>
                     <button onclick="eliminarProducto(${p.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 8px;">🗑️</button>
                 </td>
