@@ -105,6 +105,9 @@ export default async function handler(req, res) {
         } else {
             await pool.query('UPDATE inventario_general SET stock = $1 WHERE id = $2', [stock, id]);
         }
+
+        // Sincronizar stock en tabla productos (Tienda)
+        await pool.query('UPDATE productos SET stock = $1 WHERE barcode = (SELECT barcode FROM inventario_general WHERE id = $2)', [stock, id]);
         
         // Ocultar producto en tienda si stock llega a 0
         if (stock <= 0) {
@@ -125,6 +128,9 @@ export default async function handler(req, res) {
             [cantidad, barcode]
         );
         if (rows.length > 0) {
+            // Sincronizar stock en tabla productos (Tienda)
+            await pool.query('UPDATE productos SET stock = $1 WHERE barcode = $2', [rows[0].stock, barcode]);
+
             // Ocultar producto en tienda si stock llega a 0
             if (rows[0].stock <= 0) {
                 await pool.query('UPDATE productos SET mostrar = false WHERE barcode = $1', [barcode]);

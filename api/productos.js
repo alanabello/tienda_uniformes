@@ -42,6 +42,11 @@ export default async function handler(req, res) {
 
       await pool.query(`UPDATE productos SET ${setClause} WHERE id = $1`, [id, ...values]);
 
+      // Sincronizar con inventario_general si se actualizó el stock
+      if (updates.stock !== undefined) {
+          await pool.query('UPDATE inventario_general SET stock = $1 WHERE barcode = (SELECT barcode FROM productos WHERE id = $2)', [updates.stock, id]);
+      }
+
       // Auto-mostrar si hay stock positivo
       if (updates.stock !== undefined && Number(updates.stock) > 0) {
           await pool.query('UPDATE productos SET mostrar = true WHERE id = $1', [id]);
@@ -55,9 +60,15 @@ export default async function handler(req, res) {
           'UPDATE productos SET stock = stock + $1 WHERE barcode = $2 RETURNING id, nombre, stock',
           [cantidad, barcode]
         );
-        // Auto-mostrar si hay stock
-        if (rows.length > 0 && rows[0].stock > 0) {
-            await pool.query('UPDATE productos SET mostrar = true WHERE barcode = $1', [barcode]);
+        
+        if (rows.length > 0) {
+            // Sincronizar con inventario_general
+            await pool.query('UPDATE inventario_general SET stock = stock + $1 WHERE barcode = $2', [cantidad, barcode]);
+
+            // Auto-mostrar si hay stock
+            if (rows[0].stock > 0) {
+                await pool.query('UPDATE productos SET mostrar = true WHERE barcode = $1', [barcode]);
+            }
         }
       }
       
