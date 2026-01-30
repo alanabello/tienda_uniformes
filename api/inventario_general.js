@@ -47,21 +47,20 @@ export default async function handler(req, res) {
       throw new Error("DATABASE_URL no está configurada.");
     }
 
-    // OPTIMIZACIÓN: La creación de tablas no debería ejecutarse en cada petición.
-    // Idealmente, esto se corre una sola vez manualmente o mediante migraciones.
-    // await pool.query(`
-    //   CREATE TABLE IF NOT EXISTS inventario_general (
-    //     id SERIAL PRIMARY KEY,
-    //     nombre TEXT NOT NULL,
-    //     precio INTEGER,
-    //     stock INTEGER DEFAULT 0,
-    //     categoria TEXT,
-    //     tallas TEXT[],
-    //     descripcion TEXT,
-    //     barcode TEXT UNIQUE,
-    //     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
-    //   );
-    // `);
+    // Asegurar que la tabla existe
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS inventario_general (
+        id SERIAL PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        precio INTEGER,
+        stock INTEGER DEFAULT 0,
+        categoria TEXT,
+        tallas TEXT[],
+        descripcion TEXT,
+        barcode TEXT UNIQUE,
+        fecha_creacion TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
 
     // Proteger rutas que modifican datos (POST, PUT, PATCH, DELETE)
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {

@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     ];
 
     try {
-        // 1. Asegurar que la tabla existe con la estructura correcta
+        // 1. Crear tabla PRODUCTOS
         await pool.query(`
             CREATE TABLE IF NOT EXISTS productos (
                 id SERIAL PRIMARY KEY,
@@ -43,20 +43,46 @@ export default async function handler(req, res) {
             );
         `);
 
-        // 2. Insertar o Actualizar cada producto
+        // 2. Crear tabla INVENTARIO GENERAL (Bodega)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS inventario_general (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                precio INTEGER,
+                stock INTEGER DEFAULT 0,
+                categoria TEXT,
+                tallas TEXT[],
+                descripcion TEXT,
+                barcode TEXT UNIQUE,
+                fecha_creacion TIMESTAMPTZ DEFAULT NOW()
+            );
+        `);
+
+        // 3. Insertar datos en AMBAS tablas
         for (const p of productos) {
+            // A. Insertar en Tienda
             await pool.query(`
                 INSERT INTO productos (id, nombre, precio, categorias, mostrar, imagenes, barcode, descripcion)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT (id) DO UPDATE 
                 SET nombre = $2, precio = $3, categorias = $4, mostrar = $5, imagenes = $6, barcode = $7, descripcion = $8
             `, [p.id, p.nombre, p.precio, p.categorias, p.mostrar, p.imagenes, p.barcode, p.descripcion]);
+
+            // B. Insertar en Inventario General (Si tiene código de barras)
+            if (p.barcode) {
+                // Insertamos con stock inicial de 50 para pruebas, si no existe
+                await pool.query(`
+                    INSERT INTO inventario_general (nombre, precio, stock, categoria, descripcion, barcode)
+                    VALUES ($1, $2, 50, $3, $4, $5)
+                    ON CONFLICT (barcode) DO NOTHING
+                `, [p.nombre, p.precio, p.categorias[0], p.descripcion, p.barcode]);
+            }
         }
 
-        // 3. Ajustar la secuencia de IDs para que los nuevos productos sigan desde el último ID
+        // 4. Ajustar la secuencia de IDs
         await pool.query("SELECT setval('productos_id_seq', (SELECT MAX(id) FROM productos))");
 
-        res.status(200).json({ message: "✅ Base de datos actualizada con todos los productos." });
+        res.status(200).json({ message: "✅ Base de datos actualizada: Productos e Inventario General sincronizados." });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
