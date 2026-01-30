@@ -30,23 +30,21 @@ export default async function handler(req, res) {
       );
       res.json({ success: true });
     } else if (req.method === 'PUT') {
-      // Actualizar producto (Stock o Visibilidad)
-      const { id, stock, mostrar, tallas, stock_tallas } = req.body;
+      // Actualizar cualquier campo del producto (Nombre, Precio, Stock, etc.)
+      const { id, ...updates } = req.body;
       
-      if (stock !== undefined) {
-        await pool.query('UPDATE productos SET stock = $1 WHERE id = $2', [stock, id]);
-        // Auto-mostrar si hay stock
-        if (stock > 0) {
-            await pool.query('UPDATE productos SET mostrar = true WHERE id = $1', [id]);
-        }
-      }
-      
-      if (mostrar !== undefined) {
-        await pool.query('UPDATE productos SET mostrar = $1 WHERE id = $2', [mostrar, id]);
-      }
+      const keys = Object.keys(updates);
+      if (keys.length === 0) return res.status(400).json({ error: "Nada que actualizar" });
 
-      if (tallas !== undefined || stock_tallas !== undefined) {
-        await pool.query('UPDATE productos SET tallas = $1, stock_tallas = $2 WHERE id = $3', [tallas, stock_tallas, id]);
+      // Construir query dinámica para actualizar solo los campos enviados
+      const setClause = keys.map((key, index) => `${key} = $${index + 2}`).join(', ');
+      const values = Object.values(updates);
+
+      await pool.query(`UPDATE productos SET ${setClause} WHERE id = $1`, [id, ...values]);
+
+      // Auto-mostrar si hay stock positivo
+      if (updates.stock !== undefined && Number(updates.stock) > 0) {
+          await pool.query('UPDATE productos SET mostrar = true WHERE id = $1', [id]);
       }
       
       res.json({ success: true });
