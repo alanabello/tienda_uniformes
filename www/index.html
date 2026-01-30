@@ -57,15 +57,13 @@
             <a href="#" onclick="abrirGuiaTallas(); return false;" class="btn-secondary">Guía de Tallas</a>
         </div>
     </div>
-    <div class="hero-image-container">
-        <div class="carousel-track" id="heroTrack">
-            <img src="imagenes/conjuntoazulrey2.png" class="hero-img-cover hero-slide" alt="Slide 0">
-            <img src="imagenes/conjuntohombre123.png" class="hero-img-cover hero-slide" alt="Slide 1">
-            <img src="imagenes/conjuntoazulmarino.jpeg" class="hero-img-cover hero-slide" alt="Slide 2">
-            <img src="imagenes/topazulrey1.jpeg" class="hero-img-cover hero-slide" alt="Slide 3">
-            <img src="imagenes/topnegro1.jpeg" class="hero-img-cover hero-slide" alt="Slide 4">
-            <img src="imagenes/topceleste3.jpeg" class="hero-img-cover hero-slide" alt="Slide 5">
-            
+    <div class="hero-image-container">            
+            <img src="imagenes/conjuntoazulmarino.jpeg" class="hero-img-cover hero-slide" alt="Slide 1">
+            <img src="imagenes/topazulrey1.jpeg" class="hero-img-cover hero-slide" alt="Slide 2">
+            <img src="imagenes/topnegro1.jpeg" class="hero-img-cover hero-slide" alt="Slide 3">
+            <img src="imagenes/topceleste3.jpeg" class="hero-img-cover hero-slide" alt="Slide 4">
+            <img src="imagenes/conjuntoazulrey2.png" class="hero-img-cover hero-slide" alt="Slide 5">
+            <img src="imagenes/conjuntohombre123.png" class="hero-img-cover hero-slide" alt="Slide 6">
             <!-- Agrega aquí tus nuevas fotos (Cambia el nombre del archivo) -->
             <!-- <img src="imagenes/TU_FOTO_NUEVA.jpg" class="hero-img-cover hero-slide" alt="Slide 5"> -->
         </div>
@@ -141,14 +139,14 @@
             
             <!-- Botones para cambiar de imagen -->
             <div class="tallas-tabs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button onclick="cambiarGuia('HOMBRE')" class="btn-filter active" id="btn-talla-mujer">Mujer</button>
-                <button onclick="cambiarGuia('MUJER')" class="btn-filter" id="btn-talla-hombre">Hombre</button>
-                <button onclick="cambiarGuia('PANTALONES')" class="btn-filter" id="btn-talla-pantalones">Pantalones</button>
+                <button onclick="cambiarGuia('mujer')" class="btn-filter active" id="btn-talla-mujer">Mujer</button>
+                <button onclick="cambiarGuia('hombre')" class="btn-filter" id="btn-talla-hombre">Hombre</button>
+                <button onclick="cambiarGuia('pantalones')" class="btn-filter" id="btn-talla-pantalones">Pantalones</button>
             </div>
 
             <!-- Imágenes (Asegúrate de tener estos archivos en tu carpeta imagenes/) -->
-            <img id="img-talla-mujer" src="imagenes/guiatallasdemedidashombre.jpeg" style="width: 100%; display: block; border-radius: 8px;">
-            <img id="img-talla-hombre" src="imagenes/guiatallasdemedidasmujer.jpeg" style="width: 100%; display: none; border-radius: 8px;">
+            <img id="img-talla-mujer" src="imagenes/guiatallasdemedidasmujer.jpeg" style="width: 100%; display: block; border-radius: 8px;">
+            <img id="img-talla-hombre" src="imagenes/guiatallasdemedidashombre.jpeg" style="width: 100%; display: none; border-radius: 8px;">
             <img id="img-talla-pantalones" src="imagenes/guiatallaspantalonesyjogger.jpeg" style="width: 100%; display: none; border-radius: 8px;">
         </div>
     </div>
