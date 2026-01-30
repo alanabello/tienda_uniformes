@@ -60,6 +60,24 @@ function mostrarVista(vistaId) {
     });
 }
 
+// --- Guía de Tallas (Pestañas) ---
+function cambiarGuia(tipo) {
+    // 1. Ocultar todas las imágenes
+    const imagenes = document.querySelectorAll('#modal-tallas img[id^="img-talla-"]');
+    imagenes.forEach(img => img.style.display = 'none');
+
+    // 2. Quitar clase active de todos los botones
+    const botones = document.querySelectorAll('#modal-tallas .btn-filter');
+    botones.forEach(btn => btn.classList.remove('active'));
+
+    // 3. Mostrar la seleccionada
+    const imgSeleccionada = document.getElementById(`img-talla-${tipo}`);
+    const btnSeleccionado = document.getElementById(`btn-talla-${tipo}`);
+    
+    if (imgSeleccionada) imgSeleccionada.style.display = 'block';
+    if (btnSeleccionado) btnSeleccionado.classList.add('active');
+}
+
 // Exponer funciones globales
 window.abrirModal = abrirModal; // Necesario para generic scanner
 window.cerrarModal = cerrarModal;
@@ -70,3 +88,4 @@ window.cerrarPromo = cerrarPromo;
 window.moverCarrusel = moverCarrusel;
 window.cambiarImagen = cambiarImagen;
 window.mostrarVista = mostrarVista;
+window.cambiarGuia = cambiarGuia;
