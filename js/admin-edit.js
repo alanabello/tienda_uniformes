@@ -26,13 +26,11 @@ function abrirModalEditar(id) {
     document.getElementById('editDescripcion').value = producto.descripcion || '';
 
     // Mostrar el modal
-    const modal = document.getElementById('modal-editar');
-    modal.classList.add('active');
+    if (window.abrirModal) window.abrirModal('modal-editar');
 }
 
 function cerrarModalEditar() {
-    const modal = document.getElementById('modal-editar');
-    modal.classList.remove('active');
+    if (window.cerrarModal) window.cerrarModal('modal-editar');
 }
 
 async function guardarProductoEditado(e) {
