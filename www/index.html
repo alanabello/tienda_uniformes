@@ -133,8 +133,24 @@
 
     <!-- Modal Guía de Tallas -->
     <div id="modal-tallas" class="modal" onclick="cerrarGuiaTallas()">
-        <span class="close-modal">&times;</span>
-        <img class="modal-content" src="imagenes/guiadetallas.png" alt="Guía de Tallas" onclick="event.stopPropagation()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="background: white; padding: 20px; text-align: center; position: relative; max-width: 600px; width: 90%;">
+            <!-- Botón cerrar (Color oscuro para que se vea en fondo blanco) -->
+            <span class="close-modal" onclick="cerrarGuiaTallas()" style="color: #333; top: 10px; right: 15px; font-size: 2rem; line-height: 1;">&times;</span>
+            
+            <h3 style="margin-bottom: 15px; color: var(--primary);">Guía de Tallas</h3>
+            
+            <!-- Botones para cambiar de imagen -->
+            <div class="tallas-tabs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button onclick="cambiarGuia('mujer')" class="btn-filter active" id="btn-talla-mujer">Mujer</button>
+                <button onclick="cambiarGuia('hombre')" class="btn-filter" id="btn-talla-hombre">Hombre</button>
+                <button onclick="cambiarGuia('pantalones')" class="btn-filter" id="btn-talla-pantalones">Pantalones</button>
+            </div>
+
+            <!-- Imágenes (Asegúrate de tener estos archivos en tu carpeta imagenes/) -->
+            <img id="img-talla-mujer" src="imagenes/guiatallasdemedidashombre.jpeg" style="width: 100%; display: block; border-radius: 8px;">
+            <img id="img-talla-hombre" src="imagenes/guiatallasdemedidasmujer.jpeg" style="width: 100%; display: none; border-radius: 8px;">
+            <img id="img-talla-pantalones" src="imagenes/guiatallaspantalonesyjogger.jpeg" style="width: 100%; display: none; border-radius: 8px;">
+        </div>
     </div>
 
     <!-- Modal Promociones (EDITAR AQUÍ LAS OFERTAS) -->
