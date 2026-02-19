@@ -1,6 +1,7 @@
 import Transbank from 'transbank-sdk';
 const { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys, Environment } = Transbank;
 import { Pool } from '@neondatabase/serverless';
+import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
     try {
@@ -54,12 +55,15 @@ export default async function handler(req, res) {
             if (process.env.DATABASE_URL) {
                 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
                 
-                // 1. Actualizamos a PAGADO y recuperamos los items vendidos (RETURNING items)
-                const result = await pool.query("UPDATE ventas SET estado = 'PAGADO' WHERE orden = $1 RETURNING items", [commitResponse.buy_order]);
+                // 1. Actualizamos a PAGADO y recuperamos items, datos del cliente y total
+                const result = await pool.query("UPDATE ventas SET estado = 'PAGADO' WHERE orden = $1 RETURNING items, datos_cliente, total", [commitResponse.buy_order]);
                 
                 // 2. Si la venta existe, descontamos el stock de cada producto
                 if (result.rows.length > 0) {
-                    const items = result.rows[0].items; // Postgres parsea el JSONB automáticamente
+                    const venta = result.rows[0];
+                    const items = venta.items;
+                    const cliente = venta.datos_cliente || {};
+                    
                     for (const item of items) {
                         // 1. Actualizar inventario_general si existe coincidencia por barcode
                         await pool.query(`
@@ -86,23 +90,56 @@ export default async function handler(req, res) {
                             )
                         `, [item.id]);
                     }
+
+                    // --- 3. Enviar correo de confirmación DIRECTAMENTE ---
+                    if (process.env.EMAIL_USER && process.env.EMAIL_PASS && cliente.email) {
+                        try {
+                            const transporter = nodemailer.createTransport({
+                                service: 'gmail',
+                                auth: {
+                                    user: process.env.EMAIL_USER,
+                                    pass: process.env.EMAIL_PASS
+                                }
+                            });
+
+                            const itemsHtml = items.map(i => 
+                                `<li style="margin-bottom: 5px;">
+                                    <strong>${i.nombre}</strong> x${i.cantidad} <br>
+                                    <small>Talla: ${i.talla || 'Única'} | $${(i.precio * i.cantidad).toLocaleString('es-CL')}</small>
+                                </li>`
+                            ).join('');
+
+                            const mailOptions = {
+                                from: `"StylePro Uniformes" <${process.env.EMAIL_USER}>`,
+                                to: [cliente.email, process.env.EMAIL_USER],
+                                subject: `✅ Comprobante de Pago - Orden #${commitResponse.buy_order}`,
+                                html: `
+                                    <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                                        <div style="background-color: #008080; color: white; padding: 20px; text-align: center;">
+                                            <h2 style="margin: 0;">¡Pago Exitoso!</h2>
+                                            <p style="margin: 5px 0 0;">Gracias por tu compra, ${cliente.nombre || 'Cliente'}</p>
+                                        </div>
+                                        <div style="padding: 20px;">
+                                            <p>Hemos recibido tu pago correctamente. Aquí tienes el detalle:</p>
+                                            <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                                <h3 style="margin-top: 0; color: #008080;">📦 Orden #${commitResponse.buy_order}</h3>
+                                                <ul style="padding-left: 20px;">${itemsHtml}</ul>
+                                                <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                                                <p style="font-weight: bold; font-size: 1.1em; text-align: right;">Total: $${parseInt(venta.total).toLocaleString('es-CL')}</p>
+                                            </div>
+                                            <p style="font-size: 0.9em; color: #666; text-align: center;">Te notificaremos cuando tu pedido sea despachado.</p>
+                                        </div>
+                                    </div>
+                                `
+                            };
+
+                            await transporter.sendMail(mailOptions);
+                            console.log(`Correo enviado exitosamente a ${cliente.email}`);
+                        } catch (emailError) {
+                            console.error("Error enviando correo (Nodemailer):", emailError);
+                        }
+                    }
                 }
-            }
-
-            // --- Enviar correo de confirmación ---
-            // IMPORTANTE: Usamos await. En Vercel, si no esperamos, el proceso se congela al hacer redirect y el correo falla.
-            try {
-                const host = req.headers.host;
-                const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-                const apiUrl = `${protocol}://${host}/api/enviar_comprobante`;
-
-                await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orden: commitResponse.buy_order })
-                });
-            } catch (emailError) {
-                console.error("Error intentando enviar correo:", emailError);
             }
             
             // Redirigir a página de éxito
