@@ -88,6 +88,22 @@ export default async function handler(req, res) {
                     }
                 }
             }
+
+            // --- Enviar correo de confirmación ---
+            // IMPORTANTE: Usamos await. En Vercel, si no esperamos, el proceso se congela al hacer redirect y el correo falla.
+            try {
+                const host = req.headers.host;
+                const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+                const apiUrl = `${protocol}://${host}/api/enviar_comprobante`;
+
+                await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orden: commitResponse.buy_order })
+                });
+            } catch (emailError) {
+                console.error("Error intentando enviar correo:", emailError);
+            }
             
             // Redirigir a página de éxito
             safeRedirect(`/exito.html?orden=${commitResponse.buy_order}&monto=${commitResponse.amount}`);

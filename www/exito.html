@@ -97,6 +97,23 @@
             localStorage.removeItem('datosCliente');
             
             console.log("✅ Carrito limpiado tras compra exitosa.");
+
+            // 4. ENVIAR COMPROBANTE POR CORREO (Nuevo)
+            if (orden && !localStorage.getItem('comprobante_enviado_' + orden)) {
+                fetch('/api/enviar_comprobante', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orden })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("📧 Comprobante enviado correctamente.");
+                        localStorage.setItem('comprobante_enviado_' + orden, 'true');
+                    }
+                })
+                .catch(err => console.error("Error enviando comprobante:", err));
+            }
         });
     </script>
 </body>
