@@ -86,42 +86,154 @@ async function cargarInventarioAdmin() {
             }
         }
     }
-    renderizarTablaInventario();
+    actualizarDashboardMetrics();
+    renderizarInventarioModerno(); // Usamos la nueva función de renderizado
     renderizarBotonEnvio(); // Mostrar botón de configuración
 }
 
-function renderizarTablaInventario() {
-    const tbody = document.getElementById('inventory-body');
-    if (!tbody) return;
+/* =========================================
+   NUEVAS FUNCIONES DASHBOARD MODERNO
+   ========================================= */
+
+function actualizarDashboardMetrics() {
+    const totalProductos = productos.length;
+    const agotados = productos.filter(p => p.stock === 0).length;
+    const bajoStock = productos.filter(p => p.stock > 0 && p.stock < 5).length;
+    const valorInventario = productos.reduce((acc, p) => acc + (p.precio * p.stock), 0);
+
+    const container = document.getElementById('admin-dashboard-metrics');
+    if(container) {
+        container.innerHTML = `
+            <div class="metric-card blue">
+                <h3>Total Productos</h3>
+                <div class="number">${totalProductos}</div>
+            </div>
+            <div class="metric-card red">
+                <h3>Agotados</h3>
+                <div class="number">${agotados}</div>
+            </div>
+            <div class="metric-card yellow">
+                <h3>Bajo Stock (<5)</h3>
+                <div class="number">${bajoStock}</div>
+            </div>
+            <div class="metric-card green">
+                <h3>Valor Inventario</h3>
+                <div class="number">$${valorInventario.toLocaleString('es-CL')}</div>
+            </div>
+        `;
+    }
+}
+
+function renderizarInventarioModerno(data = null) {
+    const lista = data || productos;
+    const tbody = document.getElementById('inventory-body-modern');
+    const table = document.getElementById('inventory-table-modern');
+    
+    if (!tbody || !table) return;
+
+    // Header Estático
+    if (!table.querySelector('thead')) {
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr>
+                <th>Producto</th>
+                <th>Código</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+            </tr>`;
+        table.insertBefore(thead, tbody);
+    }
+
     tbody.innerHTML = '';
 
-    productos.forEach(p => {
-        const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : '';
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No se encontraron productos.</td></tr>';
+        return;
+    }
+
+    lista.forEach(p => {
+        const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : 'https://via.placeholder.com/50';
         const stock = p.stock !== undefined ? p.stock : 0;
-        const row = `
-            <tr data-product-id="${p.id}">
-                <td>#${p.id}</td>
-                <td><img src="${img}" width="50" style="border-radius:5px;"></td>
-                <td><strong>${p.nombre}</strong></td>
-                <td>${p.barcode || 'N/A'}</td>
-                <td>$${p.precio.toLocaleString('es-CL')}</td>
-                <td>${p.categorias.join(', ')}</td>
-                <td><input type="number" value="${stock}" min="0" onchange="cambiarStock(${p.id}, this.value)" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;"></td>
-                <td>
-                    <select onchange="cambiarVisibilidad(${p.id}, this.value === 'true')" style="padding: 5px; border-radius: 5px; border: 1px solid #ddd; background: ${p.mostrar ? '#d1fae5' : '#fee2e2'}; color: ${p.mostrar ? '#065f46' : '#991b1b'}; font-weight: bold;">
-                        <option value="true" ${p.mostrar ? 'selected' : ''}>Disponible</option>
-                        <option value="false" ${!p.mostrar ? 'selected' : ''}>Agotado</option>
-                    </select>
-                </td>
-                <td>
-                    <a href="detalle.html?id=${p.id}" target="_blank" title="Ver en tienda" style="text-decoration:none; font-size: 1.2rem;">🔗</a>
-                    <button type="button" onclick="abrirModalEditar(${p.id})" title="Editar Info" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 5px;">✏️</button>
-                    <button type="button" onclick="abrirModalTallas(${p.id})" title="Gestionar Tallas" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 5px;">📏</button>
-                    <button type="button" onclick="eliminarProducto(${p.id})" title="Eliminar" style="cursor:pointer; border:none; background:none; font-size:1.2rem; margin-left: 8px;">🗑️</button>
-                </td>
-            </tr>`;
-        tbody.innerHTML += row;
+        
+        // Lógica de Estado y Badges
+        let statusBadge = '';
+        if (stock === 0) statusBadge = '<span class="badge-stock out">Agotado</span>';
+        else if (stock < 5) statusBadge = '<span class="badge-stock low">Bajo Stock</span>';
+        else statusBadge = '<span class="badge-stock ok">Disponible</span>';
+
+        if (!p.mostrar) statusBadge += ' <span style="font-size:0.7rem; color:#999;">(Oculto)</span>';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <img src="${img}" class="product-mini-img">
+                    <div>
+                        <div style="font-weight:700; color:#333;">${p.nombre}</div>
+                        <div style="font-size:0.8rem; color:#888;">${p.categorias.join(', ')}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="font-family:monospace; color:#666;">${p.barcode || '-'}</td>
+            <td>
+                <input type="number" value="${p.precio}" class="inline-edit" onchange="cambiarPrecio(${p.id}, this.value)" title="Editar Precio">
+            </td>
+            <td>
+                <input type="number" value="${stock}" min="0" class="inline-edit" onchange="cambiarStock(${p.id}, this.value)" title="Editar Stock Global">
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+                <button onclick="window.open('detalle.html?id=${p.id}', '_blank')" class="action-btn-modern btn-view" title="Ver en Tienda">👁️</button>
+                <button onclick="abrirModalEditar(${p.id})" class="action-btn-modern" title="Editar Detalles">✏️</button>
+                <button onclick="abrirModalTallas(${p.id})" class="action-btn-modern" title="Gestionar Tallas">📏</button>
+                <button onclick="eliminarProducto(${p.id})" class="action-btn-modern btn-delete-modern" title="Eliminar">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(row);
     });
+}
+
+function filtrarInventarioModerno() {
+    const texto = document.getElementById('admin-search').value.toLowerCase();
+    const catFilter = document.getElementById('filter-category').value;
+    const stockFilter = document.getElementById('filter-stock').value;
+
+    const filtrados = productos.filter(p => {
+        const coincideTexto = p.nombre.toLowerCase().includes(texto) || 
+                              (p.barcode && p.barcode.toLowerCase().includes(texto)) ||
+                              p.categorias.some(c => c.toLowerCase().includes(texto));
+        
+        const coincideCat = catFilter === "" || p.categorias.includes(catFilter);
+        
+        let coincideStock = true;
+        if (stockFilter === "low") coincideStock = p.stock > 0 && p.stock < 5;
+        if (stockFilter === "out") coincideStock = p.stock === 0;
+        if (stockFilter === "ok") coincideStock = p.stock >= 5;
+
+        return coincideTexto && coincideCat && coincideStock;
+    });
+
+    renderizarInventarioModerno(filtrados);
+}
+
+// Función auxiliar para cambio de precio inline
+async function cambiarPrecio(id, nuevoPrecio) {
+    const precioNum = parseInt(nuevoPrecio);
+    if (isNaN(precioNum) || precioNum < 0) return;
+    try {
+        const url = window.getApiUrl ? window.getApiUrl('/api/productos') : '/api/productos';
+        await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+            body: JSON.stringify({ id: id, precio: precioNum }) 
+        });
+        const producto = productos.find(p => p.id === id);
+        if (producto) producto.precio = precioNum;
+        window.mostrarNotificacion("✅ Precio actualizado");
+        actualizarDashboardMetrics(); // Recalcular valor inventario
+    } catch (error) { console.error(error); alert("Error al actualizar precio"); }
 }
 
 async function cambiarVisibilidad(id, nuevoEstado) {
@@ -157,6 +269,8 @@ async function cambiarStock(id, nuevoStock) {
             }, body: JSON.stringify({ id: id, stock: stockNum }) });
         const productoIndex = productos.findIndex(p => p.id === id);
         if (productoIndex !== -1) productos[productoIndex].stock = stockNum;
+        actualizarDashboardMetrics(); // Actualizar métricas
+        renderizarInventarioModerno(); // Re-renderizar para actualizar badges
     } catch (error) { console.error(error); alert("Error al actualizar stock"); }
 }
 
@@ -1148,7 +1262,8 @@ async function guardarTallasEditadas(e) {
         if(p) { p.tallas = nuevasTallas; p.stock_tallas = stockTallas; p.stock = totalStock; }
         window.mostrarNotificacion("✅ Stock por talla actualizado");
         cerrarModalTallas();
-        renderizarTablaInventario(); // Recargar la tabla para ver el stock total actualizado
+        renderizarInventarioModerno(); // Recargar la tabla moderna
+        actualizarDashboardMetrics();
     } catch (error) { console.error(error); window.mostrarNotificacion("❌ Error al actualizar"); }
 }
 
@@ -1278,3 +1393,5 @@ window.cerrarModalTallas = cerrarModalTallas;
 window.guardarTallasEditadas = guardarTallasEditadas;
 window.cambiarEstadoVenta = cambiarEstadoVenta;
 window.filtrarInventarioGeneral = filtrarInventarioGeneral;
+window.filtrarInventarioModerno = filtrarInventarioModerno;
+window.cambiarPrecio = cambiarPrecio;

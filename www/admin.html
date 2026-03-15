@@ -47,29 +47,46 @@
 
         <div id="vista-inventario" class="admin-view">
             <div class="view-header">
-                <h2>📦 Inventario de Productos</h2>
+                <h2>📦 Gestión de Inventario</h2>
                 <button onclick="abrirModalAgregar()" class="btn-primary">➕ Nuevo Producto</button>
             </div>
-        <div style="overflow-x: auto;">
-            <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th onclick="ordenarInventario('id')" style="cursor:pointer">ID ↕</th>
-                        <th>Imagen</th>
-                        <th onclick="ordenarInventario('nombre')" style="cursor:pointer">Nombre ↕</th>
-                        <th onclick="ordenarInventario('barcode')" style="cursor:pointer">Código Barras ↕</th>
-                        <th onclick="ordenarInventario('precio')" style="cursor:pointer">Precio ↕</th>
-                        <th onclick="ordenarInventario('categorias')" style="cursor:pointer">Categoría ↕</th>
-                        <th onclick="ordenarInventario('stock')" style="cursor:pointer">Stock ↕</th>
-                        <th onclick="ordenarInventario('mostrar')" style="cursor:pointer">Estado ↕</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="inventory-body">
-                    <!-- Se llena con JS -->
-                </tbody>
-            </table>
-        </div>
+            
+            <!-- Panel de Métricas -->
+            <div id="admin-dashboard-metrics" class="dashboard-metrics">
+                <!-- Se llena con JS -->
+            </div>
+
+            <!-- Barra de Herramientas y Filtros -->
+            <div class="admin-toolbar-modern">
+                <div class="search-box-modern">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="admin-search" placeholder="Buscar por nombre, código o categoría..." onkeyup="filtrarInventarioModerno()">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <select id="filter-category" onchange="filtrarInventarioModerno()" style="padding:10px; border-radius:10px; border:1px solid #eee; background:#f9fafb;">
+                        <option value="">Todas las Categorías</option>
+                        <option value="Mujer">Mujer</option>
+                        <option value="Hombre">Hombre</option>
+                        <option value="Pantalones">Pantalones</option>
+                    </select>
+                    <select id="filter-stock" onchange="filtrarInventarioModerno()" style="padding:10px; border-radius:10px; border:1px solid #eee; background:#f9fafb;">
+                        <option value="">Todos los Estados</option>
+                        <option value="low">⚠️ Bajo Stock</option>
+                        <option value="out">🚫 Agotado</option>
+                        <option value="ok">✅ Disponible</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabla Moderna -->
+            <div class="table-container-modern">
+                <div style="overflow-x: auto;">
+                    <table class="modern-table" id="inventory-table-modern">
+                        <!-- Header se genera con JS -->
+                        <tbody id="inventory-body-modern"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- NUEVA VISTA: INVENTARIO GENERAL -->
