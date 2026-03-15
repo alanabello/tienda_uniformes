@@ -62,9 +62,6 @@ function ordenarInventario(columna) {
 }
 
 async function cargarInventarioAdmin() {
-    const tbody = document.getElementById('inventory-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
     await cargarProductosDesdeDB();
 
     const statusDiv = document.getElementById('db-status');
