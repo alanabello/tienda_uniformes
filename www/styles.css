@@ -13,7 +13,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-color);
     color: var(--text);
-    padding-top: 40px; /* Espacio para barra anuncio */
+    padding-top: 0; /* Espacio para barra anuncio */
 }
 
 /*ofertazo de la semana*/
