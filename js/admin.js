@@ -6,7 +6,6 @@
 // --- Inventario Tienda ---
 let ordenColumna = '';
 let ordenDireccion = 'asc';
-let generalChart = null;
 
 function manejarErrorApi(error) {
     console.error(error);
@@ -165,8 +164,7 @@ function renderizarInventarioModerno(data = null) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <img src="${img}" class="product-mini-img">
+                <div style="display:flex; align-items:center;">
                     <div>
                         <div style="font-weight:700; color:#333;">${p.nombre}</div>
                         <div style="font-size:0.8rem; color:#888;">${p.categorias.join(', ')}</div>
@@ -844,7 +842,6 @@ function renderizarTablaInsumos(filtro = '') {
 function actualizarDashboardGeneral(data) {
     const dashboardOp = document.getElementById('dashboard-operativo');
     const dashboardFin = document.getElementById('dashboard-financiero');
-    const chartSection = document.getElementById('chart-section-general');
     
     if (!dashboardOp || !dashboardFin) return;
 
@@ -881,44 +878,6 @@ function actualizarDashboardGeneral(data) {
             <div class="value">$${costoPromedio.toLocaleString('es-CL')}</div>
         </div>
     `;
-
-    if (chartSection) chartSection.style.display = 'block';
-    renderizarGraficoCategorias(data);
-}
-
-function renderizarGraficoCategorias(data) {
-    const ctx = document.getElementById('generalInventoryChart');
-    if (!ctx) return;
-
-    const categorias = {};
-    data.forEach(item => {
-        const cat = item.categoria || 'Sin Categoría';
-        categorias[cat] = (categorias[cat] || 0) + (item.stock || 0);
-    });
-
-    const labels = Object.keys(categorias);
-    const values = Object.values(categorias);
-
-    if (generalChart) generalChart.destroy();
-
-    generalChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Stock por Categoría',
-                data: values,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
 }
 
 function filtrarInventarioGeneral(termino) {
