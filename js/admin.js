@@ -153,6 +153,41 @@ function renderizarInventarioModerno(data = null) {
         const img = p.imagenes && p.imagenes[0] ? p.imagenes[0] : 'https://via.placeholder.com/50';
         const stock = p.stock !== undefined ? p.stock : 0;
         
+        // Lógica de visualización de Stock por Tallas
+        let stockDisplayHtml = '';
+        const hasTallas = p.stock_tallas && typeof p.stock_tallas === 'object' && Object.keys(p.stock_tallas).length > 0;
+        
+        if (hasTallas) {
+            const tallasOrden = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+            let tallasHtml = '';
+            
+            // Ordenar tallas lógicamente
+            const keys = Object.keys(p.stock_tallas).sort((a, b) => {
+                const idxA = tallasOrden.indexOf(a);
+                const idxB = tallasOrden.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b);
+            });
+
+            keys.forEach(t => {
+                const qty = p.stock_tallas[t];
+                const style = qty > 0 
+                    ? 'background:#e3f2fd; color:#1565c0; border:1px solid #bbdefb;' 
+                    : 'background:#f5f5f5; color:#aaa; border:1px solid #eee;';
+                
+                tallasHtml += `<span style="display:inline-block; font-size:0.7rem; padding:1px 4px; border-radius:3px; margin:1px; ${style}"><strong>${t}:</strong> ${qty}</span>`;
+            });
+            
+            stockDisplayHtml = `<div style="display:flex; flex-direction:column; gap:2px;">
+                    <div style="font-weight:bold; font-size:0.9rem;">Total: ${stock}</div>
+                    <div style="display:flex; flex-wrap:wrap; max-width: 280px;">${tallasHtml}</div>
+                 </div>`;
+        } else {
+            stockDisplayHtml = `<input type="number" value="${stock}" min="0" class="inline-edit" onchange="cambiarStock(${p.id}, this.value)" title="Editar Stock Global">`;
+        }
+
         // Lógica de Estado y Badges
         let statusBadge = '';
         if (stock === 0) statusBadge = '<span class="badge-stock out">Agotado</span>';
@@ -176,7 +211,7 @@ function renderizarInventarioModerno(data = null) {
                 <input type="number" value="${p.precio}" class="inline-edit" onchange="cambiarPrecio(${p.id}, this.value)" title="Editar Precio">
             </td>
             <td>
-                <input type="number" value="${stock}" min="0" class="inline-edit" onchange="cambiarStock(${p.id}, this.value)" title="Editar Stock Global">
+                ${stockDisplayHtml}
             </td>
             <td>${statusBadge}</td>
             <td style="text-align: right;">
